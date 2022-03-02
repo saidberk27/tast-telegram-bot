@@ -9,7 +9,8 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+import add_group
+import delete_group
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -349,6 +350,23 @@ class Ui_MainWindow(object):
         self.DeleteAdvertisementButton.setText(_translate("MainWindow", "Delete Advertisement"))
         self.StartButton.setText(_translate("MainWindow", "START AD PUBLISHING"))
         self.StopButton.setText(_translate("MainWindow", "STOP AD PUBLISHING"))
+
+        self.AddNewGroupButton.clicked.connect(self.addNewGroupWindow)
+        self.DeleteGroupButton.clicked.connect(self.deleteNewGroupWindow)
+
+    def addNewGroupWindow(self):
+        self.window = QtWidgets.QMainWindow()
+        self.ui = add_group.Ui_AddGroup()
+        self.ui.setupUi(self.window)
+        self.window.show()
+
+    def deleteNewGroupWindow(self):
+        self.window = QtWidgets.QMainWindow()
+        self.ui = delete_group.Ui_MainWindow()
+        self.ui.setupUi(self.window)
+        self.window.show()
+
+
 
 
 if __name__ == "__main__":
