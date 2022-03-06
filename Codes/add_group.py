@@ -172,7 +172,6 @@ class Ui_AddGroup(object):
 
 
     def addGroup(self, main_w):
-        print("Add group eklendi")
         main_w.hide()  #REFRESH -BASLANGIC
         groupName = self.lineEdit.text()
         groupIdStr = self.lineEdit_2.text()

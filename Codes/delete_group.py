@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+import main
 
 class Ui_DeleteGroupWindow(object):
     def setupUi(self, DeleteGroupWindow, MainWindow):
@@ -125,8 +125,9 @@ class Ui_DeleteGroupWindow(object):
         self.label.setText(_translate("MainWindow", "GROUP NAME:  "))
         self.deleteGroupButton.setText(_translate("MainWindow", "DELETE GROUP"))
 
-    def deleteGroup(self,m_window):
+    def deleteGroup(self,main_w):
         import ast
+        main_w.hide()# REFRESH BASLANGIC
         print("Deleted")
         groupsFile = open("Group List.txt", "r")
         groupsList = groupsFile.readlines()
@@ -147,6 +148,13 @@ class Ui_DeleteGroupWindow(object):
         for i in groupsList:
             groupsFileAppend.write(i)
         groupsFileAppend.close()
+
+        self.window = QtWidgets.QMainWindow()
+        self.ui = main.Ui_MainWindow()
+        self.ui.setupUi(self.window)
+        self.ui.fillTable()
+        self.window.show()  # REFRESH BITIS
+
 
 if __name__ == "__main__":
     import sys
