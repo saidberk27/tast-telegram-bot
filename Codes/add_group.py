@@ -9,24 +9,24 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+import main
 
 class Ui_AddGroup(object):
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(746, 400)
+    def setupUi(self, AddGroupWindow, MainWindow):
+        AddGroupWindow.setObjectName("MainWindow")
+        AddGroupWindow.resize(746, 400)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
-        MainWindow.setSizePolicy(sizePolicy)
-        MainWindow.setMinimumSize(QtCore.QSize(746, 400))
-        MainWindow.setMaximumSize(QtCore.QSize(746, 400))
+        sizePolicy.setHeightForWidth(AddGroupWindow.sizePolicy().hasHeightForWidth())
+        AddGroupWindow.setSizePolicy(sizePolicy)
+        AddGroupWindow.setMinimumSize(QtCore.QSize(746, 400))
+        AddGroupWindow.setMaximumSize(QtCore.QSize(746, 400))
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("../../../../Downloads/telegram.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        MainWindow.setWindowIcon(icon)
-        MainWindow.setStyleSheet("background-color: rgb(255, 255, 255);")
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        AddGroupWindow.setWindowIcon(icon)
+        AddGroupWindow.setStyleSheet("background-color: rgb(255, 255, 255);")
+        self.centralwidget = QtWidgets.QWidget(AddGroupWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.formLayoutWidget = QtWidgets.QWidget(self.centralwidget)
         self.formLayoutWidget.setGeometry(QtCore.QRect(80, 40, 591, 312))
@@ -129,7 +129,7 @@ class Ui_AddGroup(object):
         self.label_3.setAlignment(QtCore.Qt.AlignCenter)
         self.label_3.setObjectName("label_3")
         self.formLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_3)
-        self.pushButton = QtWidgets.QPushButton(self.formLayoutWidget)
+        self.pushButton = QtWidgets.QPushButton(self.formLayoutWidget, clicked = lambda: self.addGroup(MainWindow))
         self.pushButton.setMaximumSize(QtCore.QSize(16777215, 300))
         font = QtGui.QFont()
         font.setPointSize(-1)
@@ -158,15 +158,14 @@ class Ui_AddGroup(object):
 "")
         self.pushButton.setObjectName("pushButton")
         self.formLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.pushButton)
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        AddGroupWindow.setCentralWidget(self.centralwidget)
+        self.statusbar = QtWidgets.QStatusBar(AddGroupWindow)
         self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
+        AddGroupWindow.setStatusBar(self.statusbar)
 
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
+        self.retranslateUi(AddGroupWindow)
+        QtCore.QMetaObject.connectSlotsByName(AddGroupWindow)
 
-        self.pushButton.clicked.connect(self.addGroup)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -179,22 +178,35 @@ class Ui_AddGroup(object):
 "GROUP YOU WANT TO ADD"))
         self.pushButton.setText(_translate("MainWindow", "ADD GROUP"))
 
-    def addGroup(self):
+
+    def addGroup(self, main_w):
+        print("Add group eklendi")
+        main_w.hide()
         groupName = self.lineEdit.text()
         groupIdStr = self.lineEdit_2.text()
-        groupsFile = open("Group List.txt","w")
+        groupsFile = open("Group List.txt","a")
+
 
         try:
+            groupDataSet = {"Name": groupName, "Id": groupIdStr}
             groupId = int(groupIdStr)
             if(groupId >= 0):
                 raise ValueError
 
-            groupInfoGeneral = "{} , {}".format(groupName, groupId)
-            groupsFile.write(groupInfoGeneral)
-            print(groupInfoGeneral)
-            
+            groupInfoGeneral = "{}".format(groupDataSet)
+            groupsFile.write(groupInfoGeneral + "\n")
+            groupsFile.close()
+
+            self.window = QtWidgets.QMainWindow()
+            self.ui = main.Ui_MainWindow()
+            self.ui.setupUi(self.window)
+            self.window.show()
+
+            self.ui.fillTable()
+
         except ValueError:
             self.label_3.setText("PLEASE ADD \n VALID GROUP ID")
+
 
 
 if __name__ == "__main__":
