@@ -123,7 +123,7 @@ class Ui_MainWindow(object):
 "")
         self.AddNewGroupButton.setObjectName("AddNewGroupButton")
         self.horizontalLayout.addWidget(self.AddNewGroupButton)
-        self.DeleteGroupButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.DeleteGroupButton = QtWidgets.QPushButton(self.verticalLayoutWidget,clicked = lambda:self.deleteNewGroupWindow(MainWindow))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -346,10 +346,10 @@ class Ui_MainWindow(object):
         self.ui.setupUi(self.window, MainWindow)
         self.window.show()
 
-    def deleteNewGroupWindow(self):
+    def deleteNewGroupWindow(self, MainWindow):
         self.window = QtWidgets.QMainWindow()
-        self.ui = delete_group.Ui_MainWindow()
-        self.ui.setupUi(self.window)
+        self.ui = delete_group.Ui_DeleteGroupWindow()
+        self.ui.setupUi(self.window, MainWindow)
         self.window.show()
 
 
