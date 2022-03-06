@@ -354,11 +354,6 @@ class Ui_MainWindow(object):
 
 
     def fillTable(self):
-
-        MainWindow = QtWidgets.QMainWindow()
-        ui = Ui_MainWindow()
-        ui.setupUi(MainWindow)
-
         groupsFile = open("Group List.txt", "r")
         groupsList = groupsFile.readlines()
         print("DFill Table")

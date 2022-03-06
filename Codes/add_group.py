@@ -181,7 +181,7 @@ class Ui_AddGroup(object):
 
     def addGroup(self, main_w):
         print("Add group eklendi")
-        main_w.hide()
+        main_w.hide()  #REFRESH -BASLANGIC
         groupName = self.lineEdit.text()
         groupIdStr = self.lineEdit_2.text()
         groupsFile = open("Group List.txt","a")
@@ -197,12 +197,15 @@ class Ui_AddGroup(object):
             groupsFile.write(groupInfoGeneral + "\n")
             groupsFile.close()
 
+
+
+
             self.window = QtWidgets.QMainWindow()
             self.ui = main.Ui_MainWindow()
             self.ui.setupUi(self.window)
-            self.window.show()
-
             self.ui.fillTable()
+            self.window.show() #REFRESH BITIS
+
 
         except ValueError:
             self.label_3.setText("PLEASE ADD \n VALID GROUP ID")
