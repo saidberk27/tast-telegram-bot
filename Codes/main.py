@@ -5,6 +5,7 @@ from PyQt5.QtCore import QTimer
 
 import add_group
 import delete_group
+import add_ad
 
 import ast
 
@@ -192,7 +193,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setContentsMargins(-1, 0, -1, -1)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.AddAdvertisementButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.AddAdvertisementButton = QtWidgets.QPushButton(self.verticalLayoutWidget,clicked = lambda:self.addAdvertisementWindow())
         self.AddAdvertisementButton.setMinimumSize(QtCore.QSize(400, 100))
         self.AddAdvertisementButton.setMaximumSize(QtCore.QSize(400, 100))
         font = QtGui.QFont()
@@ -346,10 +347,17 @@ class Ui_MainWindow(object):
         self.ui.setupUi(self.window, MainWindow)
         self.window.show()
 
+
     def deleteNewGroupWindow(self, MainWindow):
         self.window = QtWidgets.QMainWindow()
         self.ui = delete_group.Ui_DeleteGroupWindow()
         self.ui.setupUi(self.window, MainWindow)
+        self.window.show()
+
+    def addAdvertisementWindow(self):
+        self.window = QtWidgets.QMainWindow()
+        self.ui = add_ad.Ui_MainWindow()
+        self.ui.setupUi(self.window)
         self.window.show()
 
 

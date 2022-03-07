@@ -1,0 +1,1 @@
+add group butona basınca add group penceresi kapansın, butona üst üste basılınca mainwindow hide olmuyor
