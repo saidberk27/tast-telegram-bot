@@ -1,7 +1,8 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import ast
-from PyQt5.QtWidgets import QListWidgetItem
+from PyQt5.QtWidgets import QListWidgetItem, QAbstractItemView
 import os
+import removeBlanks
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -150,6 +151,9 @@ class Ui_MainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
         self.listButton.clicked.connect(self.listAll)
+        self.matchButton.clicked.connect(self.match)
+
+        self.ads_listWidget.setSelectionMode(QAbstractItemView.MultiSelection)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -182,6 +186,39 @@ class Ui_MainWindow(object):
         for ad in adCsvFiles:
             listWidgetItem = QListWidgetItem(ad)
             self.ads_listWidget.addItem(listWidgetItem)
+
+    def match(self):
+        groupsFile = open("Group List.txt", "r")
+        groupsList = groupsFile.readlines()
+
+        selectedGroup = self.groups_listWidget.selectedItems()[0].data(0)#0'in amacini ben de cozemedim, int gerkeiyodu girdim.
+
+        selectedAds = self.ads_listWidget.selectedItems()
+        selectedAdsData = []
+
+        for pureAd in selectedAds:
+            selectedAdsData.append(pureAd.data(0)) #datayi almak icin.
+
+        index = 0
+        for dataSet in groupsList:
+            convertedDict = ast.literal_eval(dataSet)
+            if(convertedDict["Name"] == selectedGroup): #Secilen grup, group_list.txt icindeki bir grupla eslesiyorsa
+                selectedAdsString = ','.join(map(str, selectedAdsData)) #reklamlar listeisni stringe cevir
+                convertedDict.update( {'ADS' : selectedAdsString} ) #reklamlari eslesen grup dict'ine ekle
+                groupsList[index] = str(convertedDict) #grup listesinden secilen grubu index vasitasiyla bul, reklam eklenmis dict'i listeye ekle
+            index = index + 1
+
+        groupsFile = open("Group List.txt", "w")#clean islemi
+        groupsFile.write("") #clean islemi
+        groupsFile.close()#clean islemi
+
+        groupsFileAppend = open("Group List.txt", "a")
+        for updatedListElements in groupsList:
+            groupsFileAppend.write(updatedListElements + "\n")
+        groupsFileAppend.close()
+
+        removeBlanks.remove_blanks()#Groups List.txt tekrar kullanilabilir olmasi icin bosluklarindan arindiriyoruz.
+
 
 if __name__ == "__main__":
     import sys

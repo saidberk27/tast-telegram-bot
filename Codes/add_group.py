@@ -185,6 +185,8 @@ class Ui_AddGroup(object):
                 raise ValueError
 
             groupInfoGeneral = "{}".format(groupDataSet)
+
+
             groupsFile.write(groupInfoGeneral + "\n")
             groupsFile.close()
 

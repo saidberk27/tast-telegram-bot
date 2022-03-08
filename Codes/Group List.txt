@@ -1,6 +1,3 @@
-{'Name': 'd1', 'Id': '-3'}
-{'Name': 'd5', 'Id': '-12'}
-{'Name': 'd7', 'Id': '-12'}
-{'Name': 'd9', 'Id': '-1213'}
-{'Name': 'd11', 'Id': '-12'}
-{'Name': 'a11', 'Id': '-12'}
+{'Name': 'd1', 'Id': '-12', 'ADS': 'candan.csv,deneme4.csv'}
+{'Name': 'd2', 'Id': '-12', 'ADS': 'denemeiki.csv,test1.csv'}
+{'Name': 'd3', 'Id': '-45', 'ADS': 'denemeiki.csv,test1.csv,candan.csv,deneme4.csv'}
