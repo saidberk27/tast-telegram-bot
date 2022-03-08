@@ -1,11 +1,8 @@
-import time
-
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QTimer
-
 import add_group
 import delete_group
 import add_ad
+import delete_ad
 
 import ast
 
@@ -223,7 +220,7 @@ class Ui_MainWindow(object):
 "")
         self.AddAdvertisementButton.setObjectName("AddAdvertisementButton")
         self.horizontalLayout_2.addWidget(self.AddAdvertisementButton)
-        self.DeleteAdvertisementButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.DeleteAdvertisementButton = QtWidgets.QPushButton(self.verticalLayoutWidget,clicked = lambda:self.deleteAdvertisementWindow())
         self.DeleteAdvertisementButton.setMinimumSize(QtCore.QSize(400, 100))
         self.DeleteAdvertisementButton.setMaximumSize(QtCore.QSize(400, 100))
         font = QtGui.QFont()
@@ -347,7 +344,6 @@ class Ui_MainWindow(object):
         self.ui.setupUi(self.window, MainWindow)
         self.window.show()
 
-
     def deleteNewGroupWindow(self, MainWindow):
         self.window = QtWidgets.QMainWindow()
         self.ui = delete_group.Ui_DeleteGroupWindow()
@@ -359,6 +355,14 @@ class Ui_MainWindow(object):
         self.ui = add_ad.Ui_MainWindow()
         self.ui.setupUi(self.window)
         self.window.show()
+
+    def deleteAdvertisementWindow(self):
+        self.window = QtWidgets.QMainWindow()
+        self.ui = delete_ad.Ui_MainWindow()
+        self.ui.setupUi(self.window)
+        self.window.show()
+
+
 
 
     def fillTable(self):

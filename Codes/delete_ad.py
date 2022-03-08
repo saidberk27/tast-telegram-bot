@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QListWidgetItem
+import os
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -103,21 +104,21 @@ class Ui_MainWindow(object):
         self.deleteAdButton.setText(_translate("MainWindow", "DELETE SELECTED AD"))
 
     def listAds(self):
-        adCsvFile = open("Advertisement Information.csv", "r")
-        adCsvFileList = adCsvFile.readlines()
-        for ad in adCsvFileList:
+        self.listWidget.clear()  # Ust uste binmesin diye temizliyoruz.
+        adCsvFiles = os.listdir("ads")
+
+        for ad in adCsvFiles:
             listWidgetItem = QListWidgetItem(ad)
             self.listWidget.addItem(listWidgetItem)
 
-    def deleteSelectedAd(self):
-        currentRow = self.listWidget.currentRow()
-        self.listWidget.takeItem(currentRow)
-        adCsvFile = open("Advertisement Information.csv", "r")
 
-        adCsvFileList = adCsvFile.readlines()
-        adCsvFileList.remove(adCsvFileList[currentRow])
-        print(adCsvFileList)
-        print(adCsvFileList[currentRow])
+    def deleteSelectedAd(self):
+            currentRow = self.listWidget.currentRow()
+            self.listWidget.takeItem(currentRow)
+            adCsvFiles = os.listdir("ads")
+
+            os.system("cd ads")
+            os.system("del ads\{}".format(adCsvFiles[currentRow]))
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)

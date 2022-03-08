@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import sys
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 import main
@@ -189,15 +188,23 @@ class Ui_AddGroup(object):
             groupsFile.write(groupInfoGeneral + "\n")
             groupsFile.close()
 
-
             self.window = QtWidgets.QMainWindow()
             self.ui = main.Ui_MainWindow()
             self.ui.setupUi(self.window)
             self.ui.fillTable()
-            self.ui.addNewGroupWindow(close=True)
             self.window.show() #REFRESH BITIS
-
 
 
         except ValueError:
             self.label_3.setText("PLEASE ADD \n VALID GROUP ID")
+
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    addGroupWindow = QtWidgets.QMainWindow()
+    ui = Ui_AddGroup()
+    ui.setupUi(addGroupWindow)
+    addGroupWindow.show()
+    sys.exit(app.exec_())
