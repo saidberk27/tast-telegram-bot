@@ -76,6 +76,34 @@
          <property name="styleSheet">
           <string notr="true">border:3px solid rgb(34, 158, 217);</string>
          </property>
+         <property name="placeholderText">
+          <string>YOUR AD TEXT...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="adNameLineEdit">
+         <property name="font">
+          <font>
+           <family>Roboto</family>
+           <pointsize>12</pointsize>
+           <weight>50</weight>
+           <bold>false</bold>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">border:3px solid rgb(34, 158, 217);
+color:rgb(34, 158, 217)</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+         <property name="placeholderText">
+          <string>PLEASE ENTER YOUR AD NAME</string>
+         </property>
         </widget>
        </item>
        <item>

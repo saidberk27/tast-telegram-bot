@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QDialog, QApplication, QFileDialog, QListWidgetItem
-import os
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -166,11 +166,13 @@ class Ui_MainWindow(object):
 
     def fillListWidget(self):
         self.listWidget.clear()  # Ust uste binmesin diye temizliyoruz.
-        adCsvFiles = os.listdir("ads")
-
-        for ad in adCsvFiles:
+        adCsvFiles = open("Advertisement Information.csv", "r")
+        adCsvFilesList = adCsvFiles.readlines()
+        for ad in adCsvFileList:
+            print(ad)
             listWidgetItem = QListWidgetItem(ad)
             self.listWidget.addItem(listWidgetItem)
+
 
 if __name__ == "__main__":
     import sys
