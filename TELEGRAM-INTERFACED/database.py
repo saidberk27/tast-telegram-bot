@@ -1,31 +1,20 @@
-import pyrebase
+import sqlite3
 
+def createTable():
+    veriTabaniCursor.execute("CREATE TABLE users(username,saved_groups,saved_ads)")
+    veriTabani.commit()
+def convertToBinaryData(filename):
+    # Convert digital data to binary format
+    with open(filename, 'rb') as file:
+        blobData = file.read()
+    return blobData
 
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
-
-def initilaize_app():
-    firebaseConfig = {"apiKey": "AIzaSyB90XbnKvjkFnEAXRKXwYUyOL92W04bFR0",
-      "authDomain": "tast-telegran-bot.firebaseapp.com",
-      "projectId": "tast-telegran-bot",
-      "storageBucket": "tast-telegran-bot.appspot.com",
-      "messagingSenderId": "663865393615",
-      "appId": "1:663865393615:web:a456f154e39be804a792ba"}
-
-    firebase = pyrebase.initialize_app(firebaseConfig)
-    return firebase
-
-def storage():
-    firebase = initilaize_app()
-    storage = firebase.storage()
-
-def db_setup():
-    cred = credentials.Certificate("serviceAccountKey.json")
-    firebase_admin.initialize_app(cred)
-
-    db = firestore.client()
-    return db
-
+def insertData(adName,adText):
+    veriTabaniCursor.execute("insert into users values (?,?,?)",("Test User","Test Name","Ad Text Ad Text Ad Text Ad Text Ad TextAd Text"))
+    veriTabani.commit()
 if __name__ == '__main__':
-    storage()
+    veriTabani = sqlite3.connect("mainDB.db")
+    veriTabaniCursor = veriTabani.cursor()
+
+    createTable()
+    insertData("test-name one","Ad Text Ad Text Ad Text Ad Text Ad TextAd Text")
