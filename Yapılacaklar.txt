@@ -1,1 +1,7 @@
 hebrew language encode support
+
+ads ekleniyor groups list.txt icine fakat GUI üzerinde güncellenmiyor.
+
+publish ve interval kurma işlemi 
+
+giriş yap ekranı ve veritabanına bağlanış
