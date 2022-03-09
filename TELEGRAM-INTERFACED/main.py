@@ -10,6 +10,10 @@ def createAd(update,context):
     buttons = [[KeyboardButton("Add Media")], [KeyboardButton("Save Ad")]]
     context.bot.send_message(chat_id=update.effective_chat.id, text="Please Enter the Ad Data", reply_markup=ReplyKeyboardMarkup(buttons))
 
+    if ("Add Media" in update.message.text):
+        image_handler(update,context)
+
+
 def publishAd(update,context):
     print("publishing an ad...")
     buttons = [[KeyboardButton("GROUP 1")], [KeyboardButton("GROUP 2")]]
@@ -21,11 +25,18 @@ def startCommand(update: Updater,context: CallbackContext):
 
 def messageHandler(update: Updater,context: CallbackContext):
     if("CREATE AN AD" in update.message.text):
-        createAd(update,context)
+        image_handler(update,context)
     if("PUBLISH ADS" in update.message.text):
         publishAd(update,context)
+
+def image_handler(update,context):
+    print("image handler")
+    context.bot.get_file(update.message.document).download()
 
 dispatcher.add_handler(CommandHandler("start",startCommand))
 dispatcher.add_handler(MessageHandler(Filters.text, messageHandler))
 
+dispatcher.add_handler(MessageHandler(Filters.document,image_handler))
+
 updater.start_polling()
+updater.idle()
