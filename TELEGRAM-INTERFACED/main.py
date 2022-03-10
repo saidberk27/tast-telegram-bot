@@ -72,6 +72,27 @@ def listChannels(update,context):
             buttons = buttons + list(staticsOfList)
             context.bot.send_message(chat_id=update.effective_chat.id, text=channelNames,reply_markup=ReplyKeyboardMarkup(buttons))
 
+def listPosts(update,context):
+    buttons = []
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Ad", reply_markup=ReplyKeyboardMarkup(buttons))
+
+    userJson = open("users.txt", "r")
+    userJsonList = userJson.readlines()
+    user = update.message.from_user
+    currentUser = user['username']
+
+    for users in userJsonList:
+        convertedDict = ast.literal_eval(users)
+        staticsOfList = [KeyboardButton("➕ ADD CHANNEL")], [KeyboardButton("⛔ REMOVE CHANNEL")], [KeyboardButton("⬅️ BACK")]
+        if (convertedDict['username'] == currentUser):
+            ad_lists = convertedDict['ad-names']
+            for adNames in ad_lists:
+                buttons.append([KeyboardButton(adNames)])
+
+            buttons = buttons + list(staticsOfList)
+            context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Ad",reply_markup=ReplyKeyboardMarkup(buttons))
+
+
 def addChannel(update,context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="Please Enter the Name of the Channel")
 
@@ -83,15 +104,9 @@ def addChannel(update,context):
         convertedDict = ast.literal_eval(users)
         if (convertedDict['username'] == currentUser):
             print(convertedDict['channel-name'])
-def listPosts(update,context):
-    buttons = [[KeyboardButton("✉️ POST 1")], [KeyboardButton("✉️ POST 2")],[KeyboardButton("➕ ADD POST")],[KeyboardButton("⛔ REMOVE POST")],[KeyboardButton("⬅️ BACK")]]
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Group", reply_markup=ReplyKeyboardMarkup(buttons))
-
 
 def deactivateBot():
     print("Bot Is Deactivating")
-
-
 
 
 def fileListener(update,context):
