@@ -1,2 +1,3 @@
 {'username': 'test-one','channel-names':'Test Channel','channels': [642743936],'adText': 'test123'}
-{'username': 'whilefalse27','channel-names':["Test Channel1","Test Channel2","Test Channel3"],'channels': [-642743936],'ad-names': ["Test Ad1","Test Ad2","Test Ad3"]}
+{'username': 'whilefsaalse27','channel-names':["Test Channel1","Test Channel2","Test Channel3"],'channels': [-642743936],'ad-names': ["Test Ad1","Test Ad2","Test Ad3"]}
+{'username': 'whilefalse27', 'channel-names': ['Test Channel1', 'Test Channel2', 'Test Channel3', 'AddedChannel'], 'channels': [-642743936], 'ad-names': ['Test Ad1', 'Test Ad2', 'Test Ad3']}

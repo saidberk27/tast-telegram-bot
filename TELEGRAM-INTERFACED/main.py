@@ -98,12 +98,31 @@ def addChannel(update,context):
 
     userJson = open("users.txt", "r")
     userJsonList = userJson.readlines()
+    userJson.close()
+
     user = update.message.from_user
     currentUser = user['username']
+
+    channelWillBeAdded = "AddedChannel"
+
     for users in userJsonList:
         convertedDict = ast.literal_eval(users)
         if (convertedDict['username'] == currentUser):
-            print(convertedDict['channel-name'])
+            channelList = convertedDict['channel-names']
+            channelList.append(channelWillBeAdded)
+            convertedDict['channel-names'] = channelList
+
+            listLocation = userJsonList.index(users)
+            userJsonList[listLocation] = convertedDict
+
+    userJsonListWrite = open("users.txt","w")
+    for updatedUsers in userJsonList:
+        print(updatedUsers)
+        userJsonListWrite.write(str(updatedUsers))
+    userJsonListWrite.close()
+
+#timer degil if else yap
+
 
 def deactivateBot():
     print("Bot Is Deactivating")
