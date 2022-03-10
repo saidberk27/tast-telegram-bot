@@ -1,0 +1,2 @@
+{'username': 'test-one','channel-name':'Test Channel', 'channels': [642743936], 'adText': 'test123'}
+{'username': 'whilefalse27','channel-names':["Test Channel1","Test Channel2","Test Channel3"], 'channels': [-642743936], 'adText': 'test123'}

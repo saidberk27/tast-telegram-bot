@@ -1,3 +1,0 @@
-{'Name': 'd1', 'Id': '-12', 'ADS': 'candan.csv,deneme4.csv'}
-{'Name': 'd2', 'Id': '-12', 'ADS': 'denemeiki.csv,test1.csv'}
-{'Name': 'd3', 'Id': '-45', 'ADS': 'denemeiki.csv,test1.csv,candan.csv,deneme4.csv'}
