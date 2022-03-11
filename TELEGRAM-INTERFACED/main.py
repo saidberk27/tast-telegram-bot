@@ -95,6 +95,7 @@ def listChannels(update,context):
     currentUser = user['username']
     jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
     jsonText = jsonFile.read()
+    jsonFile.close()
     convertedDict = json.loads(jsonText)
 
     channel_lists = convertedDict['channel-names']
@@ -113,6 +114,7 @@ def listPosts(update,context):
     currentUser = user['username']
     jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
     jsonText = jsonFile.read()
+    jsonFile.close()
     convertedDict = json.loads(jsonText)
 
     adList = convertedDict["ad-names"]
@@ -145,32 +147,28 @@ def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False
         channelNameInput = groupInfoList[0]
         channelIdInput = groupInfoList[1]
 
-        userJson = open("users.txt", "r")
-        userJsonList = userJson.readlines()
-        userJson.close()
-
         user = update.message.from_user
         currentUser = user['username']
+        jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+        jsonText = jsonFile.read()
+        jsonFile.close()
+        convertedDict = json.loads(jsonText)
 
-        for users in userJsonList:
-            convertedDict = ast.literal_eval(users)
-            if (convertedDict['username'] == currentUser):
-                channelNameList = convertedDict['channel-names'] #Dict'ten channelnamesi al
-                channelNameList.append(channelNameInput)
-                convertedDict['channel-names'] = channelNameList #channel namesi guncelleyip dicte geri ver
 
-                channelIdList = convertedDict['channel-ids']  # Dict'ten channel ids al
-                channelIdList.append(channelIdInput)
-                convertedDict['channel-ids'] = channelIdList  # channel idsi guncelleyip dicte geri ver
+        channelNameList = convertedDict['channel-names'] #Dict'ten channelnamesi al
+        channelNameList.append(channelNameInput)
+        convertedDict['channel-names'] = channelNameList #channel namesi guncelleyip dicte geri ver
 
-                print(convertedDict)
-                listLocation = userJsonList.index(users)
-                userJsonList[listLocation] = convertedDict
+        channelIdList = convertedDict['channel-ids']  # Dict'ten channel ids al
+        channelIdList.append(channelIdInput)
+        convertedDict['channel-ids'] = channelIdList  # channel idsi guncelleyip dicte geri ver
 
-        userJsonWrite = open("users.txt","w")
-        for updatedUsers in userJsonList:
-            userJsonWrite.write(str(updatedUsers))
-            print(str(updatedUsers))
+        updatedDatas = convertedDict
+        print(type(updatedDatas))
+
+        userJsonWrite = open("users/{}/userJson.json".format(currentUser), "w")
+        userJsonWrite.write(json.dumps(updatedDatas))
+        userJsonWrite.close()
 
         updateCommand(update,context)
 
