@@ -1,1 +1,7 @@
-{'username': 'whilefalse27', 'channel-names': ['cesebe', 'said'], 'channel-ids': ['-273', '-34'], 'ad-names': ['Test Ad1', 'Test Ad2', 'Test Ad3']}
+{
+     "username": {
+         "http://purl.org/dc/terms/title": [
+             {"type": "literal", "value": "Anna's Homepage"}
+          ]
+      }
+}

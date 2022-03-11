@@ -8,7 +8,9 @@ from telegram import *
 from telegram.ext import *
 from requests import *
 import send_message
+import os
 import ast
+import json
 
 def updateCommand(update: Updater,context: CallbackContext):
     buttons = [[KeyboardButton("🔥 CHANNELS")], [KeyboardButton("💥 POSTS")], [KeyboardButton("✅ BOT IS ACTIVE")]]
@@ -16,8 +18,32 @@ def updateCommand(update: Updater,context: CallbackContext):
 
 def startCommand(update: Updater,context: CallbackContext):
     user = update.message.from_user
-    buttons = [[KeyboardButton("🔥 CHANNELS")],[KeyboardButton("💥 POSTS")],[KeyboardButton("✅ BOT IS ACTIVE")]]
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Hello {} Welcome to bot!".format(user['username']), reply_markup=ReplyKeyboardMarkup(buttons))
+    username = user['username']
+
+    if(userCheck(username)):
+        buttons = [[KeyboardButton("🔥 CHANNELS")],[KeyboardButton("💥 POSTS")],[KeyboardButton("✅ BOT IS ACTIVE")]]
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Hello {} Welcome to bot!".format(user['username']), reply_markup=ReplyKeyboardMarkup(buttons))
+    else: context.bot.send_message(chat_id=update.effective_chat.id, text="❌ You Are Not Allowed to Use This Bot! Please Contact Admın")
+
+def userCheck(username):
+    print(type(username))
+    path = "users"
+    usernameChecked = getCheckedUserName(username)
+    userList = os.listdir(path=path)
+
+    return usernameChecked in userList
+
+def getCheckedUserName(username):
+    illegal_chars = ["<",">","/","*","?"," ","'",'"',":","|","\\"]
+    letterUpdated = ""
+
+    for letter in username:
+        if letter in illegal_chars:
+            print("Illegal Char Detected")
+            letter = ""
+        letterUpdated = letterUpdated + letter
+
+    return letterUpdated
 
 def mainMenu(update,context):
     buttons = [[KeyboardButton("🔥 CHANNELS")],[KeyboardButton("💥 POSTS")],[KeyboardButton("✅ BOT IS ACTIVE")]]
@@ -31,7 +57,6 @@ def logTut(update):
     except UnicodeEncodeError:
         logFile.write(update.message.text[2:] + "\n")
         logFile.close()
-
 
 def generalMessageHandler(update: Updater, context: CallbackContext):
     logTut(update)
@@ -65,44 +90,40 @@ def generalMessageHandler(update: Updater, context: CallbackContext):
 
 def listChannels(update,context):
     buttons = []
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Group", reply_markup=ReplyKeyboardMarkup(buttons))
 
-    userJson = open("users.txt", "r")
-    userJsonList = userJson.readlines()
-    userJson.close()
     user = update.message.from_user
     currentUser = user['username']
+    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonText = jsonFile.read()
+    convertedDict = json.loads(jsonText)
 
-    for users in userJsonList:
-        convertedDict = ast.literal_eval(users)
-        if (convertedDict['username'] == currentUser):
-            channel_lists = convertedDict['channel-names']
-            for channelNames in channel_lists:
-                buttons.append([KeyboardButton(channelNames)])
-            staticsOfList = [KeyboardButton("➕ ADD CHANNEL")], [KeyboardButton("⛔ REMOVE CHANNEL")], [KeyboardButton("⬅️ BACK")]
-            buttons = buttons + list(staticsOfList)
-            context.bot.send_message(chat_id=update.effective_chat.id, text=channelNames,reply_markup=ReplyKeyboardMarkup(buttons))
+    channel_lists = convertedDict['channel-names']
+    for channelNames in channel_lists:
+        buttons.append([KeyboardButton(channelNames)])
+
+    staticsOfList = [KeyboardButton("➕ ADD CHANNEL")], [KeyboardButton("⛔ REMOVE CHANNEL")], [KeyboardButton("⬅️ BACK")]
+    buttons = buttons + list(staticsOfList)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Group", reply_markup=ReplyKeyboardMarkup(buttons))
+
 
 def listPosts(update,context):
     buttons = []
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Ad", reply_markup=ReplyKeyboardMarkup(buttons))
 
-    userJson = open("users.txt", "r")
-    userJsonList = userJson.readlines()
-    userJson.close()
     user = update.message.from_user
     currentUser = user['username']
+    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonText = jsonFile.read()
+    convertedDict = json.loads(jsonText)
 
-    for users in userJsonList:
-        convertedDict = ast.literal_eval(users)
-        staticsOfList = [KeyboardButton("➕ ADD CHANNEL")], [KeyboardButton("⛔ REMOVE CHANNEL")], [KeyboardButton("⬅️ BACK")]
-        if (convertedDict['username'] == currentUser):
-            ad_lists = convertedDict['ad-names']
-            for adNames in ad_lists:
-                buttons.append([KeyboardButton(adNames)])
+    adList = convertedDict["ad-names"]
 
-            buttons = buttons + list(staticsOfList)
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Ad",reply_markup=ReplyKeyboardMarkup(buttons))
+    staticsOfList = [KeyboardButton("➕ ADD CHANNEL")], [KeyboardButton("⛔ REMOVE CHANNEL")], [KeyboardButton("⬅️ BACK")]
+
+    for adNames in adList:
+        buttons.append([KeyboardButton(adNames)])
+
+    buttons = buttons + list(staticsOfList)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Ad",reply_markup=ReplyKeyboardMarkup(buttons))
 
 def awaitForGroupNameInput(update: Updater, context: CallbackContext):
     print("Tetiklendi")
