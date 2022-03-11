@@ -75,7 +75,7 @@ def generalMessageHandler(update: Updater, context: CallbackContext):
         mainMenu(update,context)
 #------------------------------GENERAL----------------------------#
     if("➕ ADD CHANNEL" in update.message.text):
-        addChannel(update,context,showMessage=True) #BUTONA ILK BASIS ICIN GEREKLI BIR CAGIRMA,INPUT BEKLEMEZ
+        addChannel(update,context,showMessage=True,ekleme=False) #BUTONA ILK BASIS ICIN GEREKLI BIR CAGIRMA,INPUT BEKLEMEZ
 #------------------------------LIST CHANNELS----------------------------#
     #if ("🔆 CHANNEL 1" in update.message.text):
     #    print("Channel One")
@@ -119,7 +119,7 @@ def listPosts(update,context):
 
     adList = convertedDict["ad-names"]
 
-    staticsOfList = [KeyboardButton("➕ ADD CHANNEL")], [KeyboardButton("⛔ REMOVE CHANNEL")], [KeyboardButton("⬅️ BACK")]
+    staticsOfList = [KeyboardButton("➕ ADD POST")], [KeyboardButton("⛔ REMOVE POST")], [KeyboardButton("⬅️ BACK")]
 
     for adNames in adList:
         buttons.append([KeyboardButton(adNames)])
@@ -127,17 +127,23 @@ def listPosts(update,context):
     buttons = buttons + list(staticsOfList)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Ad",reply_markup=ReplyKeyboardMarkup(buttons))
 
-def awaitForGroupNameInput(update: Updater, context: CallbackContext):
-    print("Tetiklendi")
-    input_message = update.message.text
-    if(input_message == "➕ ADD CHANNEL" or input_message == "🔥 CHANNELS" or input_message == "💥 POSTS" or input_message == "✅ BOT IS ACTIVE" or input_message == "⬅️ BACK"):
-        addChannel(update, context, ekleme=False)
-
+def awaitForInput(update: Updater, context: CallbackContext):
+    global inputMode
+    print("Tetiklendi",inputMode)
+    if(inputMode == "group"):
+        print("ICERISI")
+        input_message = update.message.text
+        if(input_message == "➕ ADD CHANNEL" or input_message == "🔥 CHANNELS" or input_message == "💥 POSTS" or input_message == "✅ BOT IS ACTIVE" or input_message == "⬅️ BACK"):
+            addChannel(update,context,ekleme=False)
+        else:
+            addChannel(update, context, ekleme=True, groupInfo=input_message)
+            inputMode = "None"
     else:
-        addChannel(update, context, ekleme=True, groupInfo=input_message)
-
+        print("yazmam")
 def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False):
-    dispatcher.add_handler(MessageHandler(Filters.text, awaitForGroupNameInput), group=1)#GROUP=1 DIYEREK DAHA FAZLA HANDLER KYOABILIYORUZ, https://github.com/python-telegram-bot/python-telegram-bot/issues/1133
+    global inputMode
+    inputMode = "group"
+    dispatcher.add_handler(MessageHandler(Filters.text, awaitForInput), group=1)#GROUP=1 DIYEREK DAHA FAZLA HANDLER KYOABILIYORUZ, https://github.com/python-telegram-bot/python-telegram-bot/issues/1133
     if(showMessage):
         context.bot.send_message(chat_id=update.effective_chat.id, text="Please Enter the (Group Name,Group ID)")
     print("ADD CHANNEL")
@@ -175,7 +181,44 @@ def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False
     else:
         print("Input Bekle")
 
+def addPost(update, context, ekleme=False, groupInfo = None,showMessage=False):
+    dispatcher.add_handler(MessageHandler(Filters.text, awaitForInput), group=1)#GROUP=1 DIYEREK DAHA FAZLA HANDLER KYOABILIYORUZ, https://github.com/python-telegram-bot/python-telegram-bot/issues/1133
+    if(showMessage):
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Enter the (Group Name,Group ID)")
+    print("ADD CHANNEL")
+    if(ekleme):
+        groupInfoList = groupInfo.split(",")
 
+        channelNameInput = groupInfoList[0]
+        channelIdInput = groupInfoList[1]
+
+        user = update.message.from_user
+        currentUser = user['username']
+        jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+        jsonText = jsonFile.read()
+        jsonFile.close()
+        convertedDict = json.loads(jsonText)
+
+
+        channelNameList = convertedDict['channel-names'] #Dict'ten channelnamesi al
+        channelNameList.append(channelNameInput)
+        convertedDict['channel-names'] = channelNameList #channel namesi guncelleyip dicte geri ver
+
+        channelIdList = convertedDict['channel-ids']  # Dict'ten channel ids al
+        channelIdList.append(channelIdInput)
+        convertedDict['channel-ids'] = channelIdList  # channel idsi guncelleyip dicte geri ver
+
+        updatedDatas = convertedDict
+        print(type(updatedDatas))
+
+        userJsonWrite = open("users/{}/userJson.json".format(currentUser), "w")
+        userJsonWrite.write(json.dumps(updatedDatas))
+        userJsonWrite.close()
+
+        updateCommand(update,context)
+
+    else:
+        print("Input Bekle")
 
 def deactivateBot():
     print("Bot Is Deactivating")
@@ -197,7 +240,7 @@ if __name__ == '__main__':
 
     dispatcher.add_handler(MessageHandler(Filters.document,fileListener))
 
-
+    inputMode = "None"
     updater.start_polling()
     updater.idle()
 

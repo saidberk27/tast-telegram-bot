@@ -105,3 +105,79 @@ CHANNELS
 ADD CHANNEL
 nene,-45
 CHANNELS
+<butto>
+«Button 1» - «link»,
+
+«Button 2» - «link 2»
+«Button 1» - «link»,
+
+«Button 2» - «link 2»
+hey
+heyyyyyyyyyyyyyyyyyyyyyyyyyyA
+«Button 1» - «link»,
+
+«Button 2» - «link 2»
+CHANNELS
+ADD CHANNEL
+deneme,-234
+CHANNELS
+ BACK
+her bok benim
+CHANNELS
+ADD CHANNEL
+said,-324
+heall
+heall,-32
+nasýla,3232
+CHANNELS
+ BACK
+CHANNELS
+ADD CHANNEL
+ADD CHANNEL
+CHANNELS
+ADD CHANNEL
+ADD CHANNEL
+ADD CHANNEL
+ADD CHANNEL
+ADD CHANNEL
+ADD CHANNEL
+ADD CHANNEL
+ADD CHANNEL
+CHANNELS
+ADD CHANNEL
+ADD CHANNEL
+ADD CHANNEL
+ADD CHANNEL
+said,-32
+ BACK
+CHANNELS
+yazmicam,-34
+ADD CHANNEL
+yazmicam,-34
+ BACK
+CHANNELS
+ADD CHANNEL
+ADD CHANNEL
+ADD CHANNEL
+ADD CHANNEL
+olacak,32
+CHANNELS
+ BACK
+CHANNELS
+ADD CHANNEL
+said,345
+heyya
+noldu,lan
+noldu,lan
+CHANNELS
+ADD CHANNEL
+hehyo,1234
+ADD CHANNEL
+heyya
+birgün,23
+CHANNELS
+birgüm,23
+ADD CHANNEL
+birgün,23
+selam bebke
+niye,yazmion
