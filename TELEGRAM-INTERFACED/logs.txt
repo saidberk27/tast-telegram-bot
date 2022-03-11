@@ -181,3 +181,48 @@ ADD CHANNEL
 birgün,23
 selam bebke
 niye,yazmion
+POSTS
+ADD POST
+ADD POST
+POSTS
+ADD POST
+POSTS
+ADD POST
+ BACK
+POSTS
+ADD POST
+heya
+hey
+noldu,hey
+CHANNELS
+ADD CHANNEL
+spagetti,-34
+CHANNELS
+ BACK
+dneem
+CHANNELS
+ADD CHANNEL
+kaptim,-32
+CHANNELS
+ADD CHANNEL
+yaz,-32
+CHANNELS
+ BACK
+yazma
+POSTS
+ADD POST
+reklam1,bu bir reklam metni heyy
+yazmcaýn
+aferin
+POSTS
+POSTS
+ADD POST
+reklam2,reklamin iknci metni
+POSTS
+ BACK
+POSTS
+ADD POST
+emojili,
+POSTS
+ADD POST
+POSTS
