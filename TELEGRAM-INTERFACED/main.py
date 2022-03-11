@@ -10,6 +10,10 @@ from requests import *
 import send_message
 import ast
 
+def updateCommand(update: Updater,context: CallbackContext):
+    buttons = [[KeyboardButton("🔥 CHANNELS")], [KeyboardButton("💥 POSTS")], [KeyboardButton("✅ BOT IS ACTIVE")]]
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Bot Succesfully Updated!",reply_markup=ReplyKeyboardMarkup(buttons))
+
 def startCommand(update: Updater,context: CallbackContext):
     user = update.message.from_user
     buttons = [[KeyboardButton("🔥 CHANNELS")],[KeyboardButton("💥 POSTS")],[KeyboardButton("✅ BOT IS ACTIVE")]]
@@ -45,10 +49,9 @@ def generalMessageHandler(update: Updater, context: CallbackContext):
     if ("⬅️ BACK" in update.message.text):
         mainMenu(update,context)
 #------------------------------GENERAL----------------------------#
-#------------------------------LIST CHANNELS----------------------------#
     if("➕ ADD CHANNEL" in update.message.text):
-        addChannel(update,context)
-
+        addChannel(update,context,showMessage=True) #BUTONA ILK BASIS ICIN GEREKLI BIR CAGIRMA,INPUT BEKLEMEZ
+#------------------------------LIST CHANNELS----------------------------#
     #if ("🔆 CHANNEL 1" in update.message.text):
     #    print("Channel One")
     #    userJson = open("users.txt","r")
@@ -101,24 +104,25 @@ def listPosts(update,context):
             buttons = buttons + list(staticsOfList)
             context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Ad",reply_markup=ReplyKeyboardMarkup(buttons))
 
-def awaitForInput(update: Updater, context: CallbackContext):
+def awaitForGroupNameInput(update: Updater, context: CallbackContext):
     print("Tetiklendi")
     input_message = update.message.text
     if(input_message == "➕ ADD CHANNEL" or input_message == "🔥 CHANNELS" or input_message == "💥 POSTS" or input_message == "✅ BOT IS ACTIVE" or input_message == "⬅️ BACK"):
         addChannel(update, context, ekleme=False)
 
     else:
-        addChannel(update, context, ekleme=True, mesaj=input_message)
+        addChannel(update, context, ekleme=True, groupInfo=input_message)
 
-
-
-
-
-def addChannel(update,context,ekleme=False,mesaj = None):
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Enter the Group Name")
+def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False):
+    dispatcher.add_handler(MessageHandler(Filters.text, awaitForGroupNameInput), group=1)#GROUP=1 DIYEREK DAHA FAZLA HANDLER KYOABILIYORUZ, https://github.com/python-telegram-bot/python-telegram-bot/issues/1133
+    if(showMessage):
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Enter the (Group Name,Group ID)")
     print("ADD CHANNEL")
     if(ekleme):
-        channelNameInput = mesaj
+        groupInfoList = groupInfo.split(",")
+
+        channelNameInput = groupInfoList[0]
+        channelIdInput = groupInfoList[1]
 
         userJson = open("users.txt", "r")
         userJsonList = userJson.readlines()
@@ -127,14 +131,18 @@ def addChannel(update,context,ekleme=False,mesaj = None):
         user = update.message.from_user
         currentUser = user['username']
 
-        channelWillBeAdded = channelNameInput
         for users in userJsonList:
             convertedDict = ast.literal_eval(users)
             if (convertedDict['username'] == currentUser):
-                channelList = convertedDict['channel-names']
-                channelList.append(channelWillBeAdded)
-                convertedDict['channel-names'] = channelList
+                channelNameList = convertedDict['channel-names'] #Dict'ten channelnamesi al
+                channelNameList.append(channelNameInput)
+                convertedDict['channel-names'] = channelNameList #channel namesi guncelleyip dicte geri ver
 
+                channelIdList = convertedDict['channel-ids']  # Dict'ten channel ids al
+                channelIdList.append(channelIdInput)
+                convertedDict['channel-ids'] = channelIdList  # channel idsi guncelleyip dicte geri ver
+
+                print(convertedDict)
                 listLocation = userJsonList.index(users)
                 userJsonList[listLocation] = convertedDict
 
@@ -142,6 +150,9 @@ def addChannel(update,context,ekleme=False,mesaj = None):
         for updatedUsers in userJsonList:
             userJsonWrite.write(str(updatedUsers))
             print(str(updatedUsers))
+
+        updateCommand(update,context)
+
     else:
         print("Input Bekle")
 
@@ -162,12 +173,13 @@ if __name__ == '__main__':
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CommandHandler("start",startCommand))
+    dispatcher.add_handler(CommandHandler("update",updateCommand))
     dispatcher.add_handler(MessageHandler(Filters.text, generalMessageHandler))
-    dispatcher.add_handler(MessageHandler(Filters.text, awaitForInput),  group=1)#GROUP=1 DIYEREK DAHA FAZLA HANDLER KYOABILIYORUZ, https://github.com/python-telegram-bot/python-telegram-bot/issues/1133
-
 
     dispatcher.add_handler(MessageHandler(Filters.document,fileListener))
 
 
     updater.start_polling()
     updater.idle()
+
+    #ADD GRUPTA 2 HANDLER KULLANDIM, BIRISI GENERAL HANDLER ILK BASISI ALGILAMAK ICIN (OZEL HANDLER ADD GRUP MESAJINA TEPKI VERMIYOR) DIGERI DE ADD GRUP MESAJINDAN SONRAKI INPUTU YAKALAMASI ICIN
