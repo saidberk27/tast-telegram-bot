@@ -3,7 +3,7 @@ import time
 
 from threading import Timer
 
-
+import requests
 from telegram import *
 from telegram.ext import *
 from requests import *
@@ -159,6 +159,9 @@ def awaitForInput(update: Updater, context: CallbackContext):
     elif(inputMode == "postSelection"):
         postSelection(update,context,selectedPost=update.message.text)
 
+    elif(inputMode == "publishAreYouSure"):
+        publishIfSure(update,context,message=update.message.text)
+
     else:
         print("yazmam")
 
@@ -298,14 +301,46 @@ def postSelection(update,context,selectedPost):
     userJsonWrite.write(json.dumps(convertedDictActiveWorks))
     userJsonWrite.close()
 
-
-    global inputMode
-    inputMode = None
     context.bot.send_message(chat_id=update.effective_chat.id,text="{}".format(convertedDictActiveWorks))
+
+    buttons = [[KeyboardButton("YES")],[KeyboardButton("NO")]]
+    context.bot.send_message(chat_id=update.effective_chat.id,text="ARE YOU SURE?".format(convertedDictActiveWorks),reply_markup=ReplyKeyboardMarkup(buttons))
+    global inputMode
+    inputMode = "publishAreYouSure"
+
+def publishIfSure(update,context,message):
+    if(message == "YES"):
+        user = update.message.from_user
+        currentUser = user['username']
+
+        activeWork = open("active-works.json", "r")
+        userFile = open("users/{}/userJson.json".format(currentUser), "r")
+
+        userData = userFile.read()
+        activeWorkText = activeWork.read()
+        activeWork.close()
+        userFile.close()
+
+        convertedDictActiveWorks = json.loads(activeWorkText)
+        convertedDictUsers = json.loads(userData)
+
+        activeGroupsNames = list(convertedDictActiveWorks.keys())
+
+        for groupName in activeGroupsNames:
+            channel_id = convertedDictUsers["channel-data"][groupName]
+            post_data = convertedDictActiveWorks[groupName]
+            publish(channelID=channel_id,adText=post_data)
+
+
+    elif(message == "NO"):
+        mainMenu(update,context)
+
+
+def publish(update,context,channelID,adText):
+    print("publish")
+    baseUrl = "https://api.telegram.org/bot5149901305:AAFBvwD3N1UCCkBDmNlRE9nH5YMa6fFAYtM/sendMessage?chat_id={}&text={}".format(channelID, adText)
+    requests.get(baseUrl)
     updateCommand(update,context)
-
-
-
 
 def deactivateBot():
     print("Bot Is Deactivating")

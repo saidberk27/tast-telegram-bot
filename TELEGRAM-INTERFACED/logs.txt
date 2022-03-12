@@ -487,3 +487,121 @@ testpost
 PUBLISHING ADS
 testchannel2
 testpost
+PUBLISHING ADS
+testchannel
+testpost
+PUBLISHING ADS
+testchannel
+testpost
+YES
+NO
+PUBLISHING ADS
+testchannel
+testpost
+NO
+PUBLISHING ADS
+testchannel
+testpost
+NO
+PUBLISHING ADS
+testchannel
+testpost
+YES
+PUBLISHING ADS
+testchannel
+testpost
+YES
+YES
+CHANNELS
+ BACK
+PUBLISHING ADS
+testchannel
+testpost
+YES
+PUBLISHING ADS
+testchannel2
+testpost
+YES
+PUBLISHING ADS
+testchannel
+testpost
+YES
+PUBLISHING ADS
+testchannel
+testpost
+YES
+PUBLISHING ADS
+testchannel
+testpost
+YES
+PUBLISHING ADS
+testchannel
+testpost
+YES
+PUBLISHING ADS
+testchannel
+testpost
+YES
+PUBLISHING ADS
+testchannel
+testpost
+YES
+CHANNELS
+testchannel
+testchannel
+CHANNELS
+testchannel
+PUBLISHING ADS
+testchannel
+testpost
+YES
+CHANNELS
+testchannel
+ BACK
+POSTS
+ BACK
+PUBLISHING ADS
+testchannel
+testpost
+YES
+PUBLISHING ADS
+testchannel
+testpost
+YES
+PUBLISHING ADS
+testchannel
+testpost
+YES
+CHANNELS
+testchannel
+ BACK
+POSTS
+ADD POST
+test2,second ad for second group
+PUBLISHING ADS
+testchannel
+testpost
+YES
+PUBLISHING ADS
+testchannel2
+test2
+YES
+CHANNELS
+ADD CHANNEL
+channel_first,
+CHANNELS
+ADD CHANNEL
+channel one,-642743936
+CHANNELS
+ADD CHANNEL
+channel two,-1001668532284
+POSTS
+ADD POST
+firs post,THIS IS A FIRST AD FOR FIRST GROUP
+POSTS
+ADD POST
+second post,THIS IS A SECOND POST FOR SECOND GROUP
+PUBLISHING ADS
+channel one
+firs post
+YES
