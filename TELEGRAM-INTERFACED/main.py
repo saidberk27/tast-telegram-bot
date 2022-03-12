@@ -13,7 +13,7 @@ import ast
 import json
 
 def updateCommand(update: Updater,context: CallbackContext):
-    buttons = [[KeyboardButton("🔥 CHANNELS")], [KeyboardButton("💥 POSTS")], [KeyboardButton("✅ BOT IS ACTIVE")]]
+    buttons = [[KeyboardButton("🔥 CHANNELS")], [KeyboardButton("💥 POSTS")],[KeyboardButton("💬 PUBLISHING ADS")],[KeyboardButton("✅ BOT IS ACTIVE")]]
     context.bot.send_message(chat_id=update.effective_chat.id, text="Bot Succesfully Updated!",reply_markup=ReplyKeyboardMarkup(buttons))
 
 def startCommand(update: Updater,context: CallbackContext):
@@ -21,7 +21,7 @@ def startCommand(update: Updater,context: CallbackContext):
     username = user['username']
 
     if(userCheck(username)):
-        buttons = [[KeyboardButton("🔥 CHANNELS")],[KeyboardButton("💥 POSTS")],[KeyboardButton("✅ BOT IS ACTIVE")]]
+        buttons = [[KeyboardButton("🔥 CHANNELS")], [KeyboardButton("💥 POSTS")], [KeyboardButton("💬 PUBLISHING ADS")],[KeyboardButton("✅ BOT IS ACTIVE")]]
         context.bot.send_message(chat_id=update.effective_chat.id, text="Hello {} Welcome to bot!".format(user['username']), reply_markup=ReplyKeyboardMarkup(buttons))
     else: context.bot.send_message(chat_id=update.effective_chat.id, text="❌ You Are Not Allowed to Use This Bot! Please Contact Admın")
 
@@ -46,8 +46,8 @@ def getCheckedUserName(username):
     return letterUpdated
 
 def mainMenu(update,context):
-    buttons = [[KeyboardButton("🔥 CHANNELS")],[KeyboardButton("💥 POSTS")],[KeyboardButton("✅ BOT IS ACTIVE")]]
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Group",reply_markup=ReplyKeyboardMarkup(buttons))
+    buttons = [[KeyboardButton("🔥 CHANNELS")], [KeyboardButton("💥 POSTS")], [KeyboardButton("💬 PUBLISHING ADS")],[KeyboardButton("✅ BOT IS ACTIVE")]]
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select",reply_markup=ReplyKeyboardMarkup(buttons))
 
 def logTut(update):
     try:
@@ -73,6 +73,9 @@ def generalMessageHandler(update: Updater, context: CallbackContext):
 
     if ("⬅️ BACK" in update.message.text):
         mainMenu(update,context)
+
+    if("💬 PUBLISHING ADS" in update.message.text):
+        publishingAds(update,context)
 #------------------------------GENERAL----------------------------#
     if("➕ ADD CHANNEL" in update.message.text):
         addChannel(update,context,showMessage=True,ekleme=False) #BUTONA ILK BASIS ICIN GEREKLI BIR CAGIRMA,INPUT BEKLEMEZ
@@ -146,13 +149,22 @@ def awaitForInput(update: Updater, context: CallbackContext):
             inputMode = None
         except IndexError: #ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
             pass
+    elif(inputMode == "groupSelection"):
+        if(update.message.text != "💬 PUBLISHING ADS"):
+            global selectedGroup
+            selectedGroup = update.message.text
+            groupSelection(update,context,selectedGroup)
+            inputMode = "postSelection"
+
+    elif(inputMode == "postSelection"):
+        postSelection(update,context,selectedPost=update.message.text)
+
     else:
         print("yazmam")
 
 def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False):
     global inputMode
     inputMode = "group"
-    dispatcher.add_handler(MessageHandler(Filters.text, awaitForInput), group=1)#GROUP=1 DIYEREK DAHA FAZLA HANDLER KYOABILIYORUZ, https://github.com/python-telegram-bot/python-telegram-bot/issues/1133
     if(showMessage):
         context.bot.send_message(chat_id=update.effective_chat.id, text="Please Enter the (Group Name,Group ID)")
     print("ADD CHANNEL")
@@ -171,7 +183,7 @@ def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False
 
 
         channelNameDict = convertedDict['channel-data'] #Dict'ten channelnamesi al
-        channelNameDict.update({"{}".format(channelNameInput):"False,{}".format(channelIdInput)}) #NAME,SELECTION BOOL VE ID ATA
+        channelNameDict.update({"{}".format(channelNameInput):"{}".format(channelIdInput)}) #NAME,SELECTION BOOL VE ID ATA selection=false cunku aktiflestirme olmayacak eklenir eklenmez.
         convertedDict['channel-data'] = channelNameDict #Guncelleyip geri ver
 
         print(type(convertedDict))
@@ -189,7 +201,7 @@ def addPost(update, context, ekleme=False, groupInfo = None,showMessage=False):
     global inputMode
     inputMode = "post"
     buttons = [[KeyboardButton("Add Media")],[KeyboardButton("Skip Media")],[KeyboardButton("⬅️ BACK")]]
-    dispatcher.add_handler(MessageHandler(Filters.text, awaitForInput), group=1)#GROUP=1 DIYEREK DAHA FAZLA HANDLER KYOABILIYORUZ, https://github.com/python-telegram-bot/python-telegram-bot/issues/1133
+
     if(showMessage):
         context.bot.send_message(chat_id=update.effective_chat.id, text="Please Enter the (Ad Name,Ad Text)",reply_markup=ReplyKeyboardMarkup(buttons))
     if(ekleme):
@@ -206,8 +218,8 @@ def addPost(update, context, ekleme=False, groupInfo = None,showMessage=False):
         convertedDict = json.loads(jsonText)
 
         postData = convertedDict['post-data']  # Dict'ten post-data al
-        postData.update({"{}".format(postNameInput): "False,{}".format(postIdInput)})  # NAME,SELECTION BOOL VE ID ATA
-        convertedDict['channel-data'] = postData  # Guncelleyip geri ver
+        postData.update({"{}".format(postNameInput): "{}".format(postIdInput)})  # NAME,SELECTION BOOL VE ID ATA
+        convertedDict['post-data'] = postData  # Guncelleyip geri ver
 
         userJsonWrite = open("users/{}/userJson.json".format(currentUser), "w")
         userJsonWrite.write(json.dumps(convertedDict))
@@ -217,6 +229,83 @@ def addPost(update, context, ekleme=False, groupInfo = None,showMessage=False):
 
     else:
         print("Input Bekle")
+
+def publishingAds(update,context):
+    user = update.message.from_user
+    currentUser = user['username']
+    idList = []
+
+    print("publishing")
+    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+
+    jsonText = jsonFile.read()
+    jsonFile.close()
+    convertedDict = json.loads(jsonText)
+
+    channelNames = list(convertedDict['channel-data'].keys())
+    channelNamesStatus=convertedDict['channel-data'].values()
+
+    channelNamesStr = str(channelNames)
+    for channelStatus in channelNamesStatus:
+        idList.append(channelStatus)
+
+
+    context.bot.send_message(chat_id=update.effective_chat.id,text="Your Active Groups: {}".format(channelNamesStr[1:-1]))
+    listChannels(update,context)
+    global inputMode
+    inputMode = "groupSelection"
+
+
+def groupSelection(update,context,selectedGroup):
+    activeWork = open("active-works.json","r")
+
+    activeWorkText = activeWork.read()
+    activeWork.close()
+
+    convertedDict = json.loads(activeWorkText)
+
+    convertedDict.update({selectedGroup:""})
+
+    userJsonWrite = open("active-works.json", "w")
+    userJsonWrite.write(json.dumps(convertedDict))
+    userJsonWrite.close()
+
+    context.bot.send_message(chat_id=update.effective_chat.id,text="Group Succesfully Selected and Saved! Now Please Pick Post For Your Group:")
+    listPosts(update,context)
+
+
+def postSelection(update,context,selectedPost):
+    user = update.message.from_user
+    currentUser = user['username']
+
+    activeWork = open("active-works.json", "r")
+    postFile = open("users/{}/userJson.json".format(currentUser),"r")
+
+    postText = postFile.read()
+    activeWorkText = activeWork.read()
+    activeWork.close()
+    postFile.close()
+
+    convertedDictActiveWorks = json.loads(activeWorkText)
+    convertedDictPosts = json.loads(postText)
+
+    postData = convertedDictPosts['post-data']
+    adText = postData["{}".format(selectedPost)]
+
+    convertedDictActiveWorks[selectedGroup] = adText #selectedGroup Global Var
+    print(convertedDictActiveWorks)
+    userJsonWrite = open("active-works.json", "w")
+    userJsonWrite.write(json.dumps(convertedDictActiveWorks))
+    userJsonWrite.close()
+
+
+    global inputMode
+    inputMode = None
+    context.bot.send_message(chat_id=update.effective_chat.id,text="{}".format(convertedDictActiveWorks))
+    updateCommand(update,context)
+
+
+
 
 def deactivateBot():
     print("Bot Is Deactivating")
@@ -235,10 +324,12 @@ if __name__ == '__main__':
     dispatcher.add_handler(CommandHandler("start",startCommand))
     dispatcher.add_handler(CommandHandler("update",updateCommand))
     dispatcher.add_handler(MessageHandler(Filters.text, generalMessageHandler))
+    dispatcher.add_handler(MessageHandler(Filters.text, awaitForInput), group=1)#GROUP=1 DIYEREK DAHA FAZLA HANDLER KYOABILIYORUZ, https://github.com/python-telegram-bot/python-telegram-bot/issues/1133
 
     dispatcher.add_handler(MessageHandler(Filters.document,fileListener))
 
     inputMode = "None"
+    selectedGroup = "None"
     updater.start_polling()
     updater.idle()
 
