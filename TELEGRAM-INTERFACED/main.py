@@ -101,7 +101,7 @@ def listChannels(update,context):
     jsonFile.close()
     convertedDict = json.loads(jsonText)
 
-    channel_lists = convertedDict['channel-names']
+    channel_lists = convertedDict['channel-data'].keys()
     for channelNames in channel_lists:
         buttons.append([KeyboardButton(channelNames)])
 
@@ -120,7 +120,7 @@ def listPosts(update,context):
     jsonFile.close()
     convertedDict = json.loads(jsonText)
 
-    adList = convertedDict["ad-names"]
+    adList = convertedDict["post-data"].keys()
 
     staticsOfList = [KeyboardButton("➕ ADD POST")], [KeyboardButton("⛔ REMOVE POST")], [KeyboardButton("⬅️ BACK")]
 
@@ -134,16 +134,21 @@ def awaitForInput(update: Updater, context: CallbackContext):
     global inputMode
     print("Tetiklendi",inputMode)
     if(inputMode == "group"):
-        print("ICERISI")
-        addChannel(update, context, ekleme=True, groupInfo=update.message.text)
-        inputMode = "None"
+        try:
+            addChannel(update, context, ekleme=True, groupInfo=update.message.text)
+            inputMode = "None"
+        except IndexError: #ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
+            pass
 
     elif(inputMode == "post"):
-        addPost(update,context,ekleme=True,groupInfo=update.message.text)
-        inputMode = None
-
+        try:
+            addPost(update,context,ekleme=True,groupInfo=update.message.text)
+            inputMode = None
+        except IndexError: #ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
+            pass
     else:
         print("yazmam")
+
 def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False):
     global inputMode
     inputMode = "group"
@@ -165,19 +170,14 @@ def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False
         convertedDict = json.loads(jsonText)
 
 
-        channelNameList = convertedDict['channel-names'] #Dict'ten channelnamesi al
-        channelNameList.append(channelNameInput)
-        convertedDict['channel-names'] = channelNameList #channel namesi guncelleyip dicte geri ver
+        channelNameDict = convertedDict['channel-data'] #Dict'ten channelnamesi al
+        channelNameDict.update({"{}".format(channelNameInput):"False,{}".format(channelIdInput)}) #NAME,SELECTION BOOL VE ID ATA
+        convertedDict['channel-data'] = channelNameDict #Guncelleyip geri ver
 
-        channelIdList = convertedDict['channel-ids']  # Dict'ten channel ids al
-        channelIdList.append(channelIdInput)
-        convertedDict['channel-ids'] = channelIdList  # channel idsi guncelleyip dicte geri ver
-
-        updatedDatas = convertedDict
-        print(type(updatedDatas))
+        print(type(convertedDict))
 
         userJsonWrite = open("users/{}/userJson.json".format(currentUser), "w")
-        userJsonWrite.write(json.dumps(updatedDatas))
+        userJsonWrite.write(json.dumps(convertedDict))
         userJsonWrite.close()
 
         updateCommand(update,context)
@@ -205,20 +205,12 @@ def addPost(update, context, ekleme=False, groupInfo = None,showMessage=False):
         jsonFile.close()
         convertedDict = json.loads(jsonText)
 
-
-        channelNameList = convertedDict['ad-names'] #Dict'ten channelnamesi al
-        channelNameList.append(postNameInput)
-        convertedDict['ad-names'] = channelNameList #channel namesi guncelleyip dicte geri ver
-
-        channelIdList = convertedDict['ad-texts']  # Dict'ten channel ids al
-        channelIdList.append(postIdInput)
-        convertedDict['ad-texts'] = channelIdList  # channel idsi guncelleyip dicte geri ver
-
-        updatedDatas = convertedDict
-        print(type(updatedDatas))
+        postData = convertedDict['post-data']  # Dict'ten post-data al
+        postData.update({"{}".format(postNameInput): "False,{}".format(postIdInput)})  # NAME,SELECTION BOOL VE ID ATA
+        convertedDict['channel-data'] = postData  # Guncelleyip geri ver
 
         userJsonWrite = open("users/{}/userJson.json".format(currentUser), "w")
-        userJsonWrite.write(json.dumps(updatedDatas))
+        userJsonWrite.write(json.dumps(convertedDict))
         userJsonWrite.close()
 
         updateCommand(update,context)
