@@ -15,11 +15,11 @@ import json
 def updateCommand(update: Updater,context: CallbackContext,mode = "updateData"):
     keyboard = [
         [
-            InlineKeyboardButton("🔥 CHANNELS", callback_data='1'),
-            InlineKeyboardButton("💥 POSTS", callback_data='2'),
+            InlineKeyboardButton("🔥 CHANNELS", callback_data='channels'),
+            InlineKeyboardButton("💥 POSTS", callback_data='posts'),
         ],
-        [InlineKeyboardButton("💬 PUBLISHING ADS", callback_data='3')],
-        [InlineKeyboardButton("✅ BOT IS ACTIVE", callback_data='4')]
+        [InlineKeyboardButton("💬 PUBLISHING ADS", callback_data='publishingads')],
+        [InlineKeyboardButton("✅ BOT IS ACTIVE", callback_data='botisactive')]
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -55,11 +55,9 @@ def startCommand(update: Update, context: CallbackContext) -> None:
 
 
 def button(update: Update, context: CallbackContext) -> None:
-    """Parses the CallbackQuery and updates the message text."""
-    query = update.callback_query
+    global inputMode
 
-    # CallbackQueries need to be answered, even if no notification to the user is needed
-    # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
+    query = update.callback_query
     query.answer()
 
     if(query.data == "channels"):
@@ -71,7 +69,36 @@ def button(update: Update, context: CallbackContext) -> None:
     if(query.data == "back"):
         updateCommand(update,context,mode="backTap")
 
-    query.edit_message_text(text=f"Selected option: {query.data}")
+    if(query.data == "add_channel"):
+        addChannel(update,context,showMessage=True)
+
+    if(query.data == "add_post"):
+        addPost(update,context,showMessage=True)
+
+    if(query.data == "publishingads"):
+        publishingAds(update,context)
+
+    if(inputMode == "groupSelection"):
+        if(query.data != "publishingads"):
+            inputMode = "postSelection"
+            global selectedGroup
+            selectedGroup = query.data
+            print(selectedGroup)
+            groupSelection(update, context, selectedGroup)
+        else:
+            print("await for input")
+
+    if(inputMode == "postSelection"):
+        try:
+            postSelection(update, context, selectedPost=query.data)
+            inputMode = "publishAreYouSure"
+        except KeyError:
+            print("await for input")
+
+    if(inputMode == "publishAreYouSure"):
+        if(query.data == "YES" or query.data == "NO"):
+            publishIfSure(update, context, message=query.data)
+            inputMode = None
 
 def userCheck(username):
     print(type(username))
@@ -102,40 +129,6 @@ def logTut(update):
     except UnicodeEncodeError:
         logFile.write(update.message.text[2:] + "\n")
         logFile.close()
-
-def generalMessageHandler(update: Updater, context: CallbackContext):
-    logTut(update)
-
-#------------------------------GENERAL----------------------------#
-    if("🔥 CHANNELS" in update.message.text):
-        #fileListener(update,context)
-        listChannels(update,context)
-    if("💥 POSTS" in update.message.text):
-        listPosts(update,context)
-
-    if ("✅ BOT IS ACTIVE" in update.message.text):
-        deactivateBot()
-
-    if ("⬅️ BACK" in update.message.text):
-        mainMenu(update,context)
-
-    if("💬 PUBLISHING ADS" in update.message.text):
-        publishingAds(update,context)
-#------------------------------GENERAL----------------------------#
-    if("➕ ADD CHANNEL" in update.message.text):
-        addChannel(update,context,showMessage=True,ekleme=False) #BUTONA ILK BASIS ICIN GEREKLI BIR CAGIRMA,INPUT BEKLEMEZ
-
-    if ("➕ ADD POST" in update.message.text):
-        addPost(update, context, showMessage=True,ekleme=False)  # BUTONA ILK BASIS ICIN GEREKLI BIR CAGIRMA,INPUT BEKLEMEZ
-#------------------------------LIST CHANNELS----------------------------#
-    #if ("🔆 CHANNEL 1" in update.message.text):
-    #    print("Channel One")
-    #    userJson = open("users.txt","r")
-    #    userJsonList = userJson.readlines()
-    #   userData = userJsonList[0]
-    #   convertedDict = ast.literal_eval(userData)
-    #   print(convertedDict["username"],convertedDict["channels"][0],convertedDict["adText"])
-    #   send_message.sendText(adText=convertedDict["adText"])
 
 
 
@@ -168,16 +161,14 @@ def listPosts(update,context):
 
     adList = convertedDict["post-data"].keys()
 
-    staticsOfList = [KeyboardButton("➕ ADD POST")], [KeyboardButton("⛔ REMOVE POST")], [KeyboardButton("⬅️ BACK")]
-
     for adNames in adList:
         buttons.append([InlineKeyboardButton(adNames,callback_data=adNames)])
 
-    staticsOfList = [InlineKeyboardButton("➕ ADD POST", callback_data='add_post')], [
-        InlineKeyboardButton("⛔ REMOVE POST", callback_data='remove_post')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]
+    staticsOfList = [InlineKeyboardButton("➕ ADD POST", callback_data='add_post')], [InlineKeyboardButton("⛔ REMOVE POST", callback_data='remove_post')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Hello", reply_markup=reply_markup)
+
 def awaitForInput(update: Updater, context: CallbackContext):
     global inputMode
     print("Tetiklendi",inputMode)
@@ -194,12 +185,13 @@ def awaitForInput(update: Updater, context: CallbackContext):
             inputMode = None
         except IndexError: #ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
             pass
+
     elif(inputMode == "groupSelection"):
-        if(update.message.text != "💬 PUBLISHING ADS"):
-            global selectedGroup
-            selectedGroup = update.message.text
-            groupSelection(update,context,selectedGroup)
-            inputMode = "postSelection"
+        global selectedGroup
+
+        selectedGroup = getCurrentQuery(update,context)
+        groupSelection(update,context,selectedGroup)
+        inputMode = "postSelection"
 
     elif(inputMode == "postSelection"):
         postSelection(update,context,selectedPost=update.message.text)
@@ -250,10 +242,11 @@ def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False
 def addPost(update, context, ekleme=False, groupInfo = None,showMessage=False):
     global inputMode
     inputMode = "post"
-    buttons = [[KeyboardButton("Add Media")],[KeyboardButton("Skip Media")],[KeyboardButton("⬅️ BACK")]]
+    buttons = [[InlineKeyboardButton("Add Media",callback_data='add_media')],[InlineKeyboardButton("Skip Media",callback_data='skip_media')],[InlineKeyboardButton("⬅️ BACK",callback_data='back')]]
+    reply_markup = InlineKeyboardMarkup(buttons)
 
     if(showMessage):
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Enter the (Ad Name,Ad Text)",reply_markup=ReplyKeyboardMarkup(buttons))
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Enter the (Ad Name,Ad Text)",reply_markup=reply_markup)
     if(ekleme):
         groupInfoList = groupInfo.split(",")
 
@@ -281,8 +274,7 @@ def addPost(update, context, ekleme=False, groupInfo = None,showMessage=False):
         print("Input Bekle")
 
 def publishingAds(update,context):
-    user = update.message.from_user
-    currentUser = user['username']
+    global currentUser
     idList = []
 
     print("publishing")
@@ -325,8 +317,7 @@ def groupSelection(update,context,selectedGroup):
 
 
 def postSelection(update,context,selectedPost):
-    user = update.message.from_user
-    currentUser = user['username']
+    global currentUser
 
     activeWork = open("active-works.json", "r")
     postFile = open("users/{}/userJson.json".format(currentUser),"r")
@@ -350,13 +341,12 @@ def postSelection(update,context,selectedPost):
 
     context.bot.send_message(chat_id=update.effective_chat.id,text="{}".format(convertedDictActiveWorks))
 
-    buttons = [[KeyboardButton("YES")],[KeyboardButton("NO")]]
-    context.bot.send_message(chat_id=update.effective_chat.id,text="ARE YOU SURE?".format(convertedDictActiveWorks),reply_markup=ReplyKeyboardMarkup(buttons))
+    buttons = [[InlineKeyboardButton("YES",callback_data='YES')],[InlineKeyboardButton("NO",callback_data='NO')]]
+    context.bot.send_message(chat_id=update.effective_chat.id,text="ARE YOU SURE?".format(convertedDictActiveWorks),reply_markup=InlineKeyboardMarkup(buttons))
 
 def publishIfSure(update,context,message):
     if(message == "YES"):
-        user = update.message.from_user
-        currentUser = user['username']
+        global currentUser
 
         activeWork = open("active-works.json", "r")
         userFile = open("users/{}/userJson.json".format(currentUser), "r")
@@ -405,10 +395,11 @@ if __name__ == '__main__':
 
     dispatcher.add_handler(CommandHandler("start",startCommand))
     dispatcher.add_handler(CommandHandler("update",updateCommand))
-    dispatcher.add_handler(MessageHandler(Filters.text, generalMessageHandler))
     dispatcher.add_handler(MessageHandler(Filters.text, awaitForInput), group=1)#GROUP=1 DIYEREK DAHA FAZLA HANDLER KYOABILIYORUZ, https://github.com/python-telegram-bot/python-telegram-bot/issues/1133
 
     updater.dispatcher.add_handler(CallbackQueryHandler(button))
+
+
     dispatcher.add_handler(MessageHandler(Filters.document,fileListener))
 
     currentUser = None
