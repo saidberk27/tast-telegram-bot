@@ -13,6 +13,8 @@ import ast
 import json
 
 def updateCommand(update: Updater,context: CallbackContext,mode = "updateData"):
+    global inputMode
+    inputMode = None
     keyboard = [
         [
             InlineKeyboardButton("🔥 CHANNELS", callback_data='channels'),
@@ -69,7 +71,7 @@ def button(update: Update, context: CallbackContext) -> None:
 
     if(query.data == "back"):
         updateCommand(update,context,mode="backTap")
-
+        
     if(query.data == "add_channel"):
         addChannel(update,context,showMessage=True)
 
@@ -79,6 +81,12 @@ def button(update: Update, context: CallbackContext) -> None:
     if(query.data == "publishingads"):
         publishingAds(update,context)
 
+    if(query.data == "add button ok"):
+        publishYesorNo(update,context)
+    if(query.data == "YES"):
+        publishPosts(update, context)
+    if(query.data == "NO"):
+        updateCommand(update,context,mode="backTap")
     if(inputMode == "groupSelection"):
         if(query.data != "publishingads"):
             inputMode = "postSelection"
@@ -98,10 +106,10 @@ def button(update: Update, context: CallbackContext) -> None:
 
     if(inputMode == "addButton"):
         addButtons(update,context,mod="first")
-
+        inputMode = None
     if(inputMode == "publishAreYouSure"):
         if(query.data == "YES" or query.data == "NO"):
-            publishIfSure(update, context, message=query.data)
+            publishPosts(update, context, message=query.data)
             inputMode = None
 
 
@@ -153,7 +161,7 @@ def listChannels(update,context):
     staticsOfList = [InlineKeyboardButton("➕ ADD CHANNEL",callback_data='add_channel')], [InlineKeyboardButton("⛔ REMOVE CHANNEL",callback_data='remove_channel')], [InlineKeyboardButton("⬅️ BACK",callback_data='back')]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Hello",reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="List:",reply_markup=reply_markup)
 
 def listPosts(update,context):
     global currentUser
@@ -203,7 +211,7 @@ def awaitForInput(update: Updater, context: CallbackContext):
         inputMode = "publishAreYouSure"
 
     elif(inputMode == "publishAreYouSure"):
-        publishIfSure(update,context,message=update.message.text)
+        publishPosts(update, context, message=update.message.text)
         inputMode = None
 
     elif(inputMode == "addButton"):
@@ -212,6 +220,7 @@ def awaitForInput(update: Updater, context: CallbackContext):
         buttonURL = userInput.split(",")[1]
 
         addButtons(update,context,buttonText,buttonURL,mod="addButtonInputIcı")
+        inputMode = None
     else:
         print("yazmam")
 
@@ -310,7 +319,7 @@ def publishingAds(update,context):
 
 
 def groupSelection(update,context,selectedGroup):
-    activeWork = open("active-works.json","r")
+    activeWork = open("users/{}/active-works.json".format(currentUser),"r")
 
     activeWorkText = activeWork.read()
     activeWork.close()
@@ -319,7 +328,7 @@ def groupSelection(update,context,selectedGroup):
 
     convertedDict.update({selectedGroup:""})
 
-    userJsonWrite = open("active-works.json", "w")
+    userJsonWrite = open("users/{}/active-works.json".format(currentUser), "w")
     userJsonWrite.write(json.dumps(convertedDict))
     userJsonWrite.close()
 
@@ -330,7 +339,7 @@ def groupSelection(update,context,selectedGroup):
 def postSelection(update,context,selectedPost):
     global currentUser
 
-    activeWork = open("active-works.json", "r")
+    activeWork = open("users/{}/active-works.json".format(currentUser), "r")
     postFile = open("users/{}/userJson.json".format(currentUser),"r")
 
     postText = postFile.read()
@@ -346,41 +355,41 @@ def postSelection(update,context,selectedPost):
 
     convertedDictActiveWorks[selectedGroup] = adText #selectedGroup Global Var
     print(convertedDictActiveWorks)
-    userJsonWrite = open("active-works.json", "w")
+    userJsonWrite = open("users/{}/active-works.json".format(currentUser), "w")
     userJsonWrite.write(json.dumps(convertedDictActiveWorks))
     userJsonWrite.close()
 
     #context.bot.send_message(chat_id=update.effective_chat.id,text="{}".format(convertedDictActiveWorks))
     context.bot.send_message(chat_id=update.effective_chat.id,text="Post Selected.")
 
-    #buttons = [[InlineKeyboardButton("YES",callback_data='YES')],[InlineKeyboardButton("NO",callback_data='NO')]]
-    #context.bot.send_message(chat_id=update.effective_chat.id,text="ARE YOU SURE?".format(convertedDictActiveWorks),reply_markup=InlineKeyboardMarkup(buttons))
 
-def publishIfSure(update,context,message):
-    if(message == "YES"):
-        global currentUser
-
-        activeWork = open("active-works.json", "r")
-        userFile = open("users/{}/userJson.json".format(currentUser), "r")
-
-        userData = userFile.read()
-        activeWorkText = activeWork.read()
-        activeWork.close()
-        userFile.close()
-
-        convertedDictActiveWorks = json.loads(activeWorkText)
-        convertedDictUsers = json.loads(userData)
-
-        activeGroupsNames = list(convertedDictActiveWorks.keys())
-
-        for groupName in activeGroupsNames:
-            channel_id = convertedDictUsers["channel-data"][groupName]
-            post_data = convertedDictActiveWorks[groupName]
-            publish(update,context,channelID=channel_id,adText=post_data)
+def publishYesorNo(update,context):
+    buttons = [[InlineKeyboardButton("YES",callback_data='YES')],[InlineKeyboardButton("NO",callback_data='NO')]]
+    context.bot.send_message(chat_id=update.effective_chat.id,text="ARE YOU SURE?",reply_markup=InlineKeyboardMarkup(buttons))
 
 
-    elif(message == "NO"):
-        mainMenu(update,context)
+def publishPosts(update, context):
+
+    global currentUser
+
+    activeWork = open("users/{}/active-works.json".format(currentUser), "r")
+    userFile = open("users/{}/userJson.json".format(currentUser), "r")
+
+    userData = userFile.read()
+    activeWorkText = activeWork.read()
+    activeWork.close()
+    userFile.close()
+
+    convertedDictActiveWorks = json.loads(activeWorkText)
+    convertedDictUsers = json.loads(userData)
+
+    activeGroupsNames = list(convertedDictActiveWorks.keys())
+
+    for groupName in activeGroupsNames:
+        channel_id = convertedDictUsers["channel-data"][groupName]
+        post_data = convertedDictActiveWorks[groupName]
+        publish(update,context,channelID=channel_id,adText=post_data)
+
 
 
 def publish(update,context,channelID,adText):
@@ -400,21 +409,25 @@ def fileListener(update,context):
     context.bot.get_file(update.message.document).download()
 
 def addButtons(update,context,buttonText = None,buttonURL = None,mod = None):
-    buttons = [[InlineKeyboardButton("➕ TAP TO ADD BUTTON",callback_data="add button")]]
-    lastItem = [[InlineKeyboardButton("OK 👌",callback_data="add button ok")]]
+    global inputMode
+    buttons = []
+    lastItem = [[InlineKeyboardButton("➕ TAP TO ADD BUTTON",callback_data="add button")],[InlineKeyboardButton("OK 👌",callback_data="add button ok")]]
     if(mod == "first"):
-        context.bot.send_message(chat_id=update.effective_chat.id,text="Add Buttons",reply_markup=InlineKeyboardMarkup(buttons))
+        context.bot.send_message(chat_id=update.effective_chat.id,text="Add Buttons",reply_markup=InlineKeyboardMarkup(lastItem))
     else:
         try:
             if(buttonText == None or buttonURL == None):
                 raise ValueError
             buttons.append([InlineKeyboardButton(buttonText,url=buttonURL)])
             buttonsOK = buttons + lastItem
-            context.bot.send_message(chat_id=update.effective_chat.id,text="Button Succesfully Added!",reply_markup=InlineKeyboardMarkup(buttonsOK))
+            context.bot.send_message(chat_id=update.effective_chat.id,text="Button Succesfully Added!",reply_markup=InlineKeyboardMarkup(button))
 
         except ValueError:
             context.bot.send_message(chat_id=update.effective_chat.id,text="URL OR BUTTON TEXT IS UNDEFINED")
             updateCommand(update,context,mode="backTap")
+            inputMode = None
+
+
 
 if __name__ == '__main__':
 
