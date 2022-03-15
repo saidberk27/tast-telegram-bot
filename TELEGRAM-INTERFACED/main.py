@@ -122,6 +122,9 @@ def button(update: Update, context: CallbackContext) -> None:
         timer = "30 Minutes"
         saveJob(update, context)
 
+    if(query.data == "start publishing"):
+        startPublishing(update,context)
+
 
     if("Seconds" in query.data or "Minutes" in query.data):
         if(query.data == "10 Seconds"):
@@ -154,10 +157,7 @@ def button(update: Update, context: CallbackContext) -> None:
     if(inputMode == "addButton"):
         addButtons(update,context,mod="first")
 
-    if(inputMode == "publishAreYouSure"):
-        if(query.data == "YES" or query.data == "NO"):
-            publishPosts(update, context, message=query.data)
-            inputMode = None
+
 
 
 def userCheck(username):
@@ -257,9 +257,6 @@ def awaitForInput(update: Updater, context: CallbackContext):
         postSelection(update,context,selectedPost=update.message.text)
         inputMode = "publishAreYouSure"
 
-    elif(inputMode == "publishAreYouSure"):
-        publishPosts(update, context, message=update.message.text)
-        inputMode = None
 
     elif(inputMode == "addButton"):
         userInput = update.message.text
@@ -343,7 +340,7 @@ def addPost(update, context, ekleme=False, groupInfo = None,showMessage=False):
 def publishingAds(update,context):
     global currentUser
     buttons = []
-    last_buttons = [[InlineKeyboardButton("ADD NEW JOB ➕",callback_data="add new job")],[InlineKeyboardButton("REMOVE JOB ⛔",callback_data="remove job")],[InlineKeyboardButton("⬅️ BACK",callback_data="back")]]
+    last_buttons = [[InlineKeyboardButton("ADD NEW JOB ➕",callback_data="add new job")],[InlineKeyboardButton("REMOVE JOB ⛔",callback_data="remove job")],[InlineKeyboardButton("START PUBLISHING👍",callback_data="start publishing")],[InlineKeyboardButton("⬅️ BACK",callback_data="back")]]
     jobs = os.listdir("users/{}/jobs/".format(currentUser)) # returns list
     for job in jobs:
         buttons.append([InlineKeyboardButton(job[:-5],callback_data=job[:-5])])
@@ -424,34 +421,39 @@ def publishYesorNo(update,context):
     context.bot.send_message(chat_id=update.effective_chat.id,text="ARE YOU SURE?",reply_markup=InlineKeyboardMarkup(buttons))
 
 
-def publishPosts(update, context):
-
+def publishPosts(update, context, jobData,timer):
     global currentUser
 
-    activeWork = open("users/{}/active-works.json".format(currentUser), "r")
+    jobGroupName = jobData['GroupName']
+    jobPostName = jobData['PostName']
+    jobButtons = jobData['Buttons']
     userFile = open("users/{}/userJson.json".format(currentUser), "r")
 
     userData = userFile.read()
-    activeWorkText = activeWork.read()
-    activeWork.close()
     userFile.close()
-
-    convertedDictActiveWorks = json.loads(activeWorkText)
     convertedDictUsers = json.loads(userData)
 
-    activeGroupsNames = list(convertedDictActiveWorks.keys())
+    channel_id = convertedDictUsers["channel-data"][jobGroupName]
+    ad_text = convertedDictUsers["post-data"][jobPostName]
 
-    for groupName in activeGroupsNames:
-        channel_id = convertedDictUsers["channel-data"][groupName]
-        post_data = convertedDictActiveWorks[groupName]
-        publish(update,context,channelID=channel_id,adText=post_data)
+    print(timer)
+    if(timer == "1 Minute"):
+        def secondInterval():
+            run = True
+            publish(update,context,channelID=channel_id, adText=ad_text,buttons = jobButtons)
+            if run:
+                Timer(2, secondInterval).start()
+        secondInterval()
 
 
+def publish(update,context,channelID,adText,buttons):
+    buttonsFinal = []
+    print(buttons)
+    for button in buttons:
+        buttonsFinal.append([InlineKeyboardButton("{}".format(button[0]), url="{}".format(button[1]))])
 
-def publish(update,context,channelID,adText):
-    print("publish")
-    baseUrl = "https://api.telegram.org/bot5149901305:AAFBvwD3N1UCCkBDmNlRE9nH5YMa6fFAYtM/sendMessage?chat_id={}&text={}".format(channelID, adText)
-    requests.get(baseUrl)
+    context.bot.send_message(chat_id=channelID, text=adText ,reply_markup=InlineKeyboardMarkup(buttonsFinal))
+
     global inputMode
     inputMode = None
 
@@ -504,60 +506,25 @@ def saveJob(update,context):
 
     updateCommand(update,context)
 
+def startPublishing(update,context):
+    jobsList = os.listdir("users/{}/jobs/".format(currentUser))
+
+    for job in jobsList:
+        fullFileName = "users/{}/jobs/{}".format(currentUser,job)
+        with open(fullFileName) as jobFile:
+            jobText = jobFile.read()
+            jobTextDict = ast.literal_eval(jobText)
+            timer = jobTextDict['Timer']
+
+            if(timer == "1 Minute"):
+                publishPosts(update,context,jobTextDict,timer)
+
 def secondInterval(update,context):
     run = True
     publishPosts(update,context)
     if run:
         Timer(2, lambda:secondInterval(update,context)).start()
 
-def minuteInterval():
-    run = True
-    print("Minute")
-    if run:
-        Timer(60, setMinuteInterval).start()
-
-def tenMinuteInterval():
-    run = True
-    print("10 minutes")
-    if run:
-        Timer(600, setMinuteInterval).start()
-
-def thirtyMinuteInterval():
-    run = True
-    print("30 minutes")
-    if run:
-        Timer(1800, setMinuteInterval).start()
-
-def hourInterval():
-    run = True
-    print("hour")
-    if run:
-        Timer(3600, setMinuteInterval).start()
-
-
-def threeHourInterval():
-    run = True
-    print("3 hour")
-    if run:
-        Timer(3600, setMinuteInterval).start()
-
-def sixHourInterval():
-    run = True
-    print("6 hour")
-    if run:
-        Timer(21.600, setMinuteInterval).start()
-
-def dailyInterval():
-    run = True
-    print("1 day")
-    if run:
-        Timer(86.400, setMinuteInterval).start()
-
-def weeklyInterval():
-    run = True
-    print("1 week")
-    if run:
-        Timer(604.800, setMinuteInterval).start()
 
 if __name__ == '__main__':
     from threading import Timer
