@@ -71,7 +71,7 @@ def button(update: Update, context: CallbackContext) -> None:
 
     if(query.data == "back"):
         updateCommand(update,context,mode="backTap")
-        
+
     if(query.data == "add_channel"):
         addChannel(update,context,showMessage=True)
 
@@ -84,9 +84,17 @@ def button(update: Update, context: CallbackContext) -> None:
     if(query.data == "add button ok"):
         publishYesorNo(update,context)
     if(query.data == "YES"):
-        publishPosts(update, context)
+        timeSelections = [[InlineKeyboardButton("10 Seconds",callback_data="10 Seconds")]]
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Add Buttons",reply_markup=InlineKeyboardMarkup(timeSelections))
+
+    if("Seconds" in query.data or "Minutes" in query.data):
+        if(query.data == "10 Seconds"):
+            secondInterval(update,context)
+
+
     if(query.data == "NO"):
         updateCommand(update,context,mode="backTap")
+
     if(inputMode == "groupSelection"):
         if(query.data != "publishingads"):
             inputMode = "postSelection"
@@ -396,7 +404,6 @@ def publish(update,context,channelID,adText):
     print("publish")
     baseUrl = "https://api.telegram.org/bot5149901305:AAFBvwD3N1UCCkBDmNlRE9nH5YMa6fFAYtM/sendMessage?chat_id={}&text={}".format(channelID, adText)
     requests.get(baseUrl)
-    updateCommand(update,context)
     global inputMode
     inputMode = None
 
@@ -419,7 +426,6 @@ def addButtons(update,context,buttonText = None,buttonURL = None,mod = None):
             if(buttonText == None or buttonURL == None):
                 raise ValueError
             buttons.append([InlineKeyboardButton(buttonText,url=buttonURL)])
-            buttonsOK = buttons + lastItem
             context.bot.send_message(chat_id=update.effective_chat.id,text="Button Succesfully Added!",reply_markup=InlineKeyboardMarkup(button))
 
         except ValueError:
@@ -427,9 +433,67 @@ def addButtons(update,context,buttonText = None,buttonURL = None,mod = None):
             updateCommand(update,context,mode="backTap")
             inputMode = None
 
+def deneme():
+    print("heha")
 
+
+def secondInterval(update,context):
+    run = True
+    publishPosts(update,context)
+    if run:
+        Timer(2, lambda:secondInterval(update,context)).start()
+
+def minuteInterval():
+    run = True
+    print("Minute")
+    if run:
+        Timer(60, setMinuteInterval).start()
+
+def tenMinuteInterval():
+    run = True
+    print("10 minutes")
+    if run:
+        Timer(600, setMinuteInterval).start()
+
+def thirtyMinuteInterval():
+    run = True
+    print("30 minutes")
+    if run:
+        Timer(1800, setMinuteInterval).start()
+
+def hourInterval():
+    run = True
+    print("hour")
+    if run:
+        Timer(3600, setMinuteInterval).start()
+
+
+def threeHourInterval():
+    run = True
+    print("3 hour")
+    if run:
+        Timer(3600, setMinuteInterval).start()
+
+def sixHourInterval():
+    run = True
+    print("6 hour")
+    if run:
+        Timer(21.600, setMinuteInterval).start()
+
+def dailyInterval():
+    run = True
+    print("1 day")
+    if run:
+        Timer(86.400, setMinuteInterval).start()
+
+def weeklyInterval():
+    run = True
+    print("1 week")
+    if run:
+        Timer(604.800, setMinuteInterval).start()
 
 if __name__ == '__main__':
+    from threading import Timer
 
     updater = Updater(token="5149901305:AAFBvwD3N1UCCkBDmNlRE9nH5YMa6fFAYtM")
     dispatcher = updater.dispatcher
@@ -444,7 +508,6 @@ if __name__ == '__main__':
     dispatcher.add_handler(MessageHandler(Filters.document,fileListener))
 
     currentUser = None
-
     inputMode = "None"
     selectedGroup = "None"
     updater.start_polling()

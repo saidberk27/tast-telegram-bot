@@ -1,13 +1,11 @@
-import json
+def setInterval():
+    from threading import Timer
+    run = True
 
-activeWork = open("active-works.json", "r")
+    def test():
+        global run
+        print("something")
+        if run:
+            Timer(1, test).start()
 
-activeWorkText = activeWork.read()
-activeWork.close()
-
-convertedDict = json.loads(activeWorkText)
-print(convertedDict)
-postSaveLocation = convertedDict["testchannel"]  # selectedGroup Global Var
-postSaveLocation = "ASDF"
-convertedDict["testchannel"] = postSaveLocation
-print(convertedDict)
+setInterval()
