@@ -82,7 +82,7 @@ def startCommand(update: Update, context: CallbackContext) -> None:
 
 def button(update: Update, context: CallbackContext) -> None:
     global inputMode
-
+    global timer
     query = update.callback_query
     query.answer()
 
@@ -105,13 +105,23 @@ def button(update: Update, context: CallbackContext) -> None:
         publishingAds(update,context)
 
     if(query.data == "add button ok"):
-        global inputMode
-        saveJob(update,context)
-        #publishYesorNo(update,context)
+        arrangeTime(update,context)
         inputMode = None
-    if(query.data == "YES"):
-        timeSelections = [[InlineKeyboardButton("10 Seconds",callback_data="10 Seconds")]]
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Add Buttons",reply_markup=InlineKeyboardMarkup(timeSelections))
+
+    if(query.data == "1 Minute"):
+        global timer
+        timer = "1 Minute"
+        saveJob(update,context)
+
+    if (query.data == "10 Minutes"):
+
+        timer = "10 Minutes"
+        saveJob(update, context)
+
+    if (query.data == "30 Minutes"):
+        timer = "30 Minutes"
+        saveJob(update, context)
+
 
     if("Seconds" in query.data or "Minutes" in query.data):
         if(query.data == "10 Seconds"):
@@ -471,14 +481,24 @@ def addButtons(update,context,buttonText = None,buttonURL = None,mod = None):
 
             buttonDatasLocal = [buttonText, buttonURL]
             buttonDatas.append(buttonDatasLocal)
+
         except ValueError:
             context.bot.send_message(chat_id=update.effective_chat.id,text="URL OR BUTTON TEXT IS UNDEFINED")
             updateCommand(update,context,mode="backTap")
             inputMode = None
 
+def arrangeTime(update,context):
+    timeSelections = [[InlineKeyboardButton("1 Minute", callback_data="1 Minute")],
+                       [InlineKeyboardButton("10 Minutes", callback_data="10 Minutes")],
+                      [InlineKeyboardButton("30 Minutes", callback_data="30 Minutes")]]
+
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Add Buttons",reply_markup=InlineKeyboardMarkup(timeSelections))
+
+
 def saveJob(update,context):
     global buttonDatas
-    jobData = {"GroupName":selectedGroup,"PostName":selectedPost,"Buttons":buttonDatas}
+    global timer
+    jobData = {"GroupName":selectedGroup,"PostName":selectedPost,"Buttons":buttonDatas,"Timer":timer}
     jobFile = open("users/{}/jobs/{}-job.json".format(currentUser,selectedGroup + "-" + selectedPost),"w")
     jobFile.write(str(jobData))
 
@@ -558,6 +578,7 @@ if __name__ == '__main__':
     inputMode = "None"
     selectedGroup = "None"
     selectedPost = "None"
+    timer = "None"
     buttonDatas = []
     addButtonsList = []
     updater.start_polling()
