@@ -605,3 +605,106 @@ PUBLISHING ADS
 channel one
 firs post
 YES
+CHANNELS
+ADD CHANNEL
+first channel,-642743936
+CHANNELS
+ADD CHANNEL
+second channel,-1001668532284
+POSTS
+ADD POST
+first post,FIRST POST FOR FIRST GROUP
+POSTS
+ADD POST
+second post,SECOND POST FOR SECOND GROUP
+PUBLISHING ADS
+first channel
+first post
+YES
+YES
+YES
+PUBLISHING ADS
+first channel
+first post
+YES
+CHANNELS
+CHANNELS
+ADD CHANNEL
+channel one,-642743936
+CHANNELS
+ADD CHANNEL
+channel two,-1001668532284
+POSTS
+ADD POST
+post one,First Ad Text for First Group
+POSTS
+ADD POST
+post two,Second Ad Text for Second Group
+PUBLISHING ADS
+channel one
+post one
+YES
+PUBLISHING ADS
+channel two
+post two
+YES
+/stop
+CHANNELS
+CHANNELS
+CHANNELS
+CHANNELS
+ BACK
+CHANNELS
+ BACK
+PUBLISHING ADS
+channel one
+betul one
+post one
+YES
+betul  two
+ BACK
+CHANNELS
+ADD CHANNEL
+Betulwork,-642743936
+POSTS
+ADD POST
+Betulw,works works
+PUBLISHING ADS
+PUBLISHING ADS
+Betulwork
+channel one
+Betulw
+channel one
+channel one
+YES
+YES
+NO
+CHANNELS
+Betulwork
+betul one
+PUBLISHING ADS
+channel one
+post two
+YES
+PUBLISHING ADS
+channel one
+post two
+YES
+Betulwork
+CHANNELS
+ BACK
+PUBLISHING ADS
+Betulwork
+betul post two
+YES
+PUBLISHING ADS
+Betulwork
+Betulw
+YES
+PUBLISHING ADS
+Betulwork
+Betulw
+YES
+CHANNELS
+ BACK
+deneme

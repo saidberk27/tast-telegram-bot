@@ -13,17 +13,56 @@ import ast
 import json
 
 def updateCommand(update: Updater,context: CallbackContext):
-    buttons = [[KeyboardButton("🔥 CHANNELS")], [KeyboardButton("💥 POSTS")],[KeyboardButton("💬 PUBLISHING ADS")],[KeyboardButton("✅ BOT IS ACTIVE")]]
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Bot Succesfully Updated!",reply_markup=ReplyKeyboardMarkup(buttons))
+    keyboard = [
+        [
+            InlineKeyboardButton("🔥 CHANNELS", callback_data='1'),
+            InlineKeyboardButton("💥 POSTS", callback_data='2'),
+        ],
+        [InlineKeyboardButton("💬 PUBLISHING ADS", callback_data='3')],
+        [InlineKeyboardButton("✅ BOT IS ACTIVE", callback_data='4')]
+    ]
 
-def startCommand(update: Updater,context: CallbackContext):
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Hello {} Welcome to bot!".format(user['username']),reply_markup=reply_markup)
+
+
+def startCommand(update: Update, context: CallbackContext) -> None:
+    global currentUser
+
     user = update.message.from_user
     username = user['username']
 
-    if(userCheck(username)):
-        buttons = [[KeyboardButton("🔥 CHANNELS")], [KeyboardButton("💥 POSTS")], [KeyboardButton("💬 PUBLISHING ADS")],[KeyboardButton("✅ BOT IS ACTIVE")]]
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Hello {} Welcome to bot!".format(user['username']), reply_markup=ReplyKeyboardMarkup(buttons))
-    else: context.bot.send_message(chat_id=update.effective_chat.id, text="❌ You Are Not Allowed to Use This Bot! Please Contact Admın")
+    currentUser = username
+
+    if (userCheck(username)):
+        keyboard = [
+            [
+                InlineKeyboardButton("🔥 CHANNELS", callback_data='channels'),
+                InlineKeyboardButton("💥 POSTS", callback_data='posts'),
+            ],
+            [InlineKeyboardButton("💬 PUBLISHING ADS", callback_data='publishingads')],
+            [InlineKeyboardButton("✅ BOT IS ACTIVE", callback_data='botisactive')]
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        context.bot.send_message(chat_id=update.effective_chat.id,text="Hello {} Welcome to bot!".format(user['username']),reply_markup=reply_markup)
+
+    else:
+        context.bot.send_message(chat_id=update.effective_chat.id,
+                                 text="❌ You Are Not Allowed to Use This Bot! Please Contact Admın")
+
+
+def button(update: Update, context: CallbackContext) -> None:
+    """Parses the CallbackQuery and updates the message text."""
+    query = update.callback_query
+
+    # CallbackQueries need to be answered, even if no notification to the user is needed
+    # Some clients may have trouble otherwise. See https://core.telegram.org/bots/api#callbackquery
+    query.answer()
+
+    if(query.data == "channels"):
+        listChannels(update,context)
+
+    query.edit_message_text(text=f"Selected option: {query.data}")
 
 def userCheck(username):
     print(type(username))
@@ -95,10 +134,8 @@ def generalMessageHandler(update: Updater, context: CallbackContext):
 
 
 def listChannels(update,context):
+    global currentUser
     buttons = []
-
-    user = update.message.from_user
-    currentUser = user['username']
     jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
     jsonText = jsonFile.read()
     jsonFile.close()
@@ -158,9 +195,11 @@ def awaitForInput(update: Updater, context: CallbackContext):
 
     elif(inputMode == "postSelection"):
         postSelection(update,context,selectedPost=update.message.text)
+        inputMode = "publishAreYouSure"
 
     elif(inputMode == "publishAreYouSure"):
         publishIfSure(update,context,message=update.message.text)
+        inputMode = None
 
     else:
         print("yazmam")
@@ -305,8 +344,6 @@ def postSelection(update,context,selectedPost):
 
     buttons = [[KeyboardButton("YES")],[KeyboardButton("NO")]]
     context.bot.send_message(chat_id=update.effective_chat.id,text="ARE YOU SURE?".format(convertedDictActiveWorks),reply_markup=ReplyKeyboardMarkup(buttons))
-    global inputMode
-    inputMode = "publishAreYouSure"
 
 def publishIfSure(update,context,message):
     if(message == "YES"):
@@ -329,7 +366,7 @@ def publishIfSure(update,context,message):
         for groupName in activeGroupsNames:
             channel_id = convertedDictUsers["channel-data"][groupName]
             post_data = convertedDictActiveWorks[groupName]
-            publish(channelID=channel_id,adText=post_data)
+            publish(update,context,channelID=channel_id,adText=post_data)
 
 
     elif(message == "NO"):
@@ -341,6 +378,8 @@ def publish(update,context,channelID,adText):
     baseUrl = "https://api.telegram.org/bot5149901305:AAFBvwD3N1UCCkBDmNlRE9nH5YMa6fFAYtM/sendMessage?chat_id={}&text={}".format(channelID, adText)
     requests.get(baseUrl)
     updateCommand(update,context)
+    global inputMode
+    inputMode = None
 
 def deactivateBot():
     print("Bot Is Deactivating")
@@ -361,7 +400,10 @@ if __name__ == '__main__':
     dispatcher.add_handler(MessageHandler(Filters.text, generalMessageHandler))
     dispatcher.add_handler(MessageHandler(Filters.text, awaitForInput), group=1)#GROUP=1 DIYEREK DAHA FAZLA HANDLER KYOABILIYORUZ, https://github.com/python-telegram-bot/python-telegram-bot/issues/1133
 
+    updater.dispatcher.add_handler(CallbackQueryHandler(button))
     dispatcher.add_handler(MessageHandler(Filters.document,fileListener))
+
+    currentUser = None
 
     inputMode = "None"
     selectedGroup = "None"
