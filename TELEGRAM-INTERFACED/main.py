@@ -13,8 +13,19 @@ import ast
 import json
 
 def updateCommand(update: Updater,context: CallbackContext,mode = "updateData"):
+    global currentUser
     global inputMode
-    inputMode = None
+    global selectedGroup
+    global selectedPost
+    global addButtonsList
+    global buttonDatas
+
+    inputMode = "None"
+    selectedGroup = "None"
+    selectedPost = "None"
+    addButtonsList = []
+    buttonDatas = []
+    # SIFIRLAMALAR-------------
     keyboard = [
         [
             InlineKeyboardButton("🔥 CHANNELS", callback_data='channels'),
@@ -33,7 +44,19 @@ def updateCommand(update: Updater,context: CallbackContext,mode = "updateData"):
 
 def startCommand(update: Update, context: CallbackContext) -> None:
     global currentUser
+    global inputMode
+    global selectedGroup
+    global selectedPost
+    global addButtonsList
+    global buttonDatas
 
+    inputMode = "None"
+    selectedGroup = "None"
+    selectedPost = "None"
+    addButtonsList = []
+    buttonDatas = []
+
+    #SIFIRLAMALAR-------------
     user = update.message.from_user
     username = user['username']
 
@@ -82,7 +105,10 @@ def button(update: Update, context: CallbackContext) -> None:
         publishingAds(update,context)
 
     if(query.data == "add button ok"):
-        publishYesorNo(update,context)
+        global inputMode
+        saveJob(update,context)
+        #publishYesorNo(update,context)
+        inputMode = None
     if(query.data == "YES"):
         timeSelections = [[InlineKeyboardButton("10 Seconds",callback_data="10 Seconds")]]
         context.bot.send_message(chat_id=update.effective_chat.id, text="Add Buttons",reply_markup=InlineKeyboardMarkup(timeSelections))
@@ -95,26 +121,29 @@ def button(update: Update, context: CallbackContext) -> None:
     if(query.data == "NO"):
         updateCommand(update,context,mode="backTap")
 
+    if(query.data == "add new job"):
+        addNewJob(update,context)
     if(inputMode == "groupSelection"):
-        if(query.data != "publishingads"):
-            inputMode = "postSelection"
+        if(query.data != "add new job"):
             global selectedGroup
             selectedGroup = query.data
-            print(selectedGroup)
             groupSelection(update, context, selectedGroup)
+            inputMode = "postSelection"
         else:
             print("await for input")
 
     if(inputMode == "postSelection"):
         try:
-            postSelection(update, context, selectedPost=query.data)
+            global selectedPost
+            selectedPost = query.data
+            postSelection(update, context, selectedPost)
             inputMode = "addButton"
         except KeyError:
             print("await for input")
 
     if(inputMode == "addButton"):
         addButtons(update,context,mod="first")
-        inputMode = None
+
     if(inputMode == "publishAreYouSure"):
         if(query.data == "YES" or query.data == "NO"):
             publishPosts(update, context, message=query.data)
@@ -227,8 +256,8 @@ def awaitForInput(update: Updater, context: CallbackContext):
         buttonText = userInput.split(",")[0]
         buttonURL = userInput.split(",")[1]
 
-        addButtons(update,context,buttonText,buttonURL,mod="addButtonInputIcı")
-        inputMode = None
+        addButtons(update,context,buttonText,buttonURL,mod="inputici")
+
     else:
         print("yazmam")
 
@@ -303,27 +332,36 @@ def addPost(update, context, ekleme=False, groupInfo = None,showMessage=False):
 
 def publishingAds(update,context):
     global currentUser
-    idList = []
+    buttons = []
+    last_buttons = [[InlineKeyboardButton("ADD NEW JOB ➕",callback_data="add new job")],[InlineKeyboardButton("REMOVE JOB ⛔",callback_data="remove job")],[InlineKeyboardButton("⬅️ BACK",callback_data="back")]]
+    jobs = os.listdir("users/{}/jobs/".format(currentUser)) # returns list
+    for job in jobs:
+        buttons.append([InlineKeyboardButton(job[:-5],callback_data=job[:-5])])
+    reply_markup = InlineKeyboardMarkup(buttons + last_buttons)
+    context.bot.send_message(chat_id=update.effective_chat.id,text="Your Saved Jobs:",reply_markup=reply_markup)
 
-    print("publishing")
-    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+def addNewJob(update,context):
+     idList = []
 
-    jsonText = jsonFile.read()
-    jsonFile.close()
-    convertedDict = json.loads(jsonText)
+     print("publishing")
+     jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
 
-    channelNames = list(convertedDict['channel-data'].keys())
-    channelNamesStatus=convertedDict['channel-data'].values()
+     jsonText = jsonFile.read()
+     jsonFile.close()
+     convertedDict = json.loads(jsonText)
 
-    channelNamesStr = str(channelNames)
-    for channelStatus in channelNamesStatus:
-        idList.append(channelStatus)
+     channelNames = list(convertedDict['channel-data'].keys())
+     channelNamesStatus = convertedDict['channel-data'].values()
 
+     channelNamesStr = str(channelNames)
+     for channelStatus in channelNamesStatus:
+         idList.append(channelStatus)
 
-    context.bot.send_message(chat_id=update.effective_chat.id,text="Your Active Groups: {}".format(channelNamesStr[1:-1]))
-    listChannels(update,context)
-    global inputMode
-    inputMode = "groupSelection"
+     context.bot.send_message(chat_id=update.effective_chat.id,
+                              text="Your Active Groups: {}".format(channelNamesStr[1:-1]))
+     listChannels(update, context)
+     global inputMode
+     inputMode = "groupSelection"
 
 
 def groupSelection(update,context,selectedGroup):
@@ -417,7 +455,9 @@ def fileListener(update,context):
 
 def addButtons(update,context,buttonText = None,buttonURL = None,mod = None):
     global inputMode
-    buttons = []
+    global buttonDatas
+    global addButtonsList
+
     lastItem = [[InlineKeyboardButton("➕ TAP TO ADD BUTTON",callback_data="add button")],[InlineKeyboardButton("OK 👌",callback_data="add button ok")]]
     if(mod == "first"):
         context.bot.send_message(chat_id=update.effective_chat.id,text="Add Buttons",reply_markup=InlineKeyboardMarkup(lastItem))
@@ -425,17 +465,24 @@ def addButtons(update,context,buttonText = None,buttonURL = None,mod = None):
         try:
             if(buttonText == None or buttonURL == None):
                 raise ValueError
-            buttons.append([InlineKeyboardButton(buttonText,url=buttonURL)])
-            context.bot.send_message(chat_id=update.effective_chat.id,text="Button Succesfully Added!",reply_markup=InlineKeyboardMarkup(button))
+            addButtonsList.append([InlineKeyboardButton(buttonText,url=buttonURL)])
+            buttonsFinal = addButtonsList + lastItem
+            context.bot.send_message(chat_id=update.effective_chat.id,text="Button Succesfully Added!",reply_markup=InlineKeyboardMarkup(buttonsFinal))
 
+            buttonDatasLocal = [buttonText, buttonURL]
+            buttonDatas.append(buttonDatasLocal)
         except ValueError:
             context.bot.send_message(chat_id=update.effective_chat.id,text="URL OR BUTTON TEXT IS UNDEFINED")
             updateCommand(update,context,mode="backTap")
             inputMode = None
 
-def deneme():
-    print("heha")
+def saveJob(update,context):
+    global buttonDatas
+    jobData = {"GroupName":selectedGroup,"PostName":selectedPost,"Buttons":buttonDatas}
+    jobFile = open("users/{}/jobs/{}-job.json".format(currentUser,selectedGroup + "-" + selectedPost),"w")
+    jobFile.write(str(jobData))
 
+    updateCommand(update,context)
 
 def secondInterval(update,context):
     run = True
@@ -510,6 +557,9 @@ if __name__ == '__main__':
     currentUser = None
     inputMode = "None"
     selectedGroup = "None"
+    selectedPost = "None"
+    buttonDatas = []
+    addButtonsList = []
     updater.start_polling()
     updater.idle()
 
