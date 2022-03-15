@@ -50,8 +50,9 @@ def startCommand(update: Update, context: CallbackContext) -> None:
         context.bot.send_message(chat_id=update.effective_chat.id,text="Hello {} Welcome to bot!".format(user['username']),reply_markup=reply_markup)
 
     else:
-        context.bot.send_message(chat_id=update.effective_chat.id,
-                                 text="❌ You Are Not Allowed to Use This Bot! Please Contact Admın")
+        keyboard = [[InlineKeyboardButton("Tap to Contact", url='https://t.me/BenjaminPost')]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        context.bot.send_message(chat_id=update.effective_chat.id,text="❌ You Are Not Allowed to Use This Bot! Please Contact Admin",reply_markup = reply_markup)
 
 
 def button(update: Update, context: CallbackContext) -> None:
@@ -91,14 +92,18 @@ def button(update: Update, context: CallbackContext) -> None:
     if(inputMode == "postSelection"):
         try:
             postSelection(update, context, selectedPost=query.data)
-            inputMode = "publishAreYouSure"
+            inputMode = "addButton"
         except KeyError:
             print("await for input")
+
+    if(inputMode == "addButton"):
+        addButtons(update,context,mod="first")
 
     if(inputMode == "publishAreYouSure"):
         if(query.data == "YES" or query.data == "NO"):
             publishIfSure(update, context, message=query.data)
             inputMode = None
+
 
 def userCheck(username):
     print(type(username))
@@ -201,6 +206,12 @@ def awaitForInput(update: Updater, context: CallbackContext):
         publishIfSure(update,context,message=update.message.text)
         inputMode = None
 
+    elif(inputMode == "addButton"):
+        userInput = update.message.text
+        buttonText = userInput.split(",")[0]
+        buttonURL = userInput.split(",")[1]
+
+        addButtons(update,context,buttonText,buttonURL,mod="addButtonInputIcı")
     else:
         print("yazmam")
 
@@ -339,10 +350,11 @@ def postSelection(update,context,selectedPost):
     userJsonWrite.write(json.dumps(convertedDictActiveWorks))
     userJsonWrite.close()
 
-    context.bot.send_message(chat_id=update.effective_chat.id,text="{}".format(convertedDictActiveWorks))
+    #context.bot.send_message(chat_id=update.effective_chat.id,text="{}".format(convertedDictActiveWorks))
+    context.bot.send_message(chat_id=update.effective_chat.id,text="Post Selected.")
 
-    buttons = [[InlineKeyboardButton("YES",callback_data='YES')],[InlineKeyboardButton("NO",callback_data='NO')]]
-    context.bot.send_message(chat_id=update.effective_chat.id,text="ARE YOU SURE?".format(convertedDictActiveWorks),reply_markup=InlineKeyboardMarkup(buttons))
+    #buttons = [[InlineKeyboardButton("YES",callback_data='YES')],[InlineKeyboardButton("NO",callback_data='NO')]]
+    #context.bot.send_message(chat_id=update.effective_chat.id,text="ARE YOU SURE?".format(convertedDictActiveWorks),reply_markup=InlineKeyboardMarkup(buttons))
 
 def publishIfSure(update,context,message):
     if(message == "YES"):
@@ -387,6 +399,22 @@ def fileListener(update,context):
     print("image handler")
     context.bot.get_file(update.message.document).download()
 
+def addButtons(update,context,buttonText = None,buttonURL = None,mod = None):
+    buttons = [[InlineKeyboardButton("➕ TAP TO ADD BUTTON",callback_data="add button")]]
+    lastItem = [[InlineKeyboardButton("OK 👌",callback_data="add button ok")]]
+    if(mod == "first"):
+        context.bot.send_message(chat_id=update.effective_chat.id,text="Add Buttons",reply_markup=InlineKeyboardMarkup(buttons))
+    else:
+        try:
+            if(buttonText == None or buttonURL == None):
+                raise ValueError
+            buttons.append([InlineKeyboardButton(buttonText,url=buttonURL)])
+            buttonsOK = buttons + lastItem
+            context.bot.send_message(chat_id=update.effective_chat.id,text="Button Succesfully Added!",reply_markup=InlineKeyboardMarkup(buttonsOK))
+
+        except ValueError:
+            context.bot.send_message(chat_id=update.effective_chat.id,text="URL OR BUTTON TEXT IS UNDEFINED")
+            updateCommand(update,context,mode="backTap")
 
 if __name__ == '__main__':
 
