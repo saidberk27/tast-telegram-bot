@@ -12,7 +12,7 @@ import os
 import ast
 import json
 
-def updateCommand(update: Updater,context: CallbackContext):
+def updateCommand(update: Updater,context: CallbackContext,mode = "updateData"):
     keyboard = [
         [
             InlineKeyboardButton("🔥 CHANNELS", callback_data='1'),
@@ -23,8 +23,11 @@ def updateCommand(update: Updater,context: CallbackContext):
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Hello {} Welcome to bot!".format(user['username']),reply_markup=reply_markup)
+    if(mode == "updateData"):
+        context.bot.send_message(chat_id=update.effective_chat.id, text=("Bot Succesfully Updated! 🔥🔥🔥"),reply_markup=reply_markup)
 
+    elif(mode == "backTap"):
+        context.bot.send_message(chat_id=update.effective_chat.id, text=("Please Select"),reply_markup=reply_markup)
 
 def startCommand(update: Update, context: CallbackContext) -> None:
     global currentUser
@@ -62,6 +65,12 @@ def button(update: Update, context: CallbackContext) -> None:
     if(query.data == "channels"):
         listChannels(update,context)
 
+    if(query.data == "posts"):
+        listPosts(update,context)
+
+    if(query.data == "back"):
+        updateCommand(update,context,mode="backTap")
+
     query.edit_message_text(text=f"Selected option: {query.data}")
 
 def userCheck(username):
@@ -84,9 +93,6 @@ def getCheckedUserName(username):
 
     return letterUpdated
 
-def mainMenu(update,context):
-    buttons = [[KeyboardButton("🔥 CHANNELS")], [KeyboardButton("💥 POSTS")], [KeyboardButton("💬 PUBLISHING ADS")],[KeyboardButton("✅ BOT IS ACTIVE")]]
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select",reply_markup=ReplyKeyboardMarkup(buttons))
 
 def logTut(update):
     try:
@@ -143,18 +149,18 @@ def listChannels(update,context):
 
     channel_lists = convertedDict['channel-data'].keys()
     for channelNames in channel_lists:
-        buttons.append([KeyboardButton(channelNames)])
+        buttons.append([InlineKeyboardButton(channelNames,callback_data=channelNames)])
 
-    staticsOfList = [KeyboardButton("➕ ADD CHANNEL")], [KeyboardButton("⛔ REMOVE CHANNEL")], [KeyboardButton("⬅️ BACK")]
+
+    staticsOfList = [InlineKeyboardButton("➕ ADD CHANNEL",callback_data='add_channel')], [InlineKeyboardButton("⛔ REMOVE CHANNEL",callback_data='remove_channel')], [InlineKeyboardButton("⬅️ BACK",callback_data='back')]
     buttons = buttons + list(staticsOfList)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Group", reply_markup=ReplyKeyboardMarkup(buttons))
-
+    reply_markup = InlineKeyboardMarkup(buttons)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Hello",reply_markup=reply_markup)
 
 def listPosts(update,context):
-    buttons = []
+    global currentUser
 
-    user = update.message.from_user
-    currentUser = user['username']
+    buttons = []
     jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
     jsonText = jsonFile.read()
     jsonFile.close()
@@ -165,11 +171,13 @@ def listPosts(update,context):
     staticsOfList = [KeyboardButton("➕ ADD POST")], [KeyboardButton("⛔ REMOVE POST")], [KeyboardButton("⬅️ BACK")]
 
     for adNames in adList:
-        buttons.append([KeyboardButton(adNames)])
+        buttons.append([InlineKeyboardButton(adNames,callback_data=adNames)])
 
+    staticsOfList = [InlineKeyboardButton("➕ ADD POST", callback_data='add_post')], [
+        InlineKeyboardButton("⛔ REMOVE POST", callback_data='remove_post')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]
     buttons = buttons + list(staticsOfList)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Ad",reply_markup=ReplyKeyboardMarkup(buttons))
-
+    reply_markup = InlineKeyboardMarkup(buttons)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Hello", reply_markup=reply_markup)
 def awaitForInput(update: Updater, context: CallbackContext):
     global inputMode
     print("Tetiklendi",inputMode)
