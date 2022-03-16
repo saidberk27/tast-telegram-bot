@@ -50,6 +50,7 @@ def startCommand(update: Update, context: CallbackContext) -> None:
     global addButtonsList
     global buttonDatas
 
+
     inputMode = "None"
     selectedGroup = "None"
     selectedPost = "None"
@@ -90,6 +91,7 @@ def button(update: Update, context: CallbackContext) -> None:
         listChannels(update,context)
 
     if(query.data == "posts"):
+        inputMode = "postEdit"
         listPosts(update,context)
 
     if(query.data == "back"):
@@ -102,34 +104,17 @@ def button(update: Update, context: CallbackContext) -> None:
         addPost(update,context,showMessage=True)
 
     if(query.data == "publishingads"):
+        inputMode = "jobEdit"
         publishingAds(update,context)
 
     if(query.data == "add button ok"):
-        arrangeTime(update,context)
+        saveJob(update,context)
         inputMode = None
 
-    if(query.data == "1 Minute"):
-        global timer
-        timer = "1 Minute"
-        saveJob(update,context)
 
-    if (query.data == "10 Minutes"):
-
-        timer = "10 Minutes"
-        saveJob(update, context)
-
-    if (query.data == "30 Minutes"):
-        timer = "30 Minutes"
-        saveJob(update, context)
 
     if(query.data == "start publishing"):
         startPublishing(update,context)
-
-
-    if("Seconds" in query.data or "Minutes" in query.data):
-        if(query.data == "10 Seconds"):
-            secondInterval(update,context)
-
 
     if(query.data == "NO"):
         updateCommand(update,context,mode="backTap")
@@ -157,7 +142,167 @@ def button(update: Update, context: CallbackContext) -> None:
     if(inputMode == "addButton"):
         addButtons(update,context,mod="first")
 
+def editPosts(update: Update, context: CallbackContext):
+    global inputMode
+    query = update.callback_query
+    query.answer()
+    editButton = [[InlineKeyboardButton("✏️ EDIT POST",callback_data="edit post")],[InlineKeyboardButton("⬅️ BACK",callback_data='back')]]
+    reply_markup_edit = InlineKeyboardMarkup(editButton)
 
+    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonText = jsonFile.read()
+    jsonFile.close()
+    convertedDict = json.loads(jsonText)
+    adList = convertedDict["post-data"].keys()
+
+    if(inputMode == "postEdit" and query.data in adList):
+        global postWillBeEdited
+        postWillBeEdited = query.data
+        currentAdText = convertedDict["post-data"][postWillBeEdited]
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Current Ad Text = {}".format(currentAdText), reply_markup=reply_markup_edit)
+
+    if(query.data == "edit post"):
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Type New Text")
+        inputMode = "waitForNewAdText"
+
+def editSelectedPost(update,context,newText):
+    print(newText)
+    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonText = jsonFile.read()
+    jsonFile.close()
+    convertedDict = json.loads(jsonText)
+    convertedDict["post-data"][postWillBeEdited] = newText
+
+    userJsonWrite = open("users/{}/userJson.json".format(currentUser), "w")
+    userJsonWrite.write(json.dumps(convertedDict))
+    userJsonWrite.close()
+
+    updateCommand(update,context)
+
+def editJobs(update: Update, context: CallbackContext):
+    global inputMode
+    global jobFile
+    query = update.callback_query
+    query.answer()
+
+    editButton = [[InlineKeyboardButton("⏲️ ADD TIMER", callback_data="add timer")],
+                  [InlineKeyboardButton("⬅️ BACK", callback_data='back')]]
+    reply_markup_edit = InlineKeyboardMarkup(editButton)
+
+
+    jobs = os.listdir("users/{}/jobs/".format(currentUser)) # returns list
+    dotJsonAdded = query.data + ".json" #Job Name
+
+
+
+    if(dotJsonAdded in jobs and inputMode == "jobEdit"):
+
+        job_group = dotJsonAdded.split("-")[0]
+        job_post = dotJsonAdded.split("-")[1]
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Group: {} Post: {}".format(job_group,job_post), reply_markup=reply_markup_edit)
+        jobFile = "users/{}/jobs/{}".format(currentUser, dotJsonAdded)
+    else:
+        print("GİRMEDİ")
+
+    if(query.data == "add timer"):
+        addTimer(update,context)
+
+    if(query.data == "1 Minute"):
+        with open(jobFile,"r") as JobFile:
+            JobFileConvertedDict = ast.literal_eval(JobFile.read())
+            JobFileConvertedDict['Timer'] = "1 Minute"
+        jobWrite = open(jobFile,"w")
+        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.close()
+        updateCommand(update, context)
+
+    if(query.data == "10 Minutes"):
+        with open(jobFile,"r") as JobFile:
+            JobFileConvertedDict = ast.literal_eval(JobFile.read())
+            JobFileConvertedDict['Timer'] = "10 Minutes"
+        jobWrite = open(jobFile,"w")
+        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.close()
+        updateCommand(update, context)
+
+    if(query.data == "30 Minutes"):
+        with open(jobFile,"r") as JobFile:
+            JobFileConvertedDict = ast.literal_eval(JobFile.read())
+            JobFileConvertedDict['Timer'] = "30 Minutes"
+        jobWrite = open(jobFile,"w")
+        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.close()
+        updateCommand(update, context)
+
+    if(query.data == "1 Hour"):
+        with open(jobFile,"r") as JobFile:
+            JobFileConvertedDict = ast.literal_eval(JobFile.read())
+            JobFileConvertedDict['Timer'] = "1 Hour"
+        jobWrite = open(jobFile,"w")
+        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.close()
+        updateCommand(update, context)
+
+    if(query.data == "3 Hours"):
+        with open(jobFile,"r") as JobFile:
+            JobFileConvertedDict = ast.literal_eval(JobFile.read())
+            JobFileConvertedDict['Timer'] = "3 Hours"
+        jobWrite = open(jobFile,"w")
+        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.close()
+        updateCommand(update, context)
+
+    if(query.data == "6 Hours"):
+        with open(jobFile,"r") as JobFile:
+            JobFileConvertedDict = ast.literal_eval(JobFile.read())
+            JobFileConvertedDict['Timer'] = "6 Hours"
+        jobWrite = open(jobFile,"w")
+        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.close()
+        updateCommand(update, context)
+
+    if(query.data == "12 Hours"):
+        with open(jobFile,"r") as JobFile:
+            JobFileConvertedDict = ast.literal_eval(JobFile.read())
+            JobFileConvertedDict['Timer'] = "12 Hours"
+        jobWrite = open(jobFile,"w")
+        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.close()
+        updateCommand(update, context)
+
+    if (query.data == "1 Day"):
+        with open(jobFile, "r") as JobFile:
+            JobFileConvertedDict = ast.literal_eval(JobFile.read())
+            JobFileConvertedDict['Timer'] = "1 Day"
+        jobWrite = open(jobFile, "w")
+        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.close()
+        updateCommand(update, context)
+
+    if (query.data == "3 Days"):
+        with open(jobFile, "r") as JobFile:
+            JobFileConvertedDict = ast.literal_eval(JobFile.read())
+            JobFileConvertedDict['Timer'] = "3 Days"
+        jobWrite = open(jobFile, "w")
+        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.close()
+        updateCommand(update, context)
+
+    if (query.data == "1 Week"):
+        with open(jobFile, "r") as JobFile:
+            JobFileConvertedDict = ast.literal_eval(JobFile.read())
+            JobFileConvertedDict['Timer'] = "1 Week"
+        jobWrite = open(jobFile, "w")
+        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.close()
+        updateCommand(update,context)
+
+
+def addTimer(update,context):
+    timerButtons = [[InlineKeyboardButton("1 Minute", callback_data="1 Minute"), InlineKeyboardButton("10 Minutes", callback_data="10 Minutes"),InlineKeyboardButton("30 Minutes", callback_data="30 Minutes")], [InlineKeyboardButton("1 Hour", callback_data="1 Hour"),InlineKeyboardButton("3 Hours", callback_data="3 Hours"),InlineKeyboardButton("6 Hours", callback_data="6 Hours")],[InlineKeyboardButton("12 Hours", callback_data="12 Hours"),InlineKeyboardButton("1 Day", callback_data="1 Day")],[InlineKeyboardButton("3 Days", callback_data="3 Days"),InlineKeyboardButton("1 Week", callback_data="1 Week")]]
+
+    reply_markup = InlineKeyboardMarkup(timerButtons)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select",reply_markup=reply_markup)
 
 
 def userCheck(username):
@@ -257,7 +402,9 @@ def awaitForInput(update: Updater, context: CallbackContext):
         postSelection(update,context,selectedPost=update.message.text)
         inputMode = "publishAreYouSure"
 
-
+    elif(inputMode == "waitForNewAdText"):
+        newContent = update.message.text
+        editSelectedPost(update,context,newContent)
     elif(inputMode == "addButton"):
         userInput = update.message.text
         buttonText = userInput.split(",")[0]
@@ -280,8 +427,7 @@ def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False
         channelNameInput = groupInfoList[0]
         channelIdInput = groupInfoList[1]
 
-        user = update.message.from_user
-        currentUser = user['username']
+        global currentUser
         jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
         jsonText = jsonFile.read()
         jsonFile.close()
@@ -317,8 +463,7 @@ def addPost(update, context, ekleme=False, groupInfo = None,showMessage=False):
         postNameInput = groupInfoList[0]
         postIdInput = groupInfoList[1]
 
-        user = update.message.from_user
-        currentUser = user['username']
+        global currentUser
         jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
         jsonText = jsonFile.read()
         jsonFile.close()
@@ -436,26 +581,108 @@ def publishPosts(update, context, jobData,timer):
     channel_id = convertedDictUsers["channel-data"][jobGroupName]
     ad_text = convertedDictUsers["post-data"][jobPostName]
 
-    print(timer)
     if(timer == "1 Minute"):
-        def secondInterval():
+
+        def Interval():
+            print(inputMode)
             run = True
             publish(update,context,channelID=channel_id, adText=ad_text,buttons = jobButtons)
             if run:
-                Timer(2, secondInterval).start()
-        secondInterval()
+                Timer(2, Interval).start()
+        Interval()
+
+    if (timer == "10 Minutes"):
+        def Interval():
+            run = True
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            if run:
+                Timer(5, Interval).start()
+
+        Interval()
+
+    if (timer == "30 Minutes"):
+        def Interval():
+            run = True
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            if run:
+                Timer(1800, Interval).start()
+
+        Interval()
+
+    if (timer == "1 Hour"):
+        def Interval():
+            run = True
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            if run:
+                Timer(3600, Interval).start()
+
+        Interval()
+
+    if (timer == "3 Hours"):
+        def Interval():
+            run = True
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            if run:
+                Timer(10.800, Interval).start()
+
+        Interval()
+
+    if (timer == "6 Hours"):
+        def Interval():
+            run = True
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            if run:
+                Timer(21.600, Interval).start()
+
+        Interval()
+
+    if (timer == "12 Hours"):
+        def Interval():
+            run = True
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            if run:
+                Timer(43.200, Interval).start()
+
+        Interval()
+
+    if (timer == "1 Day"):
+        def Interval():
+            run = True
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            if run:
+                Timer(86.400, Interval).start()
+
+        Interval()
+
+    if (timer == "3 Days"):
+        def Interval():
+            run = True
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            if run:
+                Timer(259.200, Interval).start()
+
+        Interval()
+
+    if (timer == "1 Week"):
+        def Interval():
+            run = True
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            if run:
+                Timer(259.200, Interval).start()
+
+        Interval()
 
 
 def publish(update,context,channelID,adText,buttons):
     buttonsFinal = []
-    print(buttons)
+
     for button in buttons:
         buttonsFinal.append([InlineKeyboardButton("{}".format(button[0]), url="{}".format(button[1]))])
 
     context.bot.send_message(chat_id=channelID, text=adText ,reply_markup=InlineKeyboardMarkup(buttonsFinal))
 
     global inputMode
-    inputMode = None
+
 
 def deactivateBot():
     print("Bot Is Deactivating")
@@ -489,18 +716,11 @@ def addButtons(update,context,buttonText = None,buttonURL = None,mod = None):
             updateCommand(update,context,mode="backTap")
             inputMode = None
 
-def arrangeTime(update,context):
-    timeSelections = [[InlineKeyboardButton("1 Minute", callback_data="1 Minute")],
-                       [InlineKeyboardButton("10 Minutes", callback_data="10 Minutes")],
-                      [InlineKeyboardButton("30 Minutes", callback_data="30 Minutes")]]
-
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Add Buttons",reply_markup=InlineKeyboardMarkup(timeSelections))
-
 
 def saveJob(update,context):
     global buttonDatas
     global timer
-    jobData = {"GroupName":selectedGroup,"PostName":selectedPost,"Buttons":buttonDatas,"Timer":timer}
+    jobData = {"GroupName":selectedGroup,"PostName":selectedPost,"Buttons":buttonDatas}
     jobFile = open("users/{}/jobs/{}-job.json".format(currentUser,selectedGroup + "-" + selectedPost),"w")
     jobFile.write(str(jobData))
 
@@ -516,15 +736,7 @@ def startPublishing(update,context):
             jobTextDict = ast.literal_eval(jobText)
             timer = jobTextDict['Timer']
 
-            if(timer == "1 Minute"):
-                publishPosts(update,context,jobTextDict,timer)
-
-def secondInterval(update,context):
-    run = True
-    publishPosts(update,context)
-    if run:
-        Timer(2, lambda:secondInterval(update,context)).start()
-
+            publishPosts(update,context,jobTextDict,timer)
 
 if __name__ == '__main__':
     from threading import Timer
@@ -537,6 +749,8 @@ if __name__ == '__main__':
     dispatcher.add_handler(MessageHandler(Filters.text, awaitForInput), group=1)#GROUP=1 DIYEREK DAHA FAZLA HANDLER KYOABILIYORUZ, https://github.com/python-telegram-bot/python-telegram-bot/issues/1133
 
     updater.dispatcher.add_handler(CallbackQueryHandler(button))
+    updater.dispatcher.add_handler(CallbackQueryHandler(editPosts),group=1)
+    updater.dispatcher.add_handler(CallbackQueryHandler(editJobs),group=2)
 
 
     dispatcher.add_handler(MessageHandler(Filters.document,fileListener))
@@ -546,6 +760,8 @@ if __name__ == '__main__':
     selectedGroup = "None"
     selectedPost = "None"
     timer = "None"
+    postWillBeEdited = "None"
+    jobFile = "None"
     buttonDatas = []
     addButtonsList = []
     updater.start_polling()
