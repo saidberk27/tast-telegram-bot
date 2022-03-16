@@ -186,6 +186,7 @@ def editJobs(update: Update, context: CallbackContext):
     query.answer()
 
     editButton = [[InlineKeyboardButton("⏲️ ADD TIMER", callback_data="add timer")],
+                  [InlineKeyboardButton("🛑 STOP PUBLISHING AND REMOVE ❌", callback_data="stop publishing and remove")],
                   [InlineKeyboardButton("⬅️ BACK", callback_data='back')]]
     reply_markup_edit = InlineKeyboardMarkup(editButton)
 
@@ -207,6 +208,10 @@ def editJobs(update: Update, context: CallbackContext):
     if(query.data == "add timer"):
         addTimer(update,context)
 
+    if(query.data == "stop publishing and remove"):
+        os.remove(jobFile)
+        updateCommand(update,context)
+        
     if(query.data == "1 Minute"):
         with open(jobFile,"r") as JobFile:
             JobFileConvertedDict = ast.literal_eval(JobFile.read())
