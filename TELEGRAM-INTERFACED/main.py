@@ -88,6 +88,7 @@ def button(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
 
+    print(query.data,inputMode)
     jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
     jsonText = jsonFile.read()
     jsonFile.close()
@@ -123,7 +124,7 @@ def button(update: Update, context: CallbackContext) -> None:
         saveJob(update,context)
         inputMode = None
 
-    if(query.data in channel_lists):
+    if(query.data in channel_lists and inputMode == "channelEdit"):
         global selectedGroup
         selectedGroup = query.data
         editButton = [[InlineKeyboardButton("⛔ REMOVE CHANNEL", callback_data="remove channel")],[InlineKeyboardButton("⬅️ BACK", callback_data='back')]]
@@ -157,7 +158,6 @@ def button(update: Update, context: CallbackContext) -> None:
         try:
             global selectedPost
             selectedPost = query.data
-            
             postSelection(update, context, selectedPost)
             inputMode = "addButton"
         except KeyError as ke:
@@ -414,11 +414,13 @@ def listChannels(update,context):
         buttons.append([InlineKeyboardButton(channelNames,callback_data=channelNames)])
 
 
-    staticsOfList = [InlineKeyboardButton("➕ ADD CHANNEL",callback_data='add_channel')], [InlineKeyboardButton("⛔ REMOVE CHANNEL",callback_data='remove_channel')], [InlineKeyboardButton("⬅️ BACK",callback_data='back')]
+    staticsOfList = [InlineKeyboardButton("➕ ADD CHANNEL",callback_data='add_channel')],[InlineKeyboardButton("⬅️ BACK",callback_data='back')]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text="List:",reply_markup=reply_markup)
 
+    global inputMode
+    inputMode = "channelEdit"
 def listFolderPosts(update, context, folder = None):
     buttons = []
     jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
@@ -435,7 +437,7 @@ def listFolderPosts(update, context, folder = None):
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select a Post", reply_markup=reply_markup)
-
+    inputMode = "postEdit"
 def listAllPosts(update,context):
     global currentUser
 
@@ -450,9 +452,7 @@ def listAllPosts(update,context):
     for adNames in adList:
         buttons.append([InlineKeyboardButton(adNames, callback_data=adNames)])
 
-    staticsOfList = [InlineKeyboardButton("➕ ADD POST", callback_data='add_post')], [
-        InlineKeyboardButton("⛔ REMOVE POST", callback_data='remove_post')], [
-                        InlineKeyboardButton("⬅️ BACK", callback_data='back')]
+    staticsOfList = [[InlineKeyboardButton("➕ ADD POST", callback_data='add_post')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text="All of Your Posts:", reply_markup=reply_markup)
@@ -474,6 +474,9 @@ def listFolders(update: Update, context: CallbackContext):
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Select a Folder", reply_markup=reply_markup)
 
+    global inputMode
+    inputMode = "postEdit"
+
 def folderSelection(update: Updater, context: CallbackContext):
     jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
     jsonText = jsonFile.read()
@@ -489,7 +492,7 @@ def folderSelection(update: Updater, context: CallbackContext):
 
     if (query.data in folderList):
         global inputMode
-        inputMode = "postSelection"
+        inputMode = "postEdit"
         selectedFolder = query.data
         listFolderPosts(update, context, query.data)
 
