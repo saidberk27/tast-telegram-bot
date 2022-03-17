@@ -269,6 +269,9 @@ def editJobs(update: Update, context: CallbackContext):
         global runData
         os.remove(jobFile)
         runData = False
+        time.sleep(3)
+        runData = True
+        startPublishing(update,context) # Bastan Baslat
         updateCommand(update,context)
 
     if(query.data == "1 Minute"):
