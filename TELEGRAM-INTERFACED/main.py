@@ -88,6 +88,13 @@ def button(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
 
+    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonText = jsonFile.read()
+    jsonFile.close()
+    convertedDict = json.loads(jsonText)
+
+    channel_lists = convertedDict['channel-data'].keys()
+
     if(query.data == "channels"):
         listChannels(update,context)
 
@@ -116,7 +123,15 @@ def button(update: Update, context: CallbackContext) -> None:
         saveJob(update,context)
         inputMode = None
 
+    if(query.data in channel_lists):
+        global selectedGroup
+        selectedGroup = query.data
+        editButton = [[InlineKeyboardButton("⛔ REMOVE CHANNEL", callback_data="remove channel")],[InlineKeyboardButton("⬅️ BACK", callback_data='back')]]
+        reply_markup = InlineKeyboardMarkup(editButton)
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Edit Channel", reply_markup=reply_markup)
 
+    if(query.data == "remove channel"):
+        removeSelectedChannel(update,context)
 
     if(query.data == "start publishing"):
         global runData
@@ -131,7 +146,6 @@ def button(update: Update, context: CallbackContext) -> None:
         addNewJob(update,context)
     if(inputMode == "groupSelection"):
         if(query.data != "add new job"):
-            global selectedGroup
             selectedGroup = query.data
             groupSelection(update, context, selectedGroup)
             inputMode = "postSelection"
@@ -174,6 +188,35 @@ def editPosts(update: Update, context: CallbackContext):
     if (query.data == "addtofolder"):
         inputMode = "addPostFolder"
         addPostFolder(update,context)
+
+def editSelectedPost(update,context,newText):
+    print(newText)
+    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonText = jsonFile.read()
+    jsonFile.close()
+    convertedDict = json.loads(jsonText)
+    convertedDict["post-data"][postWillBeEdited] = newText
+
+    userJsonWrite = open("users/{}/userJson.json".format(currentUser), "w")
+    userJsonWrite.write(json.dumps(convertedDict))
+    userJsonWrite.close()
+
+    updateCommand(update,context)
+
+def removeSelectedChannel(update,context):
+    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonText = jsonFile.read()
+    jsonFile.close()
+    convertedDict = json.loads(jsonText)
+    willRemoveDict = convertedDict["channel-data"]
+    willRemoveDict.pop(selectedGroup)
+    convertedDict["channel-data"] = willRemoveDict
+
+    jsonFileWrite = open("users/{}/userJson.json".format(currentUser), "w")
+    jsonFileWrite.write(json.dumps(convertedDict))
+    jsonFile.close()
+
+    updateCommand(update,context)
 
 def editSelectedPost(update,context,newText):
     print(newText)

@@ -1,9 +1,6 @@
-import json
-jsonFile = open("users/{}/userJson.json".format("whilefalse27"), "r")
-jsonText = jsonFile.read()
-print(jsonText)
-jsonFile.close()
-convertedDict = json.loads(jsonText)
+import ast
+userDict = {"username": "whilefalse27", "channel-data": {"said's group": "-642743936", "avi's group": "-1001668532284", "denemechannel": "-343"}, "post-data": {"said": "what a nice text for test", "berk": "deneme", "deneme": "denemenenem"}, "folder-data": {"folder1": ["berk"], "folder2": ["sadecebu"]}}
 
-folderData = convertedDict["folder-data"]["folder1"]
-print(folderData)
+print(userDict["channel-data"])
+userDict["channel-data"].pop("said's group")
+print(userDict["channel-data"])
