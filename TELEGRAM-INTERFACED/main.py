@@ -25,6 +25,7 @@ def updateCommand(update: Updater,context: CallbackContext,mode = "updateData"):
     selectedPost = "None"
     addButtonsList = []
     buttonDatas = []
+    selectedFolder = "None"
     # SIFIRLAMALAR-------------
     keyboard = [
         [
@@ -103,7 +104,8 @@ def button(update: Update, context: CallbackContext) -> None:
 
     if(query.data == "add_post"):
         addPost(update,context,showMessage=True)
-
+    if(query.data == "add post to folder"):
+        listAllPosts(update,context)
     if(query.data == "publishingads"):
         inputMode = "jobEdit"
         publishingAds(update,context)
@@ -136,8 +138,6 @@ def button(update: Update, context: CallbackContext) -> None:
 
     if(inputMode == "postSelection"):
         try:
-            global selectedPost
-            selectedPost = query.data
             postSelection(update, context, selectedPost)
             inputMode = "addButton"
         except KeyError:
@@ -150,7 +150,7 @@ def editPosts(update: Update, context: CallbackContext):
     global inputMode
     query = update.callback_query
     query.answer()
-    editButton = [[InlineKeyboardButton("✏️ EDIT POST",callback_data="edit post")],[InlineKeyboardButton("⬅️ BACK",callback_data='back')]]
+    editButton = [[InlineKeyboardButton("✏️ EDIT POST",callback_data="edit post")],[InlineKeyboardButton("➕ ADD TO FOLDER",callback_data="addtofolder")],[InlineKeyboardButton("⬅️ BACK",callback_data='back')]]
     reply_markup_edit = InlineKeyboardMarkup(editButton)
 
     jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
@@ -168,6 +168,10 @@ def editPosts(update: Update, context: CallbackContext):
     if(query.data == "edit post"):
         context.bot.send_message(chat_id=update.effective_chat.id, text="Please Type New Text")
         inputMode = "waitForNewAdText"
+
+    if (query.data == "addtofolder"):
+        inputMode = "addPostFolder"
+        addPostFolder(update,context)
 
 def editSelectedPost(update,context,newText):
     print(newText)
@@ -207,7 +211,7 @@ def editJobs(update: Update, context: CallbackContext):
         context.bot.send_message(chat_id=update.effective_chat.id, text="Group: {} Post: {}".format(job_group,job_post), reply_markup=reply_markup_edit)
         jobFile = "users/{}/jobs/{}".format(currentUser, dotJsonAdded)
     else:
-        print("GİRMEDİ")
+        pass
 
     if(query.data == "add timer"):
         addTimer(update,context)
@@ -366,25 +370,43 @@ def listChannels(update,context):
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text="List:",reply_markup=reply_markup)
 
-def listPosts(update,context,folder = None,addFolder = False):
-    if(addFolder):
-        postSelection(update,context)
-    else:
-        buttons = []
-        jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
-        jsonText = jsonFile.read()
-        jsonFile.close()
-        convertedDict = json.loads(jsonText)
+def listFolderPosts(update, context, folder = None):
+    buttons = []
+    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonText = jsonFile.read()
+    jsonFile.close()
+    convertedDict = json.loads(jsonText)
 
-        folderData = convertedDict["folder-data"][folder]
+    folderData = convertedDict["folder-data"][folder]
 
-        for adNames in folderData:
-            buttons.append([InlineKeyboardButton(adNames,callback_data=adNames)])
+    for adNames in folderData:
+        buttons.append([InlineKeyboardButton(adNames,callback_data=adNames)])
 
-        staticsOfList = [InlineKeyboardButton("➕ ADD POST", callback_data='add_post')], [InlineKeyboardButton("⛔ REMOVE POST", callback_data='remove_post')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]
-        buttons = buttons + list(staticsOfList)
-        reply_markup = InlineKeyboardMarkup(buttons)
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select a Post", reply_markup=reply_markup)
+    staticsOfList = [InlineKeyboardButton("➕ ADD POST TO FOLDER", callback_data='add post to folder')], [InlineKeyboardButton("⛔ REMOVE POST FROM FOLDER", callback_data='remove post from folder')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]
+    buttons = buttons + list(staticsOfList)
+    reply_markup = InlineKeyboardMarkup(buttons)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select a Post", reply_markup=reply_markup)
+
+def listAllPosts(update,context):
+    global currentUser
+
+    buttons = []
+    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonText = jsonFile.read()
+    jsonFile.close()
+    convertedDict = json.loads(jsonText)
+
+    adList = convertedDict["post-data"].keys()
+
+    for adNames in adList:
+        buttons.append([InlineKeyboardButton(adNames, callback_data=adNames)])
+
+    staticsOfList = [InlineKeyboardButton("➕ ADD POST", callback_data='add_post')], [
+        InlineKeyboardButton("⛔ REMOVE POST", callback_data='remove_post')], [
+                        InlineKeyboardButton("⬅️ BACK", callback_data='back')]
+    buttons = buttons + list(staticsOfList)
+    reply_markup = InlineKeyboardMarkup(buttons)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="All of Your Posts:", reply_markup=reply_markup)
 
 def listFolders(update: Update, context: CallbackContext):
     jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
@@ -403,7 +425,7 @@ def listFolders(update: Update, context: CallbackContext):
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Select a Folder", reply_markup=reply_markup)
 
-def selectedFolder(update: Updater, context: CallbackContext):
+def folderSelection(update: Updater, context: CallbackContext):
     jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
     jsonText = jsonFile.read()
     jsonFile.close()
@@ -414,10 +436,12 @@ def selectedFolder(update: Updater, context: CallbackContext):
 
     query = update.callback_query
     query.answer()
+    global selectedFolder
 
     if (query.data in folderList):
         inputMode == "postSelection"
-        listPosts(update, context, query.data)
+        selectedFolder = query.data
+        listFolderPosts(update, context, query.data)
 
     if(query.data == "add folder"):
         addNewFolder(update,context)
@@ -553,6 +577,26 @@ def addPost(update, context, ekleme=False, groupInfo = None,showMessage=False):
 
     else:
         print("Input Bekle")
+
+def addPostFolder(update: Update, context: CallbackContext):
+    query = update.callback_query
+    query.answer()
+    print(query.data)
+    if(inputMode == "addPostFolder" and query.data == "addtofolder"):
+        jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+        jsonText = jsonFile.read()
+        jsonFile.close()
+
+        convertedDict = json.loads(jsonText)
+        folderData = convertedDict["folder-data"][selectedFolder]
+        folderData.append(postWillBeEdited)
+        convertedDict["folder-data"][selectedFolder] = folderData
+
+        jsonFileWrite = open("users/{}/userJson.json".format(currentUser), "w")
+        jsonFileWrite.write(json.dumps(convertedDict))
+        jsonFileWrite.close()
+
+        updateCommand(update,context)
 
 def publishingAds(update,context):
     global currentUser
@@ -825,7 +869,8 @@ if __name__ == '__main__':
     updater.dispatcher.add_handler(CallbackQueryHandler(button))
     updater.dispatcher.add_handler(CallbackQueryHandler(editPosts),group=1)
     updater.dispatcher.add_handler(CallbackQueryHandler(editJobs),group=2)
-    updater.dispatcher.add_handler(CallbackQueryHandler(selectedFolder),group=3)
+    updater.dispatcher.add_handler(CallbackQueryHandler(folderSelection), group=3)
+    updater.dispatcher.add_handler(CallbackQueryHandler(addPostFolder), group=3)
 
 
     dispatcher.add_handler(MessageHandler(Filters.document,fileListener))
@@ -835,6 +880,7 @@ if __name__ == '__main__':
     inputMode = "None"
     selectedGroup = "None"
     selectedPost = "None"
+    selectedFolder = "None"
     timer = "None"
     postWillBeEdited = "None"
     jobFile = "None"
