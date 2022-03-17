@@ -91,8 +91,9 @@ def button(update: Update, context: CallbackContext) -> None:
         listChannels(update,context)
 
     if(query.data == "posts"):
+        listFolders(update, context)
         inputMode = "postEdit"
-        listPosts(update,context)
+
 
     if(query.data == "back"):
         updateCommand(update,context,mode="backTap")
@@ -114,7 +115,10 @@ def button(update: Update, context: CallbackContext) -> None:
 
 
     if(query.data == "start publishing"):
+        global runData
+        runData = True
         startPublishing(update,context)
+
 
     if(query.data == "NO"):
         updateCommand(update,context,mode="backTap")
@@ -209,9 +213,11 @@ def editJobs(update: Update, context: CallbackContext):
         addTimer(update,context)
 
     if(query.data == "stop publishing and remove"):
+        global runData
         os.remove(jobFile)
+        runData = False
         updateCommand(update,context)
-        
+
     if(query.data == "1 Minute"):
         with open(jobFile,"r") as JobFile:
             JobFileConvertedDict = ast.literal_eval(JobFile.read())
@@ -360,24 +366,67 @@ def listChannels(update,context):
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text="List:",reply_markup=reply_markup)
 
-def listPosts(update,context):
-    global currentUser
+def listPosts(update,context,folder = None,addFolder = False):
+    if(addFolder):
+        postSelection(update,context)
+    else:
+        buttons = []
+        jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+        jsonText = jsonFile.read()
+        jsonFile.close()
+        convertedDict = json.loads(jsonText)
 
-    buttons = []
+        folderData = convertedDict["folder-data"][folder]
+
+        for adNames in folderData:
+            buttons.append([InlineKeyboardButton(adNames,callback_data=adNames)])
+
+        staticsOfList = [InlineKeyboardButton("➕ ADD POST", callback_data='add_post')], [InlineKeyboardButton("⛔ REMOVE POST", callback_data='remove_post')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]
+        buttons = buttons + list(staticsOfList)
+        reply_markup = InlineKeyboardMarkup(buttons)
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select a Post", reply_markup=reply_markup)
+
+def listFolders(update: Update, context: CallbackContext):
     jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
     jsonText = jsonFile.read()
     jsonFile.close()
     convertedDict = json.loads(jsonText)
 
-    adList = convertedDict["post-data"].keys()
+    folderData = convertedDict["folder-data"]
+    folderList = folderData.keys()
 
-    for adNames in adList:
-        buttons.append([InlineKeyboardButton(adNames,callback_data=adNames)])
-
-    staticsOfList = [InlineKeyboardButton("➕ ADD POST", callback_data='add_post')], [InlineKeyboardButton("⛔ REMOVE POST", callback_data='remove_post')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]
+    buttons = []
+    for folder in folderList:
+        buttons.append([InlineKeyboardButton(folder,callback_data=folder)])
+    staticsOfList = [InlineKeyboardButton("➕ ADD NEW FOLDER", callback_data='add folder')], [InlineKeyboardButton("⛔ REMOVE POST", callback_data='remove_post')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Hello", reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Select a Folder", reply_markup=reply_markup)
+
+def selectedFolder(update: Updater, context: CallbackContext):
+    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonText = jsonFile.read()
+    jsonFile.close()
+    convertedDict = json.loads(jsonText)
+
+    folderData = convertedDict["folder-data"]
+    folderList = folderData.keys()
+
+    query = update.callback_query
+    query.answer()
+
+    if (query.data in folderList):
+        inputMode == "postSelection"
+        listPosts(update, context, query.data)
+
+    if(query.data == "add folder"):
+        addNewFolder(update,context)
+
+def addNewFolder(update,context):
+    global inputMode
+    inputMode = "folderName"
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Type Folder Name")
+
 
 def awaitForInput(update: Updater, context: CallbackContext):
     global inputMode
@@ -388,6 +437,24 @@ def awaitForInput(update: Updater, context: CallbackContext):
             inputMode = "None"
         except IndexError: #ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
             pass
+
+    elif(inputMode == "folderName"):
+        global folderName
+        folderName = update.message.text
+
+        jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+        jsonText = jsonFile.read()
+        jsonFile.close()
+        convertedDict = json.loads(jsonText)
+
+        folderData = convertedDict["folder-data"]
+        folderData.update({folderName:" "})
+        convertedDict["folder-data"] = folderData
+
+        jsonFileWrite = open("users/{}/userJson.json".format(currentUser), "w")
+        jsonFileWrite.write(json.dumps(convertedDict))
+        jsonFile.close()
+        updateCommand(update,context)
 
     elif(inputMode == "post"):
         try:
@@ -536,7 +603,7 @@ def groupSelection(update,context,selectedGroup):
     userJsonWrite.close()
 
     context.bot.send_message(chat_id=update.effective_chat.id,text="Group Succesfully Selected and Saved! Now Please Pick Post For Your Group:")
-    listPosts(update,context)
+    listFolders(update,context)
 
 
 def postSelection(update,context,selectedPost):
@@ -571,7 +638,7 @@ def publishYesorNo(update,context):
     context.bot.send_message(chat_id=update.effective_chat.id,text="ARE YOU SURE?",reply_markup=InlineKeyboardMarkup(buttons))
 
 
-def publishPosts(update, context, jobData,timer):
+def publishPosts(update, context, jobData, timer):
     global currentUser
 
     jobGroupName = jobData['GroupName']
@@ -585,12 +652,9 @@ def publishPosts(update, context, jobData,timer):
 
     channel_id = convertedDictUsers["channel-data"][jobGroupName]
     ad_text = convertedDictUsers["post-data"][jobPostName]
-
     if(timer == "1 Minute"):
-
         def Interval():
-            print(inputMode)
-            run = True
+            run = runData
             publish(update,context,channelID=channel_id, adText=ad_text,buttons = jobButtons)
             if run:
                 Timer(2, Interval).start()
@@ -598,7 +662,7 @@ def publishPosts(update, context, jobData,timer):
 
     if (timer == "10 Minutes"):
         def Interval():
-            run = True
+            run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
             if run:
                 Timer(5, Interval).start()
@@ -607,7 +671,7 @@ def publishPosts(update, context, jobData,timer):
 
     if (timer == "30 Minutes"):
         def Interval():
-            run = True
+            run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
             if run:
                 Timer(1800, Interval).start()
@@ -616,7 +680,7 @@ def publishPosts(update, context, jobData,timer):
 
     if (timer == "1 Hour"):
         def Interval():
-            run = True
+            run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
             if run:
                 Timer(3600, Interval).start()
@@ -625,7 +689,7 @@ def publishPosts(update, context, jobData,timer):
 
     if (timer == "3 Hours"):
         def Interval():
-            run = True
+            run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
             if run:
                 Timer(10.800, Interval).start()
@@ -634,7 +698,7 @@ def publishPosts(update, context, jobData,timer):
 
     if (timer == "6 Hours"):
         def Interval():
-            run = True
+            run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
             if run:
                 Timer(21.600, Interval).start()
@@ -643,7 +707,7 @@ def publishPosts(update, context, jobData,timer):
 
     if (timer == "12 Hours"):
         def Interval():
-            run = True
+            run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
             if run:
                 Timer(43.200, Interval).start()
@@ -652,7 +716,7 @@ def publishPosts(update, context, jobData,timer):
 
     if (timer == "1 Day"):
         def Interval():
-            run = True
+            run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
             if run:
                 Timer(86.400, Interval).start()
@@ -661,7 +725,7 @@ def publishPosts(update, context, jobData,timer):
 
     if (timer == "3 Days"):
         def Interval():
-            run = True
+            run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
             if run:
                 Timer(259.200, Interval).start()
@@ -670,7 +734,7 @@ def publishPosts(update, context, jobData,timer):
 
     if (timer == "1 Week"):
         def Interval():
-            run = True
+            run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
             if run:
                 Timer(259.200, Interval).start()
@@ -739,9 +803,14 @@ def startPublishing(update,context):
         with open(fullFileName) as jobFile:
             jobText = jobFile.read()
             jobTextDict = ast.literal_eval(jobText)
-            timer = jobTextDict['Timer']
+            try:
+                timer = jobTextDict['Timer']
+                publishPosts(update, context, jobTextDict, timer)
+            except KeyError:
+                context.bot.send_message(chat_id=update.effective_chat.id, text=("Please Arrange Timer!"))
+                updateCommand(update,context,mode="backTap")
 
-            publishPosts(update,context,jobTextDict,timer)
+
 
 if __name__ == '__main__':
     from threading import Timer
@@ -756,10 +825,12 @@ if __name__ == '__main__':
     updater.dispatcher.add_handler(CallbackQueryHandler(button))
     updater.dispatcher.add_handler(CallbackQueryHandler(editPosts),group=1)
     updater.dispatcher.add_handler(CallbackQueryHandler(editJobs),group=2)
+    updater.dispatcher.add_handler(CallbackQueryHandler(selectedFolder),group=3)
 
 
     dispatcher.add_handler(MessageHandler(Filters.document,fileListener))
 
+    runData = True
     currentUser = None
     inputMode = "None"
     selectedGroup = "None"
@@ -767,6 +838,7 @@ if __name__ == '__main__':
     timer = "None"
     postWillBeEdited = "None"
     jobFile = "None"
+    folderName = "None"
     buttonDatas = []
     addButtonsList = []
     updater.start_polling()
