@@ -144,6 +144,7 @@ def button(update: Update, context: CallbackContext) -> None:
 
     if(query.data == "add new job"):
         addNewJob(update,context)
+
     if(inputMode == "groupSelection"):
         if(query.data != "add new job"):
             selectedGroup = query.data
@@ -154,10 +155,13 @@ def button(update: Update, context: CallbackContext) -> None:
 
     if(inputMode == "postSelection"):
         try:
+            global selectedPost
+            selectedPost = query.data
+            
             postSelection(update, context, selectedPost)
             inputMode = "addButton"
-        except KeyError:
-            print("await for input")
+        except KeyError as ke:
+            print("await for input",selectedPost)
 
     if(inputMode == "addButton"):
         addButtons(update,context,mod="first")
@@ -484,7 +488,8 @@ def folderSelection(update: Updater, context: CallbackContext):
     global selectedFolder
 
     if (query.data in folderList):
-        inputMode == "postSelection"
+        global inputMode
+        inputMode = "postSelection"
         selectedFolder = query.data
         listFolderPosts(update, context, query.data)
 
@@ -517,7 +522,7 @@ def awaitForInput(update: Updater, context: CallbackContext):
         convertedDict = json.loads(jsonText)
 
         folderData = convertedDict["folder-data"]
-        folderData.update({folderName:" "})
+        folderData.update({folderName:[]})
         convertedDict["folder-data"] = folderData
 
         jsonFileWrite = open("users/{}/userJson.json".format(currentUser), "w")
@@ -708,7 +713,7 @@ def groupSelection(update,context,selectedGroup):
     userJsonWrite.close()
 
     context.bot.send_message(chat_id=update.effective_chat.id,text="Group Succesfully Selected and Saved! Now Please Pick Post For Your Group:")
-    listFolders(update,context)
+    listAllPosts(update,context)
 
 
 def postSelection(update,context,selectedPost):
