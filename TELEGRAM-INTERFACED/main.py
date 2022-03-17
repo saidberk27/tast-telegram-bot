@@ -106,6 +106,8 @@ def button(update: Update, context: CallbackContext) -> None:
         addPost(update,context,showMessage=True)
     if(query.data == "add post to folder"):
         listAllPosts(update,context)
+    if(query.data == "remove post from folder"):
+        removePostFromFolder(update,context)
     if(query.data == "publishingads"):
         inputMode = "jobEdit"
         publishingAds(update,context)
@@ -150,7 +152,7 @@ def editPosts(update: Update, context: CallbackContext):
     global inputMode
     query = update.callback_query
     query.answer()
-    editButton = [[InlineKeyboardButton("✏️ EDIT POST",callback_data="edit post")],[InlineKeyboardButton("➕ ADD TO FOLDER",callback_data="addtofolder")],[InlineKeyboardButton("⬅️ BACK",callback_data='back')]]
+    editButton = [[InlineKeyboardButton("✏️ EDIT POST",callback_data="edit post")],[InlineKeyboardButton("➕ ADD TO FOLDER",callback_data="addtofolder")],[InlineKeyboardButton("⛔ REMOVE POST FROM FOLDER", callback_data='remove post from folder')],[InlineKeyboardButton("⬅️ BACK",callback_data='back')]]
     reply_markup_edit = InlineKeyboardMarkup(editButton)
 
     jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
@@ -382,7 +384,7 @@ def listFolderPosts(update, context, folder = None):
     for adNames in folderData:
         buttons.append([InlineKeyboardButton(adNames,callback_data=adNames)])
 
-    staticsOfList = [InlineKeyboardButton("➕ ADD POST TO FOLDER", callback_data='add post to folder')], [InlineKeyboardButton("⛔ REMOVE POST FROM FOLDER", callback_data='remove post from folder')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]
+    staticsOfList = [InlineKeyboardButton("➕ ADD POST TO FOLDER", callback_data='add post to folder')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select a Post", reply_markup=reply_markup)
@@ -597,6 +599,22 @@ def addPostFolder(update: Update, context: CallbackContext):
         jsonFileWrite.close()
 
         updateCommand(update,context)
+
+def removePostFromFolder(update,context):
+    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonText = jsonFile.read()
+    jsonFile.close()
+
+    convertedDict = json.loads(jsonText)
+    folderData = convertedDict["folder-data"][selectedFolder]
+    folderData.remove(postWillBeEdited)
+    convertedDict["folder-data"][selectedFolder] = folderData
+
+    jsonFileWrite = open("users/{}/userJson.json".format(currentUser), "w")
+    jsonFileWrite.write(json.dumps(convertedDict))
+    jsonFileWrite.close()
+
+    updateCommand(update, context)
 
 def publishingAds(update,context):
     global currentUser
@@ -872,7 +890,6 @@ if __name__ == '__main__':
     updater.dispatcher.add_handler(CallbackQueryHandler(folderSelection), group=3)
     updater.dispatcher.add_handler(CallbackQueryHandler(addPostFolder), group=3)
 
-
     dispatcher.add_handler(MessageHandler(Filters.document,fileListener))
 
     runData = True
@@ -889,5 +906,3 @@ if __name__ == '__main__':
     addButtonsList = []
     updater.start_polling()
     updater.idle()
-
-    #ADD GRUPTA 2 HANDLER KULLANDIM, BIRISI GENERAL HANDLER ILK BASISI ALGILAMAK ICIN (OZEL HANDLER ADD GRUP MESAJINA TEPKI VERMIYOR) DIGERI DE ADD GRUP MESAJINDAN SONRAKI INPUTU YAKALAMASI ICIN
