@@ -1,0 +1,6 @@
+string_addChannel = "➕ ADD CHANNEL"
+string_addPost = "➕ ADD POST"
+string_addButton = "➕ TAP TO ADD BUTTON"
+string_botIsActive = "✅ BOT IS ACTIVE"
+string_botUpdated = "Bot Succesfully Updated! 🔥🔥🔥"
+string_channels = "🔥 CHANNELS"

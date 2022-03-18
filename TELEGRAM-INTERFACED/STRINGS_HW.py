@@ -1,0 +1,6 @@
+string_addChannel = "➕ להוסיף ערוץ"
+string_addPost = "➕ להוסיף פוסט"
+string_addButton = "➕ הקש כדי להוסיף לחצן"
+string_botIsActive = "✅ הבוט פעיל"
+string_botUpdated = "הבוט עודכן בהצלחה  🔥🔥🔥"
+string_channels = "🔥 ערוצים"

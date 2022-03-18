@@ -2,7 +2,6 @@
 import time
 
 from threading import Timer
-
 import requests
 from telegram import *
 from telegram.ext import *
@@ -11,6 +10,8 @@ import send_message
 import os
 import ast
 import json
+import STRINGS_EN
+import STRINGS_HW
 
 def updateCommand(update: Updater,context: CallbackContext,mode = "updateData"):
     global currentUser
@@ -29,16 +30,17 @@ def updateCommand(update: Updater,context: CallbackContext,mode = "updateData"):
     # SIFIRLAMALAR-------------
     keyboard = [
         [
-            InlineKeyboardButton("🔥 CHANNELS", callback_data='channels'),
+            InlineKeyboardButton(botTexts.string_channels, callback_data='channels'),
             InlineKeyboardButton("💥 POSTS", callback_data='posts'),
         ],
         [InlineKeyboardButton("💬 PUBLISHING ADS", callback_data='publishingads')],
+        [InlineKeyboardButton("CHANGE LANGUAGE 🇮🇱/🇬🇧", callback_data='changelanguage')],
         [InlineKeyboardButton("✅ BOT IS ACTIVE", callback_data='botisactive')]
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
     if(mode == "updateData"):
-        context.bot.send_message(chat_id=update.effective_chat.id, text=("Bot Succesfully Updated! 🔥🔥🔥"),reply_markup=reply_markup)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=(botTexts.string_botUpdated), reply_markup=reply_markup)
 
     elif(mode == "backTap"):
         context.bot.send_message(chat_id=update.effective_chat.id, text=("Please Select"),reply_markup=reply_markup)
@@ -71,6 +73,7 @@ def startCommand(update: Update, context: CallbackContext) -> None:
                 InlineKeyboardButton("💥 POSTS", callback_data='posts'),
             ],
             [InlineKeyboardButton("💬 PUBLISHING ADS", callback_data='publishingads')],
+            [InlineKeyboardButton("CHANGE LANGUAGE 🇮🇱/🇬🇧", callback_data='changelanguage')],
             [InlineKeyboardButton("✅ BOT IS ACTIVE", callback_data='botisactive')]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -82,7 +85,27 @@ def startCommand(update: Update, context: CallbackContext) -> None:
         context.bot.send_message(chat_id=update.effective_chat.id,text="❌ You Are Not Allowed to Use This Bot! Please Contact Admin",reply_markup = reply_markup)
 
 
-def button(update: Update, context: CallbackContext) -> None:
+def languageSelectionQueryListener(update: Update, context: CallbackContext):
+    global botTexts
+    query = update.callback_query
+    query.answer()
+
+    if(query.data == "changelanguage"):
+        languageOptions = [[InlineKeyboardButton("English 🇬🇧", callback_data="english")],[InlineKeyboardButton("Hebrew 🇮🇱", callback_data="hebrew")]]
+        reply_markup = InlineKeyboardMarkup(languageOptions)
+        context.bot.send_message(chat_id=update.effective_chat.id, text="PLease Select a Language",reply_markup=reply_markup)
+
+    if (query.data == "english"):
+        print("English Selected")
+        botTexts = STRINGS_EN
+        updateCommand(update, context)
+
+    elif (query.data == "hebrew"):
+        print("Hebrew Selected")
+        botTexts = STRINGS_HW
+        updateCommand(update, context)
+
+def mainQueryHandler(update: Update, context: CallbackContext) -> None:
     global inputMode
     global timer
     query = update.callback_query
@@ -417,7 +440,7 @@ def listChannels(update,context):
         buttons.append([InlineKeyboardButton(channelNames,callback_data=channelNames)])
 
 
-    staticsOfList = [InlineKeyboardButton("➕ ADD CHANNEL",callback_data='add_channel')],[InlineKeyboardButton("⬅️ BACK",callback_data='back')]
+    staticsOfList = [InlineKeyboardButton(botTexts.string_addChannel, callback_data='add_channel')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text="List:",reply_markup=reply_markup)
@@ -455,7 +478,7 @@ def listAllPosts(update,context):
     for adNames in adList:
         buttons.append([InlineKeyboardButton(adNames, callback_data=adNames)])
 
-    staticsOfList = [[InlineKeyboardButton("➕ ADD POST", callback_data='add_post')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]]
+    staticsOfList = [[InlineKeyboardButton(botTexts.string_addPost, callback_data='add_post')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text="All of Your Posts:", reply_markup=reply_markup)
@@ -773,7 +796,7 @@ def publishPosts(update, context, jobData, timer):
             run = runData
             publish(update,context,channelID=channel_id, adText=ad_text,buttons = jobButtons)
             if run:
-                Timer(2, Interval).start()
+                Timer(60, Interval).start()
         Interval()
 
     if (timer == "10 Minutes"):
@@ -781,7 +804,7 @@ def publishPosts(update, context, jobData, timer):
             run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
             if run:
-                Timer(5, Interval).start()
+                Timer(600, Interval).start()
 
         Interval()
 
@@ -882,7 +905,7 @@ def addButtons(update,context,buttonText = None,buttonURL = None,mod = None):
     global buttonDatas
     global addButtonsList
 
-    lastItem = [[InlineKeyboardButton("➕ TAP TO ADD BUTTON",callback_data="add button")],[InlineKeyboardButton("OK 👌",callback_data="add button ok")]]
+    lastItem = [[InlineKeyboardButton(botTexts.string_addButton, callback_data="add button")], [InlineKeyboardButton("OK 👌", callback_data="add button ok")]]
     if(mod == "first"):
         context.bot.send_message(chat_id=update.effective_chat.id,text="Add Buttons",reply_markup=InlineKeyboardMarkup(lastItem))
     else:
@@ -934,18 +957,21 @@ if __name__ == '__main__':
     updater = Updater(token="5149901305:AAFBvwD3N1UCCkBDmNlRE9nH5YMa6fFAYtM")
     dispatcher = updater.dispatcher
 
-    dispatcher.add_handler(CommandHandler("start",startCommand))
+    dispatcher.add_handler(CommandHandler("start", startCommand))
     dispatcher.add_handler(CommandHandler("update",updateCommand))
     dispatcher.add_handler(MessageHandler(Filters.text, awaitForInput), group=1)#GROUP=1 DIYEREK DAHA FAZLA HANDLER KYOABILIYORUZ, https://github.com/python-telegram-bot/python-telegram-bot/issues/1133
 
-    updater.dispatcher.add_handler(CallbackQueryHandler(button))
+    updater.dispatcher.add_handler(CallbackQueryHandler(mainQueryHandler))
+
     updater.dispatcher.add_handler(CallbackQueryHandler(editPosts),group=1)
     updater.dispatcher.add_handler(CallbackQueryHandler(editJobs),group=2)
     updater.dispatcher.add_handler(CallbackQueryHandler(folderSelection), group=3)
-    updater.dispatcher.add_handler(CallbackQueryHandler(addPostFolder), group=3)
+    updater.dispatcher.add_handler(CallbackQueryHandler(addPostFolder), group=4)
+    updater.dispatcher.add_handler(CallbackQueryHandler(languageSelectionQueryListener), group=5)
 
     dispatcher.add_handler(MessageHandler(Filters.document,fileListener))
 
+    botTexts = STRINGS_EN
     runData = True
     currentUser = None
     inputMode = "None"
