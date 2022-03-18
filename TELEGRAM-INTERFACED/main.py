@@ -31,11 +31,11 @@ def updateCommand(update: Updater,context: CallbackContext,mode = "updateData"):
     keyboard = [
         [
             InlineKeyboardButton(botTexts.string_channels, callback_data='channels'),
-            InlineKeyboardButton("💥 POSTS", callback_data='posts'),
+            InlineKeyboardButton(botTexts.string_posts, callback_data='posts'),
         ],
-        [InlineKeyboardButton("💬 PUBLISHING ADS", callback_data='publishingads')],
-        [InlineKeyboardButton("CHANGE LANGUAGE 🇮🇱/🇬🇧", callback_data='changelanguage')],
-        [InlineKeyboardButton("✅ BOT IS ACTIVE", callback_data='botisactive')]
+        [InlineKeyboardButton(botTexts.string_publishingAds, callback_data='publishingads')],
+        [InlineKeyboardButton(botTexts.string_changeLanguage, callback_data='changelanguage')],
+        [InlineKeyboardButton(botTexts.string_botIsActive, callback_data='botisactive')]
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -80,7 +80,7 @@ def startCommand(update: Update, context: CallbackContext) -> None:
         context.bot.send_message(chat_id=update.effective_chat.id,text="Hello {} Welcome to bot!".format(user['username']),reply_markup=reply_markup)
 
     else:
-        keyboard = [[InlineKeyboardButton("Tap to Contact", url='https://t.me/BenjaminPost')]]
+        keyboard = [[InlineKeyboardButton("Tap to Contact", url='https://t.me/BenjaminPost')],[InlineKeyboardButton("הקש כדי ליצור קשר", url='https://t.me/BenjaminPost')]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         context.bot.send_message(chat_id=update.effective_chat.id,text="❌ You Are Not Allowed to Use This Bot! Please Contact Admin",reply_markup = reply_markup)
 
@@ -150,7 +150,7 @@ def mainQueryHandler(update: Update, context: CallbackContext) -> None:
     if(query.data in channel_lists and inputMode == "channelEdit"):
         global selectedGroup
         selectedGroup = query.data
-        editButton = [[InlineKeyboardButton("⛔ REMOVE CHANNEL", callback_data="remove channel")],[InlineKeyboardButton("⬅️ BACK", callback_data='back')]]
+        editButton = [[InlineKeyboardButton(botTexts.string_removeChannel, callback_data="remove channel")],[InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
         reply_markup = InlineKeyboardMarkup(editButton)
         context.bot.send_message(chat_id=update.effective_chat.id, text="Edit Channel", reply_markup=reply_markup)
 
@@ -193,7 +193,7 @@ def editPosts(update: Update, context: CallbackContext):
     global inputMode
     query = update.callback_query
     query.answer()
-    editButton = [[InlineKeyboardButton("✏️ EDIT POST",callback_data="edit post")],[InlineKeyboardButton("➕ ADD TO FOLDER",callback_data="addtofolder")],[InlineKeyboardButton("⛔ REMOVE POST FROM FOLDER", callback_data='remove post from folder')],[InlineKeyboardButton("⬅️ BACK",callback_data='back')]]
+    editButton = [[InlineKeyboardButton(botTexts.string_editPost,callback_data="edit post")],[InlineKeyboardButton(botTexts.string_addToFolder,callback_data="addtofolder")],[InlineKeyboardButton(botTexts.string_removePostFromFolder, callback_data='remove post from folder')],[InlineKeyboardButton(botTexts.string_back,callback_data='back')]]
     reply_markup_edit = InlineKeyboardMarkup(editButton)
 
     jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
@@ -265,9 +265,9 @@ def editJobs(update: Update, context: CallbackContext):
     query = update.callback_query
     query.answer()
 
-    editButton = [[InlineKeyboardButton("⏲️ ADD TIMER", callback_data="add timer")],
-                  [InlineKeyboardButton("🛑 STOP PUBLISHING AND REMOVE ❌", callback_data="stop publishing and remove")],
-                  [InlineKeyboardButton("⬅️ BACK", callback_data='back')]]
+    editButton = [[InlineKeyboardButton(botTexts.string_addTimer, callback_data="add timer")],
+                  [InlineKeyboardButton(botTexts.string_stopPublishingAndRemove, callback_data="stop publishing and remove")],
+                  [InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
     reply_markup_edit = InlineKeyboardMarkup(editButton)
 
 
@@ -389,7 +389,7 @@ def editJobs(update: Update, context: CallbackContext):
 
 
 def addTimer(update,context):
-    timerButtons = [[InlineKeyboardButton("1 Minute", callback_data="1 Minute"), InlineKeyboardButton("10 Minutes", callback_data="10 Minutes"),InlineKeyboardButton("30 Minutes", callback_data="30 Minutes")], [InlineKeyboardButton("1 Hour", callback_data="1 Hour"),InlineKeyboardButton("3 Hours", callback_data="3 Hours"),InlineKeyboardButton("6 Hours", callback_data="6 Hours")],[InlineKeyboardButton("12 Hours", callback_data="12 Hours"),InlineKeyboardButton("1 Day", callback_data="1 Day")],[InlineKeyboardButton("3 Days", callback_data="3 Days"),InlineKeyboardButton("1 Week", callback_data="1 Week")]]
+    timerButtons = [[InlineKeyboardButton(botTexts.string_1minute, callback_data="1 Minute"), InlineKeyboardButton(botTexts.string_10minutes, callback_data="10 Minutes"),InlineKeyboardButton(botTexts.string_30minutes, callback_data="30 Minutes")], [InlineKeyboardButton(botTexts.string_1hour, callback_data="1 Hour"),InlineKeyboardButton(botTexts.string_3hours, callback_data="3 Hours"),InlineKeyboardButton(botTexts.string_6hours, callback_data="6 Hours")],[InlineKeyboardButton(botTexts.string_12hours, callback_data="12 Hours"),InlineKeyboardButton(botTexts.string_1day, callback_data="1 Day")],[InlineKeyboardButton(botTexts.string_3days, callback_data="3 Days"),InlineKeyboardButton(botTexts.string_1week, callback_data="1 Week")]]
 
     reply_markup = InlineKeyboardMarkup(timerButtons)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select",reply_markup=reply_markup)
@@ -440,7 +440,7 @@ def listChannels(update,context):
         buttons.append([InlineKeyboardButton(channelNames,callback_data=channelNames)])
 
 
-    staticsOfList = [InlineKeyboardButton(botTexts.string_addChannel, callback_data='add_channel')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]
+    staticsOfList = [InlineKeyboardButton(botTexts.string_addChannel, callback_data='add_channel')], [InlineKeyboardButton(botTexts.string_back, callback_data='back')]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text="List:",reply_markup=reply_markup)
@@ -459,7 +459,7 @@ def listFolderPosts(update, context, folder = None):
     for adNames in folderData:
         buttons.append([InlineKeyboardButton(adNames,callback_data=adNames)])
 
-    staticsOfList = [InlineKeyboardButton("➕ ADD POST TO FOLDER", callback_data='add post to folder')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]
+    staticsOfList = [InlineKeyboardButton(botTexts.string_addPostToFolder, callback_data='add post to folder')], [InlineKeyboardButton(botTexts.string_back, callback_data='back')]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select a Post", reply_markup=reply_markup)
@@ -478,7 +478,7 @@ def listAllPosts(update,context):
     for adNames in adList:
         buttons.append([InlineKeyboardButton(adNames, callback_data=adNames)])
 
-    staticsOfList = [[InlineKeyboardButton(botTexts.string_addPost, callback_data='add_post')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]]
+    staticsOfList = [[InlineKeyboardButton(botTexts.string_addPost, callback_data='add_post')], [InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text="All of Your Posts:", reply_markup=reply_markup)
@@ -495,7 +495,7 @@ def listFolders(update: Update, context: CallbackContext):
     buttons = []
     for folder in folderList:
         buttons.append([InlineKeyboardButton(folder,callback_data=folder)])
-    staticsOfList = [InlineKeyboardButton("➕ ADD NEW FOLDER", callback_data='add folder')], [InlineKeyboardButton("⛔ REMOVE POST", callback_data='remove_post')], [InlineKeyboardButton("⬅️ BACK", callback_data='back')]
+    staticsOfList = [InlineKeyboardButton(botTexts.string_addNewFolder, callback_data='add folder')],[InlineKeyboardButton(botTexts.string_back, callback_data='back')]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Select a Folder", reply_markup=reply_markup)
@@ -627,7 +627,7 @@ def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False
 def addPost(update, context, ekleme=False, groupInfo = None,showMessage=False):
     global inputMode
     inputMode = "post"
-    buttons = [[InlineKeyboardButton("Add Media",callback_data='add_media')],[InlineKeyboardButton("Skip Media",callback_data='skip_media')],[InlineKeyboardButton("⬅️ BACK",callback_data='back')]]
+    buttons = [[InlineKeyboardButton(botTexts.string_addMedia,callback_data='add_media')],[InlineKeyboardButton(botTexts.string_skipMedia,callback_data='skip_media')],[InlineKeyboardButton(botTexts.string_back,callback_data='back')]]
     reply_markup = InlineKeyboardMarkup(buttons)
 
     if(showMessage):
@@ -696,7 +696,7 @@ def removePostFromFolder(update,context):
 def publishingAds(update,context):
     global currentUser
     buttons = []
-    last_buttons = [[InlineKeyboardButton("ADD NEW JOB ➕",callback_data="add new job")],[InlineKeyboardButton("REMOVE JOB ⛔",callback_data="remove job")],[InlineKeyboardButton("START PUBLISHING👍",callback_data="start publishing")],[InlineKeyboardButton("⬅️ BACK",callback_data="back")]]
+    last_buttons = [[InlineKeyboardButton(botTexts.string_addNewJob,callback_data="add new job")],[InlineKeyboardButton(botTexts.string_startPublishing,callback_data="start publishing")],[InlineKeyboardButton(botTexts.string_back,callback_data="back")]]
     jobs = os.listdir("users/{}/jobs/".format(currentUser)) # returns list
     for job in jobs:
         buttons.append([InlineKeyboardButton(job[:-5],callback_data=job[:-5])])
@@ -773,7 +773,7 @@ def postSelection(update,context,selectedPost):
 
 
 def publishYesorNo(update,context):
-    buttons = [[InlineKeyboardButton("YES",callback_data='YES')],[InlineKeyboardButton("NO",callback_data='NO')]]
+    buttons = [[InlineKeyboardButton(botTexts.string_yes,callback_data='YES')],[InlineKeyboardButton(botTexts.string_no,callback_data='NO')]]
     context.bot.send_message(chat_id=update.effective_chat.id,text="ARE YOU SURE?",reply_markup=InlineKeyboardMarkup(buttons))
 
 
