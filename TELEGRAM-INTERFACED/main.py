@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
 import time
-
-from threading import Timer
-import requests
 from telegram import *
 from telegram.ext import *
-from requests import *
-import send_message
 import os
 import ast
 import json
@@ -112,7 +107,7 @@ def mainQueryHandler(update: Update, context: CallbackContext) -> None:
     query.answer()
 
     print(query.data,inputMode)
-    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonFile = open("userJson.json", "r")
     jsonText = jsonFile.read()
     jsonFile.close()
     convertedDict = json.loads(jsonText)
@@ -196,7 +191,7 @@ def editPosts(update: Update, context: CallbackContext):
     editButton = [[InlineKeyboardButton(botTexts.string_editPost,callback_data="edit post")],[InlineKeyboardButton(botTexts.string_addToFolder,callback_data="addtofolder")],[InlineKeyboardButton(botTexts.string_removePostFromFolder, callback_data='remove post from folder')],[InlineKeyboardButton(botTexts.string_back,callback_data='back')]]
     reply_markup_edit = InlineKeyboardMarkup(editButton)
 
-    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonFile = open("userJson.json", "r")
     jsonText = jsonFile.read()
     jsonFile.close()
     convertedDict = json.loads(jsonText)
@@ -218,20 +213,20 @@ def editPosts(update: Update, context: CallbackContext):
 
 def editSelectedPost(update,context,newText):
     print(newText)
-    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonFile = open("userJson.json", "r")
     jsonText = jsonFile.read()
     jsonFile.close()
     convertedDict = json.loads(jsonText)
     convertedDict["post-data"][postWillBeEdited] = newText
 
-    userJsonWrite = open("users/{}/userJson.json".format(currentUser), "w")
+    userJsonWrite = open("userJson.json", "w")
     userJsonWrite.write(json.dumps(convertedDict))
     userJsonWrite.close()
 
     updateCommand(update,context)
 
 def removeSelectedChannel(update,context):
-    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonFile = open("userJson.json", "r")
     jsonText = jsonFile.read()
     jsonFile.close()
     convertedDict = json.loads(jsonText)
@@ -239,7 +234,7 @@ def removeSelectedChannel(update,context):
     willRemoveDict.pop(selectedGroup)
     convertedDict["channel-data"] = willRemoveDict
 
-    jsonFileWrite = open("users/{}/userJson.json".format(currentUser), "w")
+    jsonFileWrite = open("userJson.json", "w")
     jsonFileWrite.write(json.dumps(convertedDict))
     jsonFile.close()
 
@@ -247,13 +242,13 @@ def removeSelectedChannel(update,context):
 
 def editSelectedPost(update,context,newText):
     print(newText)
-    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonFile = open("userJson.json", "r")
     jsonText = jsonFile.read()
     jsonFile.close()
     convertedDict = json.loads(jsonText)
     convertedDict["post-data"][postWillBeEdited] = newText
 
-    userJsonWrite = open("users/{}/userJson.json".format(currentUser), "w")
+    userJsonWrite = open("userJson.json", "w")
     userJsonWrite.write(json.dumps(convertedDict))
     userJsonWrite.close()
 
@@ -271,7 +266,7 @@ def editJobs(update: Update, context: CallbackContext):
     reply_markup_edit = InlineKeyboardMarkup(editButton)
 
 
-    jobs = os.listdir("users/{}/jobs/".format(currentUser)) # returns list
+    jobs = os.listdir("jobs/") # returns list
     dotJsonAdded = query.data + ".json" #Job Name
 
 
@@ -281,7 +276,7 @@ def editJobs(update: Update, context: CallbackContext):
         job_group = dotJsonAdded.split("-")[0]
         job_post = dotJsonAdded.split("-")[1]
         context.bot.send_message(chat_id=update.effective_chat.id, text="Group: {} Post: {}".format(job_group,job_post), reply_markup=reply_markup_edit)
-        jobFile = "users/{}/jobs/{}".format(currentUser, dotJsonAdded)
+        jobFile = "jobs/{}".format(dotJsonAdded)
     else:
         pass
 
@@ -396,10 +391,9 @@ def addTimer(update,context):
 
 
 def userCheck(username):
-    print(type(username))
-    path = "users"
     usernameChecked = getCheckedUserName(username)
-    userList = os.listdir(path=path)
+    with open("userList.txt","r") as userFile:
+        userList = userFile.readlines()
 
     return usernameChecked in userList
 
@@ -430,7 +424,7 @@ def logTut(update):
 def listChannels(update,context):
     global currentUser
     buttons = []
-    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonFile = open("userJson.json", "r")
     jsonText = jsonFile.read()
     jsonFile.close()
     convertedDict = json.loads(jsonText)
@@ -449,7 +443,7 @@ def listChannels(update,context):
     inputMode = "channelEdit"
 def listFolderPosts(update, context, folder = None):
     buttons = []
-    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonFile = open("userJson.json", "r")
     jsonText = jsonFile.read()
     jsonFile.close()
     convertedDict = json.loads(jsonText)
@@ -468,7 +462,7 @@ def listAllPosts(update,context):
     global currentUser
 
     buttons = []
-    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonFile = open("userJson.json", "r")
     jsonText = jsonFile.read()
     jsonFile.close()
     convertedDict = json.loads(jsonText)
@@ -484,7 +478,7 @@ def listAllPosts(update,context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="All of Your Posts:", reply_markup=reply_markup)
 
 def listFolders(update: Update, context: CallbackContext):
-    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonFile = open("userJson.json", "r")
     jsonText = jsonFile.read()
     jsonFile.close()
     convertedDict = json.loads(jsonText)
@@ -504,7 +498,7 @@ def listFolders(update: Update, context: CallbackContext):
     inputMode = "postEdit"
 
 def folderSelection(update: Updater, context: CallbackContext):
-    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonFile = open("userJson.json", "r")
     jsonText = jsonFile.read()
     jsonFile.close()
     convertedDict = json.loads(jsonText)
@@ -545,7 +539,7 @@ def awaitForInput(update: Updater, context: CallbackContext):
         global folderName
         folderName = update.message.text
 
-        jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+        jsonFile = open("userJson.json", "r")
         jsonText = jsonFile.read()
         jsonFile.close()
         convertedDict = json.loads(jsonText)
@@ -554,7 +548,7 @@ def awaitForInput(update: Updater, context: CallbackContext):
         folderData.update({folderName:[]})
         convertedDict["folder-data"] = folderData
 
-        jsonFileWrite = open("users/{}/userJson.json".format(currentUser), "w")
+        jsonFileWrite = open("userJson.json", "w")
         jsonFileWrite.write(json.dumps(convertedDict))
         jsonFile.close()
         updateCommand(update,context)
@@ -603,7 +597,7 @@ def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False
         channelIdInput = groupInfoList[1]
 
         global currentUser
-        jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+        jsonFile = open("userJson.json", "r")
         jsonText = jsonFile.read()
         jsonFile.close()
         convertedDict = json.loads(jsonText)
@@ -615,7 +609,7 @@ def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False
 
         print(type(convertedDict))
 
-        userJsonWrite = open("users/{}/userJson.json".format(currentUser), "w")
+        userJsonWrite = open("userJson.json", "w")
         userJsonWrite.write(json.dumps(convertedDict))
         userJsonWrite.close()
 
@@ -639,7 +633,7 @@ def addPost(update, context, ekleme=False, groupInfo = None,showMessage=False):
         postIdInput = groupInfoList[1]
 
         global currentUser
-        jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+        jsonFile = open("userJson.json", "r")
         jsonText = jsonFile.read()
         jsonFile.close()
         convertedDict = json.loads(jsonText)
@@ -648,7 +642,7 @@ def addPost(update, context, ekleme=False, groupInfo = None,showMessage=False):
         postData.update({"{}".format(postNameInput): "{}".format(postIdInput)})  # NAME,SELECTION BOOL VE ID ATA
         convertedDict['post-data'] = postData  # Guncelleyip geri ver
 
-        userJsonWrite = open("users/{}/userJson.json".format(currentUser), "w")
+        userJsonWrite = open("userJson.json", "w")
         userJsonWrite.write(json.dumps(convertedDict))
         userJsonWrite.close()
 
@@ -662,7 +656,7 @@ def addPostFolder(update: Update, context: CallbackContext):
     query.answer()
     print(query.data)
     if(inputMode == "addPostFolder" and query.data == "addtofolder"):
-        jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+        jsonFile = open("userJson.json", "r")
         jsonText = jsonFile.read()
         jsonFile.close()
 
@@ -671,14 +665,14 @@ def addPostFolder(update: Update, context: CallbackContext):
         folderData.append(postWillBeEdited)
         convertedDict["folder-data"][selectedFolder] = folderData
 
-        jsonFileWrite = open("users/{}/userJson.json".format(currentUser), "w")
+        jsonFileWrite = open("userJson.json", "w")
         jsonFileWrite.write(json.dumps(convertedDict))
         jsonFileWrite.close()
 
         updateCommand(update,context)
 
 def removePostFromFolder(update,context):
-    jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+    jsonFile = open("userJson.json", "r")
     jsonText = jsonFile.read()
     jsonFile.close()
 
@@ -687,7 +681,7 @@ def removePostFromFolder(update,context):
     folderData.remove(postWillBeEdited)
     convertedDict["folder-data"][selectedFolder] = folderData
 
-    jsonFileWrite = open("users/{}/userJson.json".format(currentUser), "w")
+    jsonFileWrite = open("userJson.json", "w")
     jsonFileWrite.write(json.dumps(convertedDict))
     jsonFileWrite.close()
 
@@ -697,7 +691,7 @@ def publishingAds(update,context):
     global currentUser
     buttons = []
     last_buttons = [[InlineKeyboardButton(botTexts.string_addNewJob,callback_data="add new job")],[InlineKeyboardButton(botTexts.string_startPublishing,callback_data="start publishing")],[InlineKeyboardButton(botTexts.string_back,callback_data="back")]]
-    jobs = os.listdir("users/{}/jobs/".format(currentUser)) # returns list
+    jobs = os.listdir("jobs/") # returns list
     for job in jobs:
         buttons.append([InlineKeyboardButton(job[:-5],callback_data=job[:-5])])
     reply_markup = InlineKeyboardMarkup(buttons + last_buttons)
@@ -707,7 +701,7 @@ def addNewJob(update,context):
      idList = []
 
      print("publishing")
-     jsonFile = open("users/{}/userJson.json".format(currentUser), "r")
+     jsonFile = open("userJson.json", "r")
 
      jsonText = jsonFile.read()
      jsonFile.close()
@@ -728,7 +722,7 @@ def addNewJob(update,context):
 
 
 def groupSelection(update,context,selectedGroup):
-    activeWork = open("users/{}/active-works.json".format(currentUser),"r")
+    activeWork = open("active-works.json","r")
 
     activeWorkText = activeWork.read()
     activeWork.close()
@@ -737,7 +731,7 @@ def groupSelection(update,context,selectedGroup):
 
     convertedDict.update({selectedGroup:""})
 
-    userJsonWrite = open("users/{}/active-works.json".format(currentUser), "w")
+    userJsonWrite = open("active-works.json", "w")
     userJsonWrite.write(json.dumps(convertedDict))
     userJsonWrite.close()
 
@@ -748,8 +742,8 @@ def groupSelection(update,context,selectedGroup):
 def postSelection(update,context,selectedPost):
     global currentUser
 
-    activeWork = open("users/{}/active-works.json".format(currentUser), "r")
-    postFile = open("users/{}/userJson.json".format(currentUser),"r")
+    activeWork = open("active-works.json", "r")
+    postFile = open("userJson.json","r")
 
     postText = postFile.read()
     activeWorkText = activeWork.read()
@@ -764,7 +758,7 @@ def postSelection(update,context,selectedPost):
 
     convertedDictActiveWorks[selectedGroup] = adText #selectedGroup Global Var
     print(convertedDictActiveWorks)
-    userJsonWrite = open("users/{}/active-works.json".format(currentUser), "w")
+    userJsonWrite = open("active-works.json", "w")
     userJsonWrite.write(json.dumps(convertedDictActiveWorks))
     userJsonWrite.close()
 
@@ -783,7 +777,7 @@ def publishPosts(update, context, jobData, timer):
     jobGroupName = jobData['GroupName']
     jobPostName = jobData['PostName']
     jobButtons = jobData['Buttons']
-    userFile = open("users/{}/userJson.json".format(currentUser), "r")
+    userFile = open("userJson.json", "r")
 
     userData = userFile.read()
     userFile.close()
@@ -929,16 +923,15 @@ def saveJob(update,context):
     global buttonDatas
     global timer
     jobData = {"GroupName":selectedGroup,"PostName":selectedPost,"Buttons":buttonDatas}
-    jobFile = open("users/{}/jobs/{}-job.json".format(currentUser,selectedGroup + "-" + selectedPost),"w")
+    jobFile = open("jobs/{}-job.json".format(currentUser,selectedGroup + "-" + selectedPost),"w")
     jobFile.write(str(jobData))
 
     updateCommand(update,context)
 
 def startPublishing(update,context):
-    jobsList = os.listdir("users/{}/jobs/".format(currentUser))
-
+    jobsList = os.listdir("jobs/")
     for job in jobsList:
-        fullFileName = "users/{}/jobs/{}".format(currentUser,job)
+        fullFileName = "jobs/{}".format(job)
         with open(fullFileName) as jobFile:
             jobText = jobFile.read()
             jobTextDict = ast.literal_eval(jobText)
@@ -948,8 +941,6 @@ def startPublishing(update,context):
             except KeyError:
                 context.bot.send_message(chat_id=update.effective_chat.id, text=("Please Arrange Timer!"))
                 updateCommand(update,context,mode="backTap")
-
-
 
 if __name__ == '__main__':
     from threading import Timer
@@ -972,7 +963,7 @@ if __name__ == '__main__':
     dispatcher.add_handler(MessageHandler(Filters.document,fileListener))
 
     botTexts = STRINGS_EN
-    runData = True
+    runData = False
     currentUser = None
     inputMode = "None"
     selectedGroup = "None"

@@ -1,7 +1,0 @@
-{
-     "username": {
-         "http://purl.org/dc/terms/title": [
-             {"type": "literal", "value": "Anna's Homepage"}
-          ]
-      }
-}
