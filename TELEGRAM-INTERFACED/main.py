@@ -142,6 +142,11 @@ def mainQueryHandler(update: Update, context: CallbackContext) -> None:
         inputMode = "jobEdit"
         publishingAds(update,context)
 
+    if(query.data == "remove media"):
+        global fileWillBeEdited
+        os.remove("medias/{}".format(fileWillBeEdited))
+        updateCommand(update,context)
+
     if(query.data == "add button ok"):
         saveJob(update,context)
         inputMode = None
@@ -688,13 +693,23 @@ def addOrSkipMedia(update: Update, context: CallbackContext):
 
     medias = os.listdir("medias/")  # returns list
     if(query.data in medias):
+        global fileWillBeEdited
+        fileWillBeEdited = query.data
         editMedia(update,context)
 
     if(query.data == "add new media"):
         inputMode = "save img"
         context.bot.send_message(chat_id=update.effective_chat.id, text="Please Drag Your Image Without Compression")
+
 def editMedia(update,context):
-    print("Edit Media")
+    global inputMode
+    query = update.callback_query
+    query.answer()
+    editButton = [[InlineKeyboardButton(botTexts.string_removeMedia, callback_data='remove media')],
+                  [InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
+
+    reply_markup = InlineKeyboardMarkup(editButton)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select",reply_markup=reply_markup)
 
 def addPostFolder(update: Update, context: CallbackContext):
     query = update.callback_query
