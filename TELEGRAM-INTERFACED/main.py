@@ -16,10 +16,10 @@ def updateCommand(update: Updater,context: CallbackContext,mode = "updateData"):
     global addButtonsList
     global buttonDatas
     global addMedia
-
+    global selectedFile
 
     addMedia = False
-
+    selectedFile = None
     inputMode = "None"
     selectedGroup = "None"
     selectedPost = "None"
@@ -143,9 +143,13 @@ def mainQueryHandler(update: Update, context: CallbackContext) -> None:
         publishingAds(update,context)
 
     if(query.data == "remove media"):
-        global fileWillBeEdited
-        os.remove("medias/{}".format(fileWillBeEdited))
+        global selectedFile
+        os.remove("medias/{}".format(selectedFile))
         updateCommand(update,context)
+
+    if(query.data == "add to post"):
+        inputMode = "post"
+        context.bot.send_message(chat_id=update.effective_chat.id,text="Please Type 'Ad Name,Ad Text' (comma is required)")
 
     if(query.data == "add button ok"):
         saveJob(update,context)
@@ -650,30 +654,30 @@ def listMedias(update,context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="Your Saved Media Files:", reply_markup=reply_markup)
 
 def addPost(update, context, groupInfo = None,skip=True):
+    groupInfoList = groupInfo.split(",")
+
+    postNameInput = groupInfoList[0]
+    postIdInput = groupInfoList[1]
+
+    jsonFile = open("userJson.json", "r")
+    jsonText = jsonFile.read()
+    jsonFile.close()
+    convertedDict = json.loads(jsonText)
+
+    userJsonWrite = open("userJson.json", "w")
     if(skip):
-        pass
+        postData = convertedDict['post-data']  # Dict'ten post-data al
+        postData.update({"{}".format(postNameInput): "{},{}".format(postIdInput,selectedFile)})  # NAME,SELECTION BOOL VE ID ATA
+        convertedDict['post-data'] = postData  # Guncelleyip geri ver
+
     else:
-        groupInfoList = groupInfo.split(",")
-
-        postNameInput = groupInfoList[0]
-        postIdInput = groupInfoList[1]
-
-        global currentUser
-        jsonFile = open("userJson.json", "r")
-        jsonText = jsonFile.read()
-        jsonFile.close()
-        convertedDict = json.loads(jsonText)
-
         postData = convertedDict['post-data']  # Dict'ten post-data al
         postData.update({"{}".format(postNameInput): "{}".format(postIdInput)})  # NAME,SELECTION BOOL VE ID ATA
         convertedDict['post-data'] = postData  # Guncelleyip geri ver
 
-        userJsonWrite = open("userJson.json", "w")
-        userJsonWrite.write(json.dumps(convertedDict))
-        userJsonWrite.close()
-
-        updateCommand(update, context)
-
+    userJsonWrite.write(json.dumps(convertedDict))
+    userJsonWrite.close()
+    updateCommand(update, context)
 
 def addOrSkipMedia(update: Update, context: CallbackContext):
     global addMedia
@@ -683,18 +687,16 @@ def addOrSkipMedia(update: Update, context: CallbackContext):
     query.answer()
     if(query.data == "add_media"):
         addMedia = True
-
         listMedias(update, context)
     elif(query.data == "skip_media"):
         addMedia = False
-
         context.bot.send_message(chat_id=update.effective_chat.id, text="Please Type 'Ad Name,Ad Text' (comma is required) ")
-        print(inputMode)
+        inputMode = "post"
 
     medias = os.listdir("medias/")  # returns list
     if(query.data in medias):
-        global fileWillBeEdited
-        fileWillBeEdited = query.data
+        global selectedFile
+        selectedFile = query.data
         editMedia(update,context)
 
     if(query.data == "add new media"):
@@ -705,7 +707,7 @@ def editMedia(update,context):
     global inputMode
     query = update.callback_query
     query.answer()
-    editButton = [[InlineKeyboardButton(botTexts.string_removeMedia, callback_data='remove media')],
+    editButton = [[InlineKeyboardButton(botTexts.string_addToPost, callback_data='add to post')],[InlineKeyboardButton(botTexts.string_removeMedia, callback_data='remove media')],
                   [InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
 
     reply_markup = InlineKeyboardMarkup(editButton)
@@ -844,11 +846,17 @@ def publishPosts(update, context, jobData, timer):
     convertedDictUsers = json.loads(userData)
 
     channel_id = convertedDictUsers["channel-data"][jobGroupName]
-    ad_text = convertedDictUsers["post-data"][jobPostName]
+    ad_data = convertedDictUsers["post-data"][jobPostName]
+    ad_text = ad_data.split(",")[0]
+    try:
+        ad_media = ad_data.split(",")[1]
+    except IndexError:
+        ad_media = None
+
     if(timer == "1 Minute"):
         def Interval():
             run = runData
-            publish(update,context,channelID=channel_id, adText=ad_text,buttons = jobButtons)
+            publish(update,context,channelID=channel_id, adText=ad_text,buttons = jobButtons,adFile=ad_media)
             if run:
                 Timer(60, Interval).start()
         Interval()
@@ -856,7 +864,7 @@ def publishPosts(update, context, jobData, timer):
     if (timer == "10 Minutes"):
         def Interval():
             run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=selected_ad_media)
             if run:
                 Timer(600, Interval).start()
 
@@ -865,7 +873,7 @@ def publishPosts(update, context, jobData, timer):
     if (timer == "30 Minutes"):
         def Interval():
             run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=selected_ad_media)
             if run:
                 Timer(1800, Interval).start()
 
@@ -874,7 +882,7 @@ def publishPosts(update, context, jobData, timer):
     if (timer == "1 Hour"):
         def Interval():
             run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=selected_ad_media)
             if run:
                 Timer(3600, Interval).start()
 
@@ -883,7 +891,7 @@ def publishPosts(update, context, jobData, timer):
     if (timer == "3 Hours"):
         def Interval():
             run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=selected_ad_media)
             if run:
                 Timer(10.800, Interval).start()
 
@@ -892,7 +900,7 @@ def publishPosts(update, context, jobData, timer):
     if (timer == "6 Hours"):
         def Interval():
             run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=selected_ad_media)
             if run:
                 Timer(21.600, Interval).start()
 
@@ -901,7 +909,7 @@ def publishPosts(update, context, jobData, timer):
     if (timer == "12 Hours"):
         def Interval():
             run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=selected_ad_media)
             if run:
                 Timer(43.200, Interval).start()
 
@@ -910,7 +918,7 @@ def publishPosts(update, context, jobData, timer):
     if (timer == "1 Day"):
         def Interval():
             run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=selected_ad_media)
             if run:
                 Timer(86.400, Interval).start()
 
@@ -919,7 +927,7 @@ def publishPosts(update, context, jobData, timer):
     if (timer == "3 Days"):
         def Interval():
             run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=selected_ad_media)
             if run:
                 Timer(259.200, Interval).start()
 
@@ -928,23 +936,24 @@ def publishPosts(update, context, jobData, timer):
     if (timer == "1 Week"):
         def Interval():
             run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons)
+            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=selected_ad_media)
             if run:
                 Timer(259.200, Interval).start()
 
         Interval()
 
 
-def publish(update,context,channelID,adText,buttons):
+def publish(update,context,channelID,adText,adFile,buttons):
     buttonsFinal = []
 
-    for button in buttons:
-        buttonsFinal.append([InlineKeyboardButton("{}".format(button[0]), url="{}".format(button[1]))])
+    if(adFile == None):
+        for button in buttons:
+            buttonsFinal.append([InlineKeyboardButton("{}".format(button[0]), url="{}".format(button[1]))])
 
-    context.bot.send_message(chat_id=channelID, text=adText ,reply_markup=InlineKeyboardMarkup(buttonsFinal))
-
-    global inputMode
-
+        context.bot.send_message(chat_id=channelID, text=adText ,reply_markup=InlineKeyboardMarkup(buttonsFinal))
+    else:
+        path = "medias/{}".format(adFile)
+        context.bot.send_photo(channelID, photo=open(path, 'rb'), caption=adText)
 
 def deactivateBot():
     print("Bot Is Deactivating")
@@ -985,10 +994,11 @@ def addButtons(update,context,buttonText = None,buttonURL = None,mod = None):
 
 
 def saveJob(update,context):
+    print("Save Job")
     global buttonDatas
     global timer
     jobData = {"GroupName":selectedGroup,"PostName":selectedPost,"Buttons":buttonDatas}
-    jobFile = open("jobs/{}-job.json".format(currentUser,selectedGroup + "-" + selectedPost),"w")
+    jobFile = open("jobs/{}-job.json".format(selectedGroup + "-" + selectedPost),"w")
     jobFile.write(str(jobData))
 
     updateCommand(update,context)
@@ -1042,5 +1052,6 @@ if __name__ == '__main__':
     addMedia = False
     buttonDatas = []
     addButtonsList = []
+    selectedFile = None
     updater.start_polling()
     updater.idle()
