@@ -15,6 +15,10 @@ def updateCommand(update: Updater,context: CallbackContext,mode = "updateData"):
     global selectedPost
     global addButtonsList
     global buttonDatas
+    global addMedia
+
+
+    addMedia = False
 
     inputMode = "None"
     selectedGroup = "None"
@@ -129,7 +133,7 @@ def mainQueryHandler(update: Update, context: CallbackContext) -> None:
         addChannel(update,context,showMessage=True)
 
     if(query.data == "add_post"):
-        addPost(update,context,showMessage=True)
+        addPostShowButtons(update,context)
     if(query.data == "add post to folder"):
         listAllPosts(update,context)
     if(query.data == "remove post from folder"):
@@ -553,9 +557,14 @@ def awaitForInput(update: Updater, context: CallbackContext):
         jsonFile.close()
         updateCommand(update,context)
 
+    if (inputMode == "image name"):
+        os.rename("medias/nameless.jpg", "medias/{}.jpg".format(update.message.text))
+        updateCommand(update, context)
+
     elif(inputMode == "post"):
+        global addMedia
         try:
-            addPost(update,context,ekleme=True,groupInfo=update.message.text)
+            addPost(update,context,groupInfo=update.message.text,skip=addMedia)
             inputMode = None
         except IndexError: #ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
             pass
@@ -618,15 +627,27 @@ def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False
     else:
         print("Input Bekle")
 
-def addPost(update, context, ekleme=False, groupInfo = None,showMessage=False):
+def addPostShowButtons(update,context):
     global inputMode
     inputMode = "post"
     buttons = [[InlineKeyboardButton(botTexts.string_addMedia,callback_data='add_media')],[InlineKeyboardButton(botTexts.string_skipMedia,callback_data='skip_media')],[InlineKeyboardButton(botTexts.string_back,callback_data='back')]]
     reply_markup = InlineKeyboardMarkup(buttons)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Skip / Add Media", reply_markup=reply_markup)
 
-    if(showMessage):
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Enter the (Ad Name,Ad Text)",reply_markup=reply_markup)
-    if(ekleme):
+def listMedias(update,context):
+    buttons = []
+    medias = os.listdir("medias/")  # returns list
+    last_buttons = [[InlineKeyboardButton(botTexts.string_addNewMedia,callback_data="add new media")],[InlineKeyboardButton(botTexts.string_back,callback_data="back")]]
+
+    for media in medias:
+        buttons.append([InlineKeyboardButton(media, callback_data=media)])
+    reply_markup = InlineKeyboardMarkup(buttons + last_buttons)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Your Saved Media Files:", reply_markup=reply_markup)
+
+def addPost(update, context, groupInfo = None,skip=True):
+    if(skip):
+        pass
+    else:
         groupInfoList = groupInfo.split(",")
 
         postNameInput = groupInfoList[0]
@@ -646,10 +667,34 @@ def addPost(update, context, ekleme=False, groupInfo = None,showMessage=False):
         userJsonWrite.write(json.dumps(convertedDict))
         userJsonWrite.close()
 
-        updateCommand(update,context)
+        updateCommand(update, context)
 
-    else:
-        print("Input Bekle")
+
+def addOrSkipMedia(update: Update, context: CallbackContext):
+    global addMedia
+    global inputMode
+
+    query = update.callback_query
+    query.answer()
+    if(query.data == "add_media"):
+        addMedia = True
+
+        listMedias(update, context)
+    elif(query.data == "skip_media"):
+        addMedia = False
+
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Type 'Ad Name,Ad Text' (comma is required) ")
+        print(inputMode)
+
+    medias = os.listdir("medias/")  # returns list
+    if(query.data in medias):
+        editMedia(update,context)
+
+    if(query.data == "add new media"):
+        inputMode = "save img"
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Drag Your Image Without Compression")
+def editMedia(update,context):
+    print("Edit Media")
 
 def addPostFolder(update: Update, context: CallbackContext):
     query = update.callback_query
@@ -891,8 +936,13 @@ def deactivateBot():
 
 
 def fileListener(update,context):
+    global inputMode
     print("image handler")
-    context.bot.get_file(update.message.document).download()
+    if(inputMode == "save img"):
+        context.bot.get_file(update.message.document).download(custom_path="medias/nameless.jpg")
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Name Your Photo:")
+        inputMode = "image name"
+
 
 def addButtons(update,context,buttonText = None,buttonURL = None,mod = None):
     global inputMode
@@ -959,6 +1009,7 @@ if __name__ == '__main__':
     updater.dispatcher.add_handler(CallbackQueryHandler(folderSelection), group=3)
     updater.dispatcher.add_handler(CallbackQueryHandler(addPostFolder), group=4)
     updater.dispatcher.add_handler(CallbackQueryHandler(languageSelectionQueryListener), group=5)
+    updater.dispatcher.add_handler(CallbackQueryHandler(addOrSkipMedia), group=6)
 
     dispatcher.add_handler(MessageHandler(Filters.document,fileListener))
 
@@ -973,6 +1024,7 @@ if __name__ == '__main__':
     postWillBeEdited = "None"
     jobFile = "None"
     folderName = "None"
+    addMedia = False
     buttonDatas = []
     addButtonsList = []
     updater.start_polling()
