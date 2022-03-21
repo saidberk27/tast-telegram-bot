@@ -52,7 +52,7 @@ def startCommand(update: Update, context: CallbackContext) -> None:
     global addButtonsList
     global buttonDatas
 
-
+    print("BOT IS ACTIVE")
     inputMode = "None"
     selectedGroup = "None"
     selectedPost = "None"
@@ -576,7 +576,7 @@ def addNewFolder(update,context):
 
 def awaitForInput(update: Updater, context: CallbackContext):
     global inputMode
-    print("Tetiklendi",inputMode)
+    print("Trigerred",inputMode)
     if(inputMode == "group"):
         try:
             addChannel(update, context, ekleme=True, groupInfo=update.message.text)
@@ -636,7 +636,7 @@ def awaitForInput(update: Updater, context: CallbackContext):
         addButtons(update,context,buttonText,buttonURL,mod="inputici")
 
     else:
-        print("yazmam")
+        print("not trigerred")
 
 def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False):
     global inputMode
@@ -670,7 +670,7 @@ def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False
         updateCommand(update,context)
 
     else:
-        print("Input Bekle")
+        print("Await Input")
 
 def addPostShowButtons(update,context):
     global inputMode
@@ -1024,8 +1024,11 @@ def publish(update,context,channelID,adText,adFile,buttons):
 
         context.bot.send_message(chat_id=channelID, text=adText ,reply_markup=InlineKeyboardMarkup(buttonsFinal))
     else:
+        for button in buttons:
+            buttonsFinal.append([InlineKeyboardButton("{}".format(button[0]), url="{}".format(button[1]))])
+
         path = "medias/{}".format(adFile)
-        context.bot.send_photo(channelID, photo=open(path, 'rb'), caption=adText)
+        context.bot.send_photo(channelID, photo=open(path, 'rb'), caption=adText,reply_markup=InlineKeyboardMarkup(buttonsFinal))
 
 def deactivateBot():
     print("Bot Is Deactivating")
@@ -1047,7 +1050,7 @@ def addButtons(update,context,buttonText = None,buttonURL = None,mod = None):
 
     lastItem = [[InlineKeyboardButton(botTexts.string_addButton, callback_data="add button")], [InlineKeyboardButton("OK 👌", callback_data="add button ok")]]
     if(mod == "first"):
-        context.bot.send_message(chat_id=update.effective_chat.id,text="Add Buttons",reply_markup=InlineKeyboardMarkup(lastItem))
+        context.bot.send_message(chat_id=update.effective_chat.id,text="Add Buttons(Button Title,URL)(Comma is Required)",reply_markup=InlineKeyboardMarkup(lastItem))
     else:
         try:
             if(buttonText == None or buttonURL == None):
