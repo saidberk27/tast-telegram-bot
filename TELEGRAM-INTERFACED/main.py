@@ -53,6 +53,8 @@ def startCommand(update: Update, context: CallbackContext) -> None:
     global buttonDatas
 
     print("BOT IS ACTIVE")
+    languageLoader()
+
     inputMode = "None"
     selectedGroup = "None"
     selectedPost = "None"
@@ -97,21 +99,34 @@ def languageSelectionQueryListener(update: Update, context: CallbackContext):
     if (query.data == "english"):
         print("English Selected")
         botTexts = STRINGS_EN
-        updateCommand(update, context)
 
         jsonFile = open("userJson.json", "r")
         jsonText = jsonFile.read()
         jsonFile.close()
+
         convertedDict = json.loads(jsonText)
         convertedDict.update({"language":"en"})
 
         userJsonWrite = open("userJson.json", "w")
         userJsonWrite.write(json.dumps(convertedDict))
         userJsonWrite.close()
-        
+
+        updateCommand(update, context)
     elif (query.data == "hebrew"):
         print("Hebrew Selected")
         botTexts = STRINGS_HW
+
+        jsonFile = open("userJson.json", "r")
+        jsonText = jsonFile.read()
+        jsonFile.close()
+
+        convertedDict = json.loads(jsonText)
+        convertedDict.update({"language":"hw"})
+
+        userJsonWrite = open("userJson.json", "w")
+        userJsonWrite.write(json.dumps(convertedDict))
+        userJsonWrite.close()
+
         updateCommand(update, context)
 
 def mainQueryHandler(update: Update, context: CallbackContext) -> None:
@@ -1133,6 +1148,22 @@ def startPublishing(update,context):
         context.bot.send_message(chat_id=update.effective_chat.id, text=("Please Arrange Timer!"))
         updateCommand(update,context,mode="backTap")
 
+def languageLoader():
+    jsonFile = open("userJson.json", "r")
+    jsonText = jsonFile.read()
+    jsonFile.close()
+    convertedDict = json.loads(jsonText)
+    global botTexts
+    try:
+        if(convertedDict["language"] == "en"):
+            botTexts = STRINGS_EN
+        elif(convertedDict["language"] == "hw"):
+            botTexts = STRINGS_HW
+        else:
+            botTexts = STRINGS_EN
+    except KeyError:
+        botTexts = STRINGS_EN
+
 if __name__ == '__main__':
     from threading import Timer
 
@@ -1158,7 +1189,6 @@ if __name__ == '__main__':
 
     dispatcher.add_handler(MessageHandler(Filters.document,fileListener))
 
-    botTexts = STRINGS_EN
     runData = False
     currentUser = None
     inputMode = "None"
