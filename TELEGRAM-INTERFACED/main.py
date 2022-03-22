@@ -42,7 +42,7 @@ def updateCommand(update: Updater,context: CallbackContext,mode = "updateData"):
         context.bot.send_message(chat_id=update.effective_chat.id, text=(botTexts.string_botUpdated), reply_markup=reply_markup)
 
     elif(mode == "backTap"):
-        context.bot.send_message(chat_id=update.effective_chat.id, text=("Please Select"),reply_markup=reply_markup)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=(botTexts.string_pleaseSelect),reply_markup=reply_markup)
 
 def startCommand(update: Update, context: CallbackContext) -> None:
     global currentUser
@@ -78,7 +78,8 @@ def startCommand(update: Update, context: CallbackContext) -> None:
             [InlineKeyboardButton("✅ BOT IS ACTIVE", callback_data='botisactive')]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        context.bot.send_message(chat_id=update.effective_chat.id,text="Hello {} Welcome to bot!".format(user['username']),reply_markup=reply_markup)
+        global botTexts
+        context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_helloMessage.format(user['username']),reply_markup=reply_markup)
 
     else:
         keyboard = [[InlineKeyboardButton("Tap to Contact", url='https://t.me/BenjaminPost')],[InlineKeyboardButton("הקש כדי ליצור קשר", url='https://t.me/BenjaminPost')]]
@@ -90,7 +91,7 @@ def languageSelectionQueryListener(update: Update, context: CallbackContext):
     global botTexts
     query = update.callback_query
     query.answer()
-    query.message.delete()
+    query.message.delete() # SINGLE-CALL YAPTIM ( TEK BALON CIKIYOR BUTONA BASINCA )
     if(query.data == "changelanguage"):
         languageOptions = [[InlineKeyboardButton("English 🇬🇧", callback_data="english")],[InlineKeyboardButton("Hebrew 🇮🇱", callback_data="hebrew")]]
         reply_markup = InlineKeyboardMarkup(languageOptions)
@@ -174,7 +175,8 @@ def mainQueryHandler(update: Update, context: CallbackContext) -> None:
 
     if(query.data == "add to post"):
         inputMode = "post"
-        context.bot.send_message(chat_id=update.effective_chat.id,text="Please Type 'Ad Name,Ad Text' (comma is required)")
+        global botTexts
+        context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_adNameandAdText)
 
     if(query.data == "add button ok"):
         saveJob(update,context)
@@ -185,7 +187,7 @@ def mainQueryHandler(update: Update, context: CallbackContext) -> None:
         selectedGroup = query.data
         editButton = [[InlineKeyboardButton(botTexts.string_removeChannel, callback_data="remove channel")],[InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
         reply_markup = InlineKeyboardMarkup(editButton)
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Edit Channel", reply_markup=reply_markup)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_editChannel, reply_markup=reply_markup)
 
     if(query.data == "remove channel"):
         removeSelectedChannel(update,context)
@@ -237,10 +239,10 @@ def editPosts(update: Update, context: CallbackContext):
         global postWillBeEdited
         postWillBeEdited = query.data
         currentAdText = convertedDict["post-data"][postWillBeEdited]
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Current Ad Text = {}".format(currentAdText), reply_markup=reply_markup_edit)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_currentAdText.format(currentAdText), reply_markup=reply_markup_edit)
 
     if(query.data == "edit post"):
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Type New Text")
+        context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseTypeNewText)
         inputMode = "waitForNewAdText"
 
     if (query.data == "addtofolder"):
@@ -309,7 +311,7 @@ def editJobs(update: Update, context: CallbackContext):
         selectedJob = dotJsonAdded
         job_group = dotJsonAdded.split("-")[0]
         job_post = dotJsonAdded.split("-")[1]
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Group: {} Post: {}".format(job_group,job_post), reply_markup=reply_markup_edit)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_GroupFormatPostFormat.format(job_group,job_post), reply_markup=reply_markup_edit)
         jobFile = "jobs/{}".format(dotJsonAdded)
     else:
         pass
@@ -461,7 +463,7 @@ def addTimer(update,context):
     timerButtons = [[InlineKeyboardButton(botTexts.string_1second, callback_data="1 Second"), InlineKeyboardButton(botTexts.string_10seconds, callback_data="10 Seconds"),InlineKeyboardButton(botTexts.string_30seconds, callback_data="30 Seconds"),InlineKeyboardButton(botTexts.string_45seconds, callback_data="45 Seconds")],[InlineKeyboardButton(botTexts.string_1minute, callback_data="1 Minute"), InlineKeyboardButton(botTexts.string_10minutes, callback_data="10 Minutes"),InlineKeyboardButton(botTexts.string_30minutes, callback_data="30 Minutes")], [InlineKeyboardButton(botTexts.string_1hour, callback_data="1 Hour"),InlineKeyboardButton(botTexts.string_3hours, callback_data="3 Hours"),InlineKeyboardButton(botTexts.string_6hours, callback_data="6 Hours")],[InlineKeyboardButton(botTexts.string_12hours, callback_data="12 Hours"),InlineKeyboardButton(botTexts.string_1day, callback_data="1 Day")],[InlineKeyboardButton(botTexts.string_3days, callback_data="3 Days"),InlineKeyboardButton(botTexts.string_1week, callback_data="1 Week")]]
 
     reply_markup = InlineKeyboardMarkup(timerButtons)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select",reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseSelect,reply_markup=reply_markup)
 
 
 def userCheck(username):
@@ -511,7 +513,7 @@ def listChannels(update,context):
     staticsOfList = [InlineKeyboardButton(botTexts.string_addChannel, callback_data='add_channel')], [InlineKeyboardButton(botTexts.string_back, callback_data='back')]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="List:",reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_list,reply_markup=reply_markup)
 
     global inputMode
     inputMode = "channelEdit"
@@ -530,7 +532,7 @@ def listFolderPosts(update, context, folder = None):
     staticsOfList = [InlineKeyboardButton(botTexts.string_addPostToFolder, callback_data='add post to folder')], [InlineKeyboardButton(botTexts.string_back, callback_data='back')]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select a Post", reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseSelectPost, reply_markup=reply_markup)
     inputMode = "postEdit"
 def listAllPosts(update,context):
     global currentUser
@@ -549,7 +551,7 @@ def listAllPosts(update,context):
     staticsOfList = [[InlineKeyboardButton(botTexts.string_addPost, callback_data='add_post')], [InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="All of Your Posts:", reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_allOfYourPosts, reply_markup=reply_markup)
 
 def listFolders(update: Update, context: CallbackContext):
     jsonFile = open("userJson.json", "r")
@@ -566,7 +568,7 @@ def listFolders(update: Update, context: CallbackContext):
     staticsOfList = [InlineKeyboardButton(botTexts.string_addNewFolder, callback_data='add folder')],[InlineKeyboardButton(botTexts.string_back, callback_data='back')]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Select a Folder", reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_selectAFolder, reply_markup=reply_markup)
 
     global inputMode
     inputMode = "postEdit"
@@ -596,19 +598,22 @@ def folderSelection(update: Updater, context: CallbackContext):
 def addNewFolder(update,context):
     global inputMode
     inputMode = "folderName"
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Type Folder Name")
+    global botTexts
+    context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseTypeFolderName)
 
 
 def awaitForInput(update: Updater, context: CallbackContext):
     global inputMode
     print("Trigerred",inputMode)
 
+    update.message.delete()
     if(inputMode == "GroupName"):
         try:
             global groupWillBeSaved
             groupWillBeSaved = update.message.text
             inputMode = "groupId"
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Please Type Group ID")
+            global botTexts
+            context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseTypeGroupId)
         except IndexError: #ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
             pass
 
@@ -678,7 +683,8 @@ def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False
     global inputMode
     inputMode = "GroupName"
     if(showMessage):
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Enter the Group Name")
+        global botTexts
+        context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseEnterTheGroupName)
     print("ADD CHANNEL")
     if(ekleme):
         groupInfoList = groupInfo.split(",")
@@ -713,7 +719,7 @@ def addPostShowButtons(update,context):
     inputMode = "post"
     buttons = [[InlineKeyboardButton(botTexts.string_addMedia,callback_data='add_media')],[InlineKeyboardButton(botTexts.string_skipMedia,callback_data='skip_media')],[InlineKeyboardButton(botTexts.string_back,callback_data='back')]]
     reply_markup = InlineKeyboardMarkup(buttons)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Skip / Add Media", reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_skipAddMedia, reply_markup=reply_markup)
 
 def listMedias(update,context):
     buttons = []
@@ -723,7 +729,7 @@ def listMedias(update,context):
     for media in medias:
         buttons.append([InlineKeyboardButton(media, callback_data=media)])
     reply_markup = InlineKeyboardMarkup(buttons + last_buttons)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Your Saved Media Files:", reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_savedMediaFiles, reply_markup=reply_markup)
 
 def addPost(update, context, groupInfo = None,skip=True):
     groupInfoList = groupInfo.split(",")
@@ -762,7 +768,7 @@ def addOrSkipMedia(update: Update, context: CallbackContext):
         listMedias(update, context)
     elif(query.data == "skip_media"):
         addMedia = False
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Type 'Ad Name,Ad Text' (comma is required) ")
+        context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_adNameandAdText)
         inputMode = "post"
 
     medias = os.listdir("medias/")  # returns list
@@ -773,7 +779,7 @@ def addOrSkipMedia(update: Update, context: CallbackContext):
 
     if(query.data == "add new media"):
         inputMode = "save img"
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Drag Your Image Without Compression")
+        context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_dragImage)
 
 def editMedia(update,context):
     global inputMode
@@ -783,7 +789,7 @@ def editMedia(update,context):
                   [InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
 
     reply_markup = InlineKeyboardMarkup(editButton)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select",reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseSelect,reply_markup=reply_markup)
 
 def addPostFolder(update: Update, context: CallbackContext):
     query = update.callback_query
@@ -829,7 +835,7 @@ def publishingAds(update,context):
     for job in jobs:
         buttons.append([InlineKeyboardButton(job[:-5],callback_data=job[:-5])])
     reply_markup = InlineKeyboardMarkup(buttons + last_buttons)
-    context.bot.send_message(chat_id=update.effective_chat.id,text="Your Saved Jobs:",reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_savedJobs,reply_markup=reply_markup)
 
 def addNewJob(update,context):
      idList = []
@@ -849,7 +855,7 @@ def addNewJob(update,context):
          idList.append(channelStatus)
 
      context.bot.send_message(chat_id=update.effective_chat.id,
-                              text="Your Active Groups: {}".format(channelNamesStr[1:-1]))
+                              text=botTexts.string_yourActiveGroups.format(channelNamesStr[1:-1]))
      listChannels(update, context)
      global inputMode
      inputMode = "groupSelection"
@@ -869,7 +875,7 @@ def groupSelection(update,context,selectedGroup):
     userJsonWrite.write(json.dumps(convertedDict))
     userJsonWrite.close()
 
-    context.bot.send_message(chat_id=update.effective_chat.id,text="Group Succesfully Selected and Saved! Now Please Pick Post For Your Group:")
+    context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_groupSelected)
     listAllPosts(update,context)
 
 
@@ -897,12 +903,12 @@ def postSelection(update,context,selectedPost):
     userJsonWrite.close()
 
     #context.bot.send_message(chat_id=update.effective_chat.id,text="{}".format(convertedDictActiveWorks))
-    context.bot.send_message(chat_id=update.effective_chat.id,text="Post Selected.")
+    context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_postSelected)
 
 
 def publishYesorNo(update,context):
     buttons = [[InlineKeyboardButton(botTexts.string_yes,callback_data='YES')],[InlineKeyboardButton(botTexts.string_no,callback_data='NO')]]
-    context.bot.send_message(chat_id=update.effective_chat.id,text="ARE YOU SURE?",reply_markup=InlineKeyboardMarkup(buttons))
+    context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_areYouSure, reply_markup=InlineKeyboardMarkup(buttons))
 
 
 def publishPosts(update, context, jobData, timer):
@@ -1101,7 +1107,7 @@ def fileListener(update,context):
     print("image handler")
     if(inputMode == "save img"):
         context.bot.get_file(update.message.document).download(custom_path="medias/nameless.jpg")
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Name Your Photo:")
+        context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseNameYourPhoto)
         inputMode = "image name"
 
 
@@ -1112,20 +1118,20 @@ def addButtons(update,context,buttonText = None,buttonURL = None,mod = None):
 
     lastItem = [[InlineKeyboardButton(botTexts.string_addButton, callback_data="add button")], [InlineKeyboardButton("OK 👌", callback_data="add button ok")]]
     if(mod == "first"):
-        context.bot.send_message(chat_id=update.effective_chat.id,text="Add Buttons(Button Title,URL)(Comma is Required)",reply_markup=InlineKeyboardMarkup(lastItem))
+        context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_addButtonURL, reply_markup=InlineKeyboardMarkup(lastItem))
     else:
         try:
             if(buttonText == None or buttonURL == None):
                 raise ValueError
             addButtonsList.append([InlineKeyboardButton(buttonText,url=buttonURL)])
             buttonsFinal = addButtonsList + lastItem
-            context.bot.send_message(chat_id=update.effective_chat.id,text="Button Succesfully Added!",reply_markup=InlineKeyboardMarkup(buttonsFinal))
+            context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_buttonSuccesfullyAdded, reply_markup=InlineKeyboardMarkup(buttonsFinal))
 
             buttonDatasLocal = [buttonText, buttonURL]
             buttonDatas.append(buttonDatasLocal)
 
         except ValueError:
-            context.bot.send_message(chat_id=update.effective_chat.id,text="URL OR BUTTON TEXT IS UNDEFINED")
+            context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_urlOrButtonUndefined)
             updateCommand(update,context,mode="backTap")
             inputMode = None
 
@@ -1156,7 +1162,7 @@ def startPublishing(update,context):
 
         publishPosts(update, context, JobFileConvertedDict, timer)
     except KeyError:
-        context.bot.send_message(chat_id=update.effective_chat.id, text=("Please Arrange Timer!"))
+        context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseArrangeTimer)
         updateCommand(update,context,mode="backTap")
 
 def languageLoader():
