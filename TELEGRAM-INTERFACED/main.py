@@ -166,10 +166,8 @@ def mainQueryHandler(update: Update, context: CallbackContext) -> None:
         removeSelectedChannel(update,context)
 
     if(query.data == "start publishing"):
-        global runData
-        runData = True
         startPublishing(update,context)
-
+        updateCommand(update,context)
 
     if(query.data == "NO"):
         updateCommand(update,context,mode="backTap")
@@ -274,18 +272,17 @@ def editJobs(update: Update, context: CallbackContext):
     query.answer()
 
     editButton = [[InlineKeyboardButton(botTexts.string_addTimer, callback_data="add timer")],
-                  [InlineKeyboardButton(botTexts.string_stopPublishingAndRemove, callback_data="stop publishing and remove")],
+                  [InlineKeyboardButton(botTexts.string_stopPublishing, callback_data="stop publishing")],
+                  [InlineKeyboardButton(botTexts.string_startPublishing, callback_data="start publishing")],
                   [InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
     reply_markup_edit = InlineKeyboardMarkup(editButton)
-
 
     jobs = os.listdir("jobs/") # returns list
     dotJsonAdded = query.data + ".json" #Job Name
 
-
-
     if(dotJsonAdded in jobs and inputMode == "jobEdit"):
-
+        global selectedJob
+        selectedJob = dotJsonAdded
         job_group = dotJsonAdded.split("-")[0]
         job_post = dotJsonAdded.split("-")[1]
         context.bot.send_message(chat_id=update.effective_chat.id, text="Group: {} Post: {}".format(job_group,job_post), reply_markup=reply_markup_edit)
@@ -296,21 +293,26 @@ def editJobs(update: Update, context: CallbackContext):
     if(query.data == "add timer"):
         addTimer(update,context)
 
-    if(query.data == "stop publishing and remove"):
-        global runData
-        os.remove(jobFile)
-        runData = False
-        time.sleep(3)
-        runData = True
+    if(query.data == "stop publishing"):
+        jobFile = open("jobs/{}".format(selectedJob), "r")
+        jobText = jobFile.read()
+        jobFile.close()
+
+        JobFileConvertedDict = json.loads(jobText)
+        JobFileConvertedDict['isRun'] = 'False'
+        jobFileWrite = open("jobs/{}".format(selectedJob), "w")
+        jobFileWrite.write(json.dumps(JobFileConvertedDict))
+        jobFileWrite.close()
+
         updateCommand(update,context)
-        startPublishing(update,context) # Bastan Baslat
+        startPublishing(update,context)
 
     if (query.data == "1 Second"):
         with open(jobFile, "r") as JobFile:
             JobFileConvertedDict = ast.literal_eval(JobFile.read())
             JobFileConvertedDict['Timer'] = "1 Second"
         jobWrite = open(jobFile, "w")
-        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
         updateCommand(update, context)
 
@@ -319,7 +321,7 @@ def editJobs(update: Update, context: CallbackContext):
             JobFileConvertedDict = ast.literal_eval(JobFile.read())
             JobFileConvertedDict['Timer'] = "10 Seconds"
         jobWrite = open(jobFile, "w")
-        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
         updateCommand(update, context)
 
@@ -328,7 +330,7 @@ def editJobs(update: Update, context: CallbackContext):
             JobFileConvertedDict = ast.literal_eval(JobFile.read())
             JobFileConvertedDict['Timer'] = "30 Seconds"
         jobWrite = open(jobFile, "w")
-        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
         updateCommand(update, context)
 
@@ -337,7 +339,7 @@ def editJobs(update: Update, context: CallbackContext):
             JobFileConvertedDict = ast.literal_eval(JobFile.read())
             JobFileConvertedDict['Timer'] = "45 Seconds"
         jobWrite = open(jobFile, "w")
-        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
         updateCommand(update, context)
 
@@ -346,7 +348,7 @@ def editJobs(update: Update, context: CallbackContext):
             JobFileConvertedDict = ast.literal_eval(JobFile.read())
             JobFileConvertedDict['Timer'] = "1 Minute"
         jobWrite = open(jobFile,"w")
-        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
         updateCommand(update, context)
 
@@ -355,7 +357,7 @@ def editJobs(update: Update, context: CallbackContext):
             JobFileConvertedDict = ast.literal_eval(JobFile.read())
             JobFileConvertedDict['Timer'] = "10 Minutes"
         jobWrite = open(jobFile,"w")
-        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
         updateCommand(update, context)
 
@@ -364,7 +366,7 @@ def editJobs(update: Update, context: CallbackContext):
             JobFileConvertedDict = ast.literal_eval(JobFile.read())
             JobFileConvertedDict['Timer'] = "30 Minutes"
         jobWrite = open(jobFile,"w")
-        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
         updateCommand(update, context)
 
@@ -373,7 +375,7 @@ def editJobs(update: Update, context: CallbackContext):
             JobFileConvertedDict = ast.literal_eval(JobFile.read())
             JobFileConvertedDict['Timer'] = "1 Hour"
         jobWrite = open(jobFile,"w")
-        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
         updateCommand(update, context)
 
@@ -382,7 +384,7 @@ def editJobs(update: Update, context: CallbackContext):
             JobFileConvertedDict = ast.literal_eval(JobFile.read())
             JobFileConvertedDict['Timer'] = "3 Hours"
         jobWrite = open(jobFile,"w")
-        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
         updateCommand(update, context)
 
@@ -391,7 +393,7 @@ def editJobs(update: Update, context: CallbackContext):
             JobFileConvertedDict = ast.literal_eval(JobFile.read())
             JobFileConvertedDict['Timer'] = "6 Hours"
         jobWrite = open(jobFile,"w")
-        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
         updateCommand(update, context)
 
@@ -400,7 +402,7 @@ def editJobs(update: Update, context: CallbackContext):
             JobFileConvertedDict = ast.literal_eval(JobFile.read())
             JobFileConvertedDict['Timer'] = "12 Hours"
         jobWrite = open(jobFile,"w")
-        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
         updateCommand(update, context)
 
@@ -409,7 +411,7 @@ def editJobs(update: Update, context: CallbackContext):
             JobFileConvertedDict = ast.literal_eval(JobFile.read())
             JobFileConvertedDict['Timer'] = "1 Day"
         jobWrite = open(jobFile, "w")
-        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
         updateCommand(update, context)
 
@@ -418,7 +420,7 @@ def editJobs(update: Update, context: CallbackContext):
             JobFileConvertedDict = ast.literal_eval(JobFile.read())
             JobFileConvertedDict['Timer'] = "3 Days"
         jobWrite = open(jobFile, "w")
-        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
         updateCommand(update, context)
 
@@ -427,7 +429,7 @@ def editJobs(update: Update, context: CallbackContext):
             JobFileConvertedDict = ast.literal_eval(JobFile.read())
             JobFileConvertedDict['Timer'] = "1 Week"
         jobWrite = open(jobFile, "w")
-        jobWrite.write(str(JobFileConvertedDict))
+        jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
         updateCommand(update,context)
 
@@ -871,7 +873,7 @@ def publishYesorNo(update,context):
 
 def publishPosts(update, context, jobData, timer):
     global currentUser
-
+    print("Posts are being publishing.")
     jobGroupName = jobData['GroupName']
     jobPostName = jobData['PostName']
     jobButtons = jobData['Buttons']
@@ -891,21 +893,47 @@ def publishPosts(update, context, jobData, timer):
 
     if (timer == "1 Second"):
         def Interval():
-            run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media)
-            if run:
-                Timer(1, Interval).start()
+            jobFile = open("jobs/{}".format(selectedJob), "r")
+            jobText = jobFile.read()
+            JobFileConvertedDict = json.loads(jobText)
+            isRun = JobFileConvertedDict['isRun']
+
+            if(isRun == "False"):
+                print("pass")
+                jobFile.close()
+
+            elif(isRun == "True"):
+                run = runData
+                print(isRun)
+                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media, isRun=isRun)
+                if True:
+                    Timer(1, Interval).start()
+                jobFile.close()
 
         Interval()
 
     if (timer == "10 Seconds"):
         def Interval():
-            run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media)
-            if run:
-                Timer(10, Interval).start()
+            jobFile = open("jobs/{}".format(selectedJob), "r")
+            jobText = jobFile.read()
+            JobFileConvertedDict = json.loads(jobText)
+            isRun = JobFileConvertedDict['isRun']
 
-        Interval()
+            if (isRun == "False"):
+                print("pass")
+                jobFile.close()
+
+            elif (isRun == "True"):
+                run = runData
+                print(isRun)
+                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
+                        isRun=isRun)
+                if True:
+                    Timer(10, Interval).start()
+
+                jobFile.close()
+
+    Interval()
 
     if (timer == "30 Seconds"):
         def Interval():
@@ -1014,21 +1042,24 @@ def publishPosts(update, context, jobData, timer):
 
         Interval()
 
-
-def publish(update,context,channelID,adText,adFile,buttons):
+def publish(update,context,channelID,adText,adFile,buttons,isRun = "False"):
     buttonsFinal = []
-
-    if(adFile == None):
-        for button in buttons:
-            buttonsFinal.append([InlineKeyboardButton("{}".format(button[0]), url="{}".format(button[1]))])
-
-        context.bot.send_message(chat_id=channelID, text=adText ,reply_markup=InlineKeyboardMarkup(buttonsFinal))
+    if(isRun == "False"):
+        print("don't run")
     else:
-        for button in buttons:
-            buttonsFinal.append([InlineKeyboardButton("{}".format(button[0]), url="{}".format(button[1]))])
+        print("Run")
+        if(adFile == None):
+            for button in buttons:
+                buttonsFinal.append([InlineKeyboardButton("{}".format(button[0]), url="{}".format(button[1]))])
 
-        path = "medias/{}".format(adFile)
-        context.bot.send_photo(channelID, photo=open(path, 'rb'), caption=adText,reply_markup=InlineKeyboardMarkup(buttonsFinal))
+            context.bot.send_message(chat_id=channelID, text=adText ,reply_markup=InlineKeyboardMarkup(buttonsFinal))
+
+        else:
+            for button in buttons:
+                buttonsFinal.append([InlineKeyboardButton("{}".format(button[0]), url="{}".format(button[1]))])
+
+            path = "medias/{}".format(adFile)
+            context.bot.send_photo(channelID, photo=open(path, 'rb'), caption=adText,reply_markup=InlineKeyboardMarkup(buttonsFinal))
 
 def deactivateBot():
     print("Bot Is Deactivating")
@@ -1074,23 +1105,28 @@ def saveJob(update,context):
     global timer
     jobData = {"GroupName":selectedGroup,"PostName":selectedPost,"Buttons":buttonDatas}
     jobFile = open("jobs/{}-job.json".format(selectedGroup + "-" + selectedPost),"w")
-    jobFile.write(str(jobData))
+    jobFile.write(json.dumps(jobData))
 
     updateCommand(update,context)
 
 def startPublishing(update,context):
-    jobsList = os.listdir("jobs/")
-    for job in jobsList:
-        fullFileName = "jobs/{}".format(job)
-        with open(fullFileName) as jobFile:
-            jobText = jobFile.read()
-            jobTextDict = ast.literal_eval(jobText)
-            try:
-                timer = jobTextDict['Timer']
-                publishPosts(update, context, jobTextDict, timer)
-            except KeyError:
-                context.bot.send_message(chat_id=update.effective_chat.id, text=("Please Arrange Timer!"))
-                updateCommand(update,context,mode="backTap")
+    print("publishing is starting")
+    fullFileName = "jobs/{}".format(selectedJob)
+    with open(fullFileName) as jobFile:
+        jobText = jobFile.read()
+        JobFileConvertedDict = json.loads(jobText)
+
+    try:
+        timer = JobFileConvertedDict['Timer']
+        JobFileConvertedDict['isRun'] = 'True'
+        jobFileWrite = open("jobs/{}".format(selectedJob), "w")
+        jobFileWrite.write(json.dumps(JobFileConvertedDict))
+        jobFileWrite.close()
+
+        publishPosts(update, context, JobFileConvertedDict, timer)
+    except KeyError:
+        context.bot.send_message(chat_id=update.effective_chat.id, text=("Please Arrange Timer!"))
+        updateCommand(update,context,mode="backTap")
 
 if __name__ == '__main__':
     from threading import Timer
@@ -1129,6 +1165,7 @@ if __name__ == '__main__':
     jobFile = "None"
     folderName = "None"
     addMedia = False
+    selectedJob = None
     buttonDatas = []
     addButtonsList = []
     selectedFile = None
