@@ -974,9 +974,8 @@ def publishPosts(update, context, jobData, timer):
 
     if (timer == "30 Seconds"):
         def Interval():
-            run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media)
-            if run:
+            if True:
                 Timer(30, Interval).start()
 
         Interval()
@@ -985,7 +984,7 @@ def publishPosts(update, context, jobData, timer):
         def Interval():
             run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media)
-            if run:
+            if True:
                 Timer(45, Interval).start()
 
         Interval()
@@ -994,7 +993,7 @@ def publishPosts(update, context, jobData, timer):
         def Interval():
             run = runData
             publish(update,context,channelID=channel_id, adText=ad_text,buttons = jobButtons,adFile=ad_media)
-            if run:
+            if True:
                 Timer(60, Interval).start()
         Interval()
 
@@ -1002,7 +1001,7 @@ def publishPosts(update, context, jobData, timer):
         def Interval():
             run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if run:
+            if True:
                 Timer(600, Interval).start()
 
         Interval()
@@ -1011,7 +1010,7 @@ def publishPosts(update, context, jobData, timer):
         def Interval():
             run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if run:
+            if True:
                 Timer(1800, Interval).start()
 
         Interval()
@@ -1020,7 +1019,7 @@ def publishPosts(update, context, jobData, timer):
         def Interval():
             run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if run:
+            if True:
                 Timer(3600, Interval).start()
 
         Interval()
@@ -1029,7 +1028,7 @@ def publishPosts(update, context, jobData, timer):
         def Interval():
             run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if run:
+            if True:
                 Timer(10.800, Interval).start()
 
         Interval()
@@ -1038,7 +1037,7 @@ def publishPosts(update, context, jobData, timer):
         def Interval():
             run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if run:
+            if True:
                 Timer(21.600, Interval).start()
 
         Interval()
@@ -1047,7 +1046,7 @@ def publishPosts(update, context, jobData, timer):
         def Interval():
             run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if run:
+            if True:
                 Timer(43.200, Interval).start()
 
         Interval()
@@ -1056,7 +1055,7 @@ def publishPosts(update, context, jobData, timer):
         def Interval():
             run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if run:
+            if True:
                 Timer(86.400, Interval).start()
 
         Interval()
@@ -1065,7 +1064,7 @@ def publishPosts(update, context, jobData, timer):
         def Interval():
             run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if run:
+            if True:
                 Timer(259.200, Interval).start()
 
         Interval()
@@ -1074,7 +1073,7 @@ def publishPosts(update, context, jobData, timer):
         def Interval():
             run = runData
             publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if run:
+            if True:
                 Timer(259.200, Interval).start()
 
         Interval()
