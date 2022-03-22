@@ -602,11 +602,22 @@ def addNewFolder(update,context):
 def awaitForInput(update: Updater, context: CallbackContext):
     global inputMode
     print("Trigerred",inputMode)
-    if(inputMode == "group"):
+
+    if(inputMode == "GroupName"):
         try:
-            addChannel(update, context, ekleme=True, groupInfo=update.message.text)
-            inputMode = "None"
+            global groupWillBeSaved
+            groupWillBeSaved = update.message.text
+            inputMode = "groupId"
+            context.bot.send_message(chat_id=update.effective_chat.id, text="Please Type Group ID")
         except IndexError: #ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
+            pass
+
+    elif(inputMode == "groupId"):
+        try:
+            groupId = update.message.text
+            channelInfo = groupWillBeSaved + "," + groupId
+            addChannel(update, context, ekleme=True, groupInfo=channelInfo)
+        except IndexError:  # ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
             pass
 
     elif(inputMode == "folderName"):
@@ -665,9 +676,9 @@ def awaitForInput(update: Updater, context: CallbackContext):
 
 def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False):
     global inputMode
-    inputMode = "group"
+    inputMode = "GroupName"
     if(showMessage):
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Enter the (Group Name,Group ID)")
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Enter the Group Name")
     print("ADD CHANNEL")
     if(ekleme):
         groupInfoList = groupInfo.split(",")
@@ -1199,6 +1210,7 @@ if __name__ == '__main__':
     postWillBeEdited = "None"
     jobFile = "None"
     folderName = "None"
+    groupWillBeSaved = "None"
     addMedia = False
     selectedJob = None
     buttonDatas = []
