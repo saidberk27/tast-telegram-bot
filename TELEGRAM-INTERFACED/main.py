@@ -90,7 +90,7 @@ def languageSelectionQueryListener(update: Update, context: CallbackContext):
     global botTexts
     query = update.callback_query
     query.answer()
-
+    query.message.delete()
     if(query.data == "changelanguage"):
         languageOptions = [[InlineKeyboardButton("English 🇬🇧", callback_data="english")],[InlineKeyboardButton("Hebrew 🇮🇱", callback_data="hebrew")]]
         reply_markup = InlineKeyboardMarkup(languageOptions)
