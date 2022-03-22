@@ -99,6 +99,16 @@ def languageSelectionQueryListener(update: Update, context: CallbackContext):
         botTexts = STRINGS_EN
         updateCommand(update, context)
 
+        jsonFile = open("userJson.json", "r")
+        jsonText = jsonFile.read()
+        jsonFile.close()
+        convertedDict = json.loads(jsonText)
+        convertedDict.update({"language":"en"})
+
+        userJsonWrite = open("userJson.json", "w")
+        userJsonWrite.write(json.dumps(convertedDict))
+        userJsonWrite.close()
+        
     elif (query.data == "hebrew"):
         print("Hebrew Selected")
         botTexts = STRINGS_HW
@@ -272,7 +282,6 @@ def editJobs(update: Update, context: CallbackContext):
     query.answer()
 
     editButton = [[InlineKeyboardButton(botTexts.string_addTimer, callback_data="add timer")],
-                  [InlineKeyboardButton(botTexts.string_stopPublishing, callback_data="stop publishing")],
                   [InlineKeyboardButton(botTexts.string_startPublishing, callback_data="start publishing")],
                   [InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
     reply_markup_edit = InlineKeyboardMarkup(editButton)
@@ -305,7 +314,6 @@ def editJobs(update: Update, context: CallbackContext):
         jobFileWrite.close()
 
         updateCommand(update,context)
-        startPublishing(update,context)
 
     if (query.data == "1 Second"):
         with open(jobFile, "r") as JobFile:
@@ -790,7 +798,7 @@ def removePostFromFolder(update,context):
 def publishingAds(update,context):
     global currentUser
     buttons = []
-    last_buttons = [[InlineKeyboardButton(botTexts.string_addNewJob,callback_data="add new job")],[InlineKeyboardButton(botTexts.string_startPublishing,callback_data="start publishing")],[InlineKeyboardButton(botTexts.string_back,callback_data="back")]]
+    last_buttons = [[InlineKeyboardButton(botTexts.string_addNewJob,callback_data="add new job")],[InlineKeyboardButton(botTexts.string_stopPublishing, callback_data="stop publishing")],[InlineKeyboardButton(botTexts.string_back,callback_data="back")]]
     jobs = os.listdir("jobs/") # returns list
     for job in jobs:
         buttons.append([InlineKeyboardButton(job[:-5],callback_data=job[:-5])])
@@ -903,7 +911,6 @@ def publishPosts(update, context, jobData, timer):
                 jobFile.close()
 
             elif(isRun == "True"):
-                run = runData
                 print(isRun)
                 publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media, isRun=isRun)
                 if True:
@@ -924,8 +931,6 @@ def publishPosts(update, context, jobData, timer):
                 jobFile.close()
 
             elif (isRun == "True"):
-                run = runData
-                print(isRun)
                 publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
                         isRun=isRun)
                 if True:
