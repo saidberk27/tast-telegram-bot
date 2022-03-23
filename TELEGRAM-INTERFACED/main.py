@@ -174,9 +174,9 @@ def mainQueryHandler(update: Update, context: CallbackContext) -> None:
         updateCommand(update,context)
 
     if(query.data == "add to post"):
-        inputMode = "post"
+        inputMode = "PostName"
         global botTexts
-        context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_adNameandAdText)
+        context.bot.send_message(chat_id=update.effective_chat.id,text="Please Type Post Name")
 
     if(query.data == "add button ok"):
         saveJob(update,context)
@@ -606,7 +606,7 @@ def awaitForInput(update: Updater, context: CallbackContext):
     global inputMode
     print("Trigerred",inputMode)
 
-    update.message.delete()
+
     if(inputMode == "GroupName"):
         try:
             global groupWillBeSaved
@@ -647,12 +647,22 @@ def awaitForInput(update: Updater, context: CallbackContext):
         os.rename("medias/nameless.jpg", "medias/{}.jpg".format(update.message.text))
         updateCommand(update, context)
 
-    elif(inputMode == "post"):
+    elif(inputMode == "PostName"):
+        try:
+            global postWillBeSaved
+            postWillBeSaved = update.message.text
+            inputMode = "PostContent"
+            context.bot.send_message(chat_id=update.effective_chat.id, text="Please Type Post Content")
+        except IndexError:  # ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
+            pass
+
+    elif(inputMode == "PostContent"):
         global addMedia
         try:
-            addPost(update,context,groupInfo=update.message.text,skip=addMedia)
-            inputMode = None
-        except IndexError: #ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
+            postContent = update.message.text
+            postInfo = postWillBeSaved + "," + postContent
+            addPost(update, context, groupInfo=postInfo, skip=addMedia)
+        except IndexError:  # ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
             pass
 
     elif(inputMode == "groupSelection"):
@@ -716,7 +726,7 @@ def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False
 
 def addPostShowButtons(update,context):
     global inputMode
-    inputMode = "post"
+    inputMode = "PostName"
     buttons = [[InlineKeyboardButton(botTexts.string_addMedia,callback_data='add_media')],[InlineKeyboardButton(botTexts.string_skipMedia,callback_data='skip_media')],[InlineKeyboardButton(botTexts.string_back,callback_data='back')]]
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_skipAddMedia, reply_markup=reply_markup)
@@ -768,8 +778,8 @@ def addOrSkipMedia(update: Update, context: CallbackContext):
         listMedias(update, context)
     elif(query.data == "skip_media"):
         addMedia = False
-        context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_adNameandAdText)
-        inputMode = "post"
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Type Post Name")
+        inputMode = "PostName"
 
     medias = os.listdir("medias/")  # returns list
     if(query.data in medias):
