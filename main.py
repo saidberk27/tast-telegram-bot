@@ -697,7 +697,7 @@ def awaitForInput(update: Updater, context: CallbackContext):
         except IndexError:  # ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
             pass
 
-    if(inputMode == "addManager"):
+    elif(inputMode == "addManager"):
         addSelectedManager(update,context,userName = update.message.text)
 
     elif(inputMode == "PostContent"):

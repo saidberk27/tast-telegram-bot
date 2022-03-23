@@ -1,5 +1,6 @@
 import os
 import json
+import time
 
 
 def createFolders(userName,botToken):
@@ -47,7 +48,14 @@ def createFolders(userName,botToken):
     botTokenWrite.close()
 
 if __name__ == '__main__':
+
     userName = input("Please Type Username of User of This Bot: ")
     botToken = input("Please Enter Bot Token: ")
     print("DISCLAIMER! MAKE SURE YOUR BOT HAS BEEN ADDED TO EVERY GROUP YOU WANT TO PUBLISH ADVERTISEMENTS (BEING ADMIN IS NOT REQUIRED)")
-    createFolders(userName,botToken)
+    try:
+        createFolders(userName,botToken)
+        time.sleep(5)
+    except FileExistsError:
+        print("User Already Saved")
+        time.sleep(5)
+

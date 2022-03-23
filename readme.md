@@ -1,1 +1,0 @@
-users.txt icinde mutlaka username whilefalse27 olan bi data bulunsun yoksa butonlar tepki vermiyor ve program hata vermiyor.
