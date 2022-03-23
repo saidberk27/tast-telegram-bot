@@ -1,1 +1,1 @@
-{"GroupName": "tea channel", "PostName": "tea post", "Buttons": [["tap to buy our teas", "www.buyteas.com"]], "Timer": "1 Second", "isRun": "False"}
+{"GroupName": "tea channel", "PostName": "tea post", "Buttons": [["tap to buy our teas", "www.buyteas.com"]], "Timer": "30 Seconds", "isRun": "True"}

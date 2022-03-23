@@ -970,111 +970,253 @@ def publishPosts(update, context, jobData, timer):
 
                 jobFile.close()
 
-    Interval()
+        Interval()
 
     if (timer == "30 Seconds"):
         def Interval():
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media)
-            if True:
-                Timer(30, Interval).start()
+            jobFile = open("jobs/{}".format(selectedJob), "r")
+            jobText = jobFile.read()
+            JobFileConvertedDict = json.loads(jobText)
+            isRun = JobFileConvertedDict['isRun']
+
+            if (isRun == "False"):
+                print("pass")
+                jobFile.close()
+
+            elif (isRun == "True"):
+                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
+                        isRun=isRun)
+                if True:
+                    Timer(30, Interval).start()
+
+                jobFile.close()
 
         Interval()
 
     if (timer == "45 Seconds"):
         def Interval():
-            run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media)
-            if True:
-                Timer(45, Interval).start()
+            jobFile = open("jobs/{}".format(selectedJob), "r")
+            jobText = jobFile.read()
+            JobFileConvertedDict = json.loads(jobText)
+            isRun = JobFileConvertedDict['isRun']
+
+            if (isRun == "False"):
+                print("pass")
+                jobFile.close()
+
+            elif (isRun == "True"):
+                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
+                        isRun=isRun)
+                if True:
+                    Timer(45, Interval).start()
+
+                jobFile.close()
 
         Interval()
-
     if(timer == "1 Minute"):
         def Interval():
-            run = runData
-            publish(update,context,channelID=channel_id, adText=ad_text,buttons = jobButtons,adFile=ad_media)
-            if True:
-                Timer(60, Interval).start()
-        Interval()
+            jobFile = open("jobs/{}".format(selectedJob), "r")
+            jobText = jobFile.read()
+            JobFileConvertedDict = json.loads(jobText)
+            isRun = JobFileConvertedDict['isRun']
 
+            if (isRun == "False"):
+                print("pass")
+                jobFile.close()
+
+            elif (isRun == "True"):
+                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
+                        isRun=isRun)
+                if True:
+                    Timer(60, Interval).start()
+
+                jobFile.close()
+
+        Interval()
     if (timer == "10 Minutes"):
         def Interval():
-            run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if True:
-                Timer(600, Interval).start()
+            jobFile = open("jobs/{}".format(selectedJob), "r")
+            jobText = jobFile.read()
+            JobFileConvertedDict = json.loads(jobText)
+            isRun = JobFileConvertedDict['isRun']
+
+            if (isRun == "False"):
+                print("pass")
+                jobFile.close()
+
+            elif (isRun == "True"):
+                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
+                        isRun=isRun)
+                if True:
+                    Timer(600, Interval).start()
+
+                jobFile.close()
 
         Interval()
 
     if (timer == "30 Minutes"):
         def Interval():
-            run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if True:
-                Timer(1800, Interval).start()
+            jobFile = open("jobs/{}".format(selectedJob), "r")
+            jobText = jobFile.read()
+            JobFileConvertedDict = json.loads(jobText)
+            isRun = JobFileConvertedDict['isRun']
+
+            if (isRun == "False"):
+                print("pass")
+                jobFile.close()
+
+            elif (isRun == "True"):
+                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
+                        isRun=isRun)
+                if True:
+                    Timer(1800, Interval).start()
+
+                jobFile.close()
 
         Interval()
 
     if (timer == "1 Hour"):
         def Interval():
-            run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if True:
-                Timer(3600, Interval).start()
+            jobFile = open("jobs/{}".format(selectedJob), "r")
+            jobText = jobFile.read()
+            JobFileConvertedDict = json.loads(jobText)
+            isRun = JobFileConvertedDict['isRun']
+
+            if (isRun == "False"):
+                print("pass")
+                jobFile.close()
+
+            elif (isRun == "True"):
+                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
+                        isRun=isRun)
+                if True:
+                    Timer(3600, Interval).start()
+
+                jobFile.close()
 
         Interval()
 
     if (timer == "3 Hours"):
         def Interval():
-            run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if True:
-                Timer(10.800, Interval).start()
+            jobFile = open("jobs/{}".format(selectedJob), "r")
+            jobText = jobFile.read()
+            JobFileConvertedDict = json.loads(jobText)
+            isRun = JobFileConvertedDict['isRun']
+
+            if (isRun == "False"):
+                print("pass")
+                jobFile.close()
+
+            elif (isRun == "True"):
+                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
+                        isRun=isRun)
+                if True:
+                    Timer(10800, Interval).start()
+
+                jobFile.close()
 
         Interval()
-
     if (timer == "6 Hours"):
         def Interval():
-            run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if True:
-                Timer(21.600, Interval).start()
+            jobFile = open("jobs/{}".format(selectedJob), "r")
+            jobText = jobFile.read()
+            JobFileConvertedDict = json.loads(jobText)
+            isRun = JobFileConvertedDict['isRun']
+
+            if (isRun == "False"):
+                print("pass")
+                jobFile.close()
+
+            elif (isRun == "True"):
+                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
+                        isRun=isRun)
+                if True:
+                    Timer(21.600, Interval).start()
+
+                jobFile.close()
 
         Interval()
 
     if (timer == "12 Hours"):
         def Interval():
-            run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if True:
-                Timer(43.200, Interval).start()
+            jobFile = open("jobs/{}".format(selectedJob), "r")
+            jobText = jobFile.read()
+            JobFileConvertedDict = json.loads(jobText)
+            isRun = JobFileConvertedDict['isRun']
+
+            if (isRun == "False"):
+                print("pass")
+                jobFile.close()
+
+            elif (isRun == "True"):
+                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
+                        isRun=isRun)
+                if True:
+                    Timer(43.200, Interval).start()
+
+                jobFile.close()
 
         Interval()
 
     if (timer == "1 Day"):
         def Interval():
-            run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if True:
-                Timer(86.400, Interval).start()
+            jobFile = open("jobs/{}".format(selectedJob), "r")
+            jobText = jobFile.read()
+            JobFileConvertedDict = json.loads(jobText)
+            isRun = JobFileConvertedDict['isRun']
+
+            if (isRun == "False"):
+                print("pass")
+                jobFile.close()
+
+            elif (isRun == "True"):
+                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
+                        isRun=isRun)
+                if True:
+                    Timer(86.400, Interval).start()
+
+                jobFile.close()
 
         Interval()
-
     if (timer == "3 Days"):
         def Interval():
-            run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if True:
-                Timer(259.200, Interval).start()
+            jobFile = open("jobs/{}".format(selectedJob), "r")
+            jobText = jobFile.read()
+            JobFileConvertedDict = json.loads(jobText)
+            isRun = JobFileConvertedDict['isRun']
+
+            if (isRun == "False"):
+                print("pass")
+                jobFile.close()
+
+            elif (isRun == "True"):
+                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
+                        isRun=isRun)
+                if True:
+                    Timer(259.200, Interval).start()
+
+                jobFile.close()
 
         Interval()
 
     if (timer == "1 Week"):
         def Interval():
-            run = runData
-            publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons,adFile=ad_media)
-            if True:
-                Timer(259.200, Interval).start()
+            jobFile = open("jobs/{}".format(selectedJob), "r")
+            jobText = jobFile.read()
+            JobFileConvertedDict = json.loads(jobText)
+            isRun = JobFileConvertedDict['isRun']
+
+            if (isRun == "False"):
+                print("pass")
+                jobFile.close()
+
+            elif (isRun == "True"):
+                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
+                        isRun=isRun)
+                if True:
+                    Timer(604.800, Interval).start()
+
+                jobFile.close()
 
         Interval()
 
