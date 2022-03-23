@@ -44,6 +44,39 @@ def updateCommand(update: Updater,context: CallbackContext,mode = "updateData"):
     elif(mode == "backTap"):
         context.bot.send_message(chat_id=update.effective_chat.id, text=(botTexts.string_pleaseSelect),reply_markup=reply_markup)
 
+def sendMistake(update: Updater,context: CallbackContext,message = botTexts.string_somethingWentWrong):
+    global currentUser
+    global inputMode
+    global selectedGroup
+    global selectedPost
+    global addButtonsList
+    global buttonDatas
+    global addMedia
+    global selectedFile
+
+    addMedia = False
+    selectedFile = None
+    inputMode = "None"
+    selectedGroup = "None"
+    selectedPost = "None"
+    addButtonsList = []
+    buttonDatas = []
+    selectedFolder = "None"
+    # SIFIRLAMALAR-------------
+    keyboard = [
+        [
+            InlineKeyboardButton(botTexts.string_channels, callback_data='channels'),
+            InlineKeyboardButton(botTexts.string_posts, callback_data='posts'),
+        ],
+        [InlineKeyboardButton(botTexts.string_publishingAds, callback_data='publishingads')],
+        [InlineKeyboardButton(botTexts.string_changeLanguage, callback_data='changelanguage')],
+        [InlineKeyboardButton(botTexts.string_botIsActive, callback_data='botisactive')]
+    ]
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    context.bot.send_message(chat_id=update.effective_chat.id, text=message, reply_markup=reply_markup)
+
 def startCommand(update: Update, context: CallbackContext) -> None:
     global currentUser
     global inputMode
@@ -176,7 +209,7 @@ def mainQueryHandler(update: Update, context: CallbackContext) -> None:
     if(query.data == "add to post"):
         inputMode = "PostName"
         global botTexts
-        context.bot.send_message(chat_id=update.effective_chat.id,text="Please Type Post Name")
+        context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_postName)
 
     if(query.data == "add button ok"):
         saveJob(update,context)
@@ -215,11 +248,11 @@ def mainQueryHandler(update: Update, context: CallbackContext) -> None:
             global selectedPost
             selectedPost = query.data
             postSelection(update, context, selectedPost)
-            inputMode = "addButton"
+            inputMode = "addButtonText"
         except KeyError as ke:
             print("await for input",selectedPost)
 
-    if(inputMode == "addButton"):
+    if(inputMode == "addButtonText"):
         addButtons(update,context,mod="first")
 
 def editPosts(update: Update, context: CallbackContext):
@@ -652,7 +685,7 @@ def awaitForInput(update: Updater, context: CallbackContext):
             global postWillBeSaved
             postWillBeSaved = update.message.text
             inputMode = "PostContent"
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Please Type Post Content")
+            context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_postContent)
         except IndexError:  # ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
             pass
 
@@ -679,10 +712,16 @@ def awaitForInput(update: Updater, context: CallbackContext):
     elif(inputMode == "waitForNewAdText"):
         newContent = update.message.text
         editSelectedPost(update,context,newContent)
-    elif(inputMode == "addButton"):
-        userInput = update.message.text
-        buttonText = userInput.split(",")[0]
-        buttonURL = userInput.split(",")[1]
+
+    elif(inputMode == "addButtonText"):
+        global buttonText
+        buttonText = update.message.text
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Enter The URL That Button Will Redirect")
+        inputMode = "addButtonURL"
+
+    elif(inputMode == "addButtonURL"):
+        global buttonURL
+        buttonURL = update.message.text
 
         addButtons(update,context,buttonText,buttonURL,mod="inputici")
 
@@ -778,7 +817,7 @@ def addOrSkipMedia(update: Update, context: CallbackContext):
         listMedias(update, context)
     elif(query.data == "skip_media"):
         addMedia = False
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Please Type Post Name")
+        context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_postName)
         inputMode = "PostName"
 
     medias = os.listdir("medias/")  # returns list
@@ -1269,14 +1308,21 @@ def addButtons(update,context,buttonText = None,buttonURL = None,mod = None):
 
     lastItem = [[InlineKeyboardButton(botTexts.string_addButton, callback_data="add button")], [InlineKeyboardButton("OK 👌", callback_data="add button ok")]]
     if(mod == "first"):
-        context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_addButtonURL, reply_markup=InlineKeyboardMarkup(lastItem))
+        context.bot.send_message(chat_id=update.effective_chat.id,text="Please Enter Your Button's Text", reply_markup=InlineKeyboardMarkup(lastItem))
     else:
         try:
             if(buttonText == None or buttonURL == None):
                 raise ValueError
             addButtonsList.append([InlineKeyboardButton(buttonText,url=buttonURL)])
             buttonsFinal = addButtonsList + lastItem
-            context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_buttonSuccesfullyAdded, reply_markup=InlineKeyboardMarkup(buttonsFinal))
+            try:
+                context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_buttonSuccesfullyAdded, reply_markup=InlineKeyboardMarkup(buttonsFinal))
+            except:
+                if(buttonURL[0] == "@"):
+                    buttonURL = "https://t.me/{}".format(buttonURL)
+                    context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_buttonSuccesfullyAdded,reply_markup=InlineKeyboardMarkup(buttonsFinal))
+                else:
+                    sendMistake(update,context, message = botTexts.string_urlIsInvalid)
 
             buttonDatasLocal = [buttonText, buttonURL]
             buttonDatas.append(buttonDatasLocal)
@@ -1313,8 +1359,7 @@ def startPublishing(update,context):
 
         publishPosts(update, context, JobFileConvertedDict, timer)
     except KeyError:
-        context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseArrangeTimer)
-        updateCommand(update,context,mode="backTap")
+        sendMistake(update,context,message=botTexts.string_pleaseArrangeTimer)
 
 def languageLoader():
     jsonFile = open("userJson.json", "r")
