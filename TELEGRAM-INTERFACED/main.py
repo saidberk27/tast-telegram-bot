@@ -34,7 +34,7 @@ def updateCommand(update: Updater,context: CallbackContext,mode = "updateData"):
         ],
         [InlineKeyboardButton(botTexts.string_publishingAds, callback_data='publishingads')],
         [InlineKeyboardButton(botTexts.string_changeLanguage, callback_data='changelanguage')],
-        [InlineKeyboardButton(botTexts.string_botIsActive, callback_data='botisactive')]
+        [InlineKeyboardButton(botTexts.string_addManager, callback_data='add manager')]
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -44,7 +44,7 @@ def updateCommand(update: Updater,context: CallbackContext,mode = "updateData"):
     elif(mode == "backTap"):
         context.bot.send_message(chat_id=update.effective_chat.id, text=(botTexts.string_pleaseSelect),reply_markup=reply_markup)
 
-def sendMistake(update: Updater,context: CallbackContext,message = botTexts.string_somethingWentWrong):
+def sendMistake(update: Updater,context: CallbackContext,message = "Something Went Wrong"):
     global currentUser
     global inputMode
     global selectedGroup
@@ -70,7 +70,7 @@ def sendMistake(update: Updater,context: CallbackContext,message = botTexts.stri
         ],
         [InlineKeyboardButton(botTexts.string_publishingAds, callback_data='publishingads')],
         [InlineKeyboardButton(botTexts.string_changeLanguage, callback_data='changelanguage')],
-        [InlineKeyboardButton(botTexts.string_botIsActive, callback_data='botisactive')]
+        [InlineKeyboardButton(botTexts.string_addManager, callback_data='add manager')]
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -86,6 +86,7 @@ def startCommand(update: Update, context: CallbackContext) -> None:
     global buttonDatas
 
     print("BOT IS ACTIVE")
+
     languageLoader()
 
     inputMode = "None"
@@ -103,15 +104,15 @@ def startCommand(update: Update, context: CallbackContext) -> None:
     if (userCheck(username)):
         keyboard = [
             [
-                InlineKeyboardButton("🔥 CHANNELS", callback_data='channels'),
-                InlineKeyboardButton("💥 POSTS", callback_data='posts'),
+                InlineKeyboardButton(botTexts.string_channels, callback_data='channels'),
+                InlineKeyboardButton(botTexts.string_posts , callback_data='posts'),
             ],
-            [InlineKeyboardButton("💬 PUBLISHING ADS", callback_data='publishingads')],
-            [InlineKeyboardButton("CHANGE LANGUAGE 🇮🇱/🇬🇧", callback_data='changelanguage')],
-            [InlineKeyboardButton("✅ BOT IS ACTIVE", callback_data='botisactive')]
+            [InlineKeyboardButton(botTexts.string_publishingAds, callback_data='publishingads')],
+            [InlineKeyboardButton(botTexts.string_changeLanguage, callback_data='changelanguage')],
+            [InlineKeyboardButton(botTexts.string_addManager, callback_data='add manager')]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        global botTexts
+
         context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_helloMessage.format(user['username']),reply_markup=reply_markup)
 
     else:
@@ -187,6 +188,9 @@ def mainQueryHandler(update: Update, context: CallbackContext) -> None:
 
     if(query.data == "back"):
         updateCommand(update,context,mode="backTap")
+
+    if(query.data == "add manager"):
+        addManager(update,context)
 
     if(query.data == "add_channel"):
         addChannel(update,context,showMessage=True)
@@ -689,6 +693,9 @@ def awaitForInput(update: Updater, context: CallbackContext):
         except IndexError:  # ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
             pass
 
+    if(inputMode == "addManager"):
+        addSelectedManager(update,context,userName = update.message.text)
+
     elif(inputMode == "PostContent"):
         global addMedia
         try:
@@ -805,6 +812,42 @@ def addPost(update, context, groupInfo = None,skip=True):
     userJsonWrite.write(json.dumps(convertedDict))
     userJsonWrite.close()
     updateCommand(update, context)
+
+def addManager(update,context):
+    global inputMode
+    inputMode = "addManager"
+    context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseEnterManagerUserName)
+
+
+
+def addSelectedManager(update,context, userName):
+    jsonFile = open("userJson.json", "r")
+    jsonText = jsonFile.read()
+    jsonFile.close()
+    convertedDict = json.loads(jsonText)
+
+    try:
+        managerList = convertedDict['managers']
+        if(len(managerList) >= 2):
+            raise ValueError
+        managerList.append(userName)
+        convertedDict['managers'] = managerList
+
+        userJsonWrite = open("userJson.json", "w")
+        userJsonWrite.write(json.dumps(convertedDict))
+        userJsonWrite.close()
+
+        userListWrite = open("userList.txt","a")
+        userListWrite.write("\n{}".format(userName))
+        userListWrite.close()
+
+        updateCommand(update,context)
+
+    except ValueError:
+        sendMistake(update,context,message="You Have Maximum Number Of Managers.Can't Be Added.")
+
+
+
 
 def addOrSkipMedia(update: Update, context: CallbackContext):
     global addMedia
