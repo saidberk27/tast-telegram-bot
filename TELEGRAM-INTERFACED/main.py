@@ -233,6 +233,9 @@ def mainQueryHandler(update: Update, context: CallbackContext) -> None:
         startPublishing(update,context)
         updateCommand(update,context)
 
+    if(query.data == "remove job"):
+        removeJob(update,context)
+
     if(query.data == "NO"):
         updateCommand(update,context,mode="backTap")
 
@@ -337,6 +340,7 @@ def editJobs(update: Update, context: CallbackContext):
 
     editButton = [[InlineKeyboardButton(botTexts.string_addTimer, callback_data="add timer")],
                   [InlineKeyboardButton(botTexts.string_startPublishing, callback_data="start publishing")],
+                  [InlineKeyboardButton(botTexts.string_removeJob, callback_data="remove job")],
                   [InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
     reply_markup_edit = InlineKeyboardMarkup(editButton)
 
@@ -1404,6 +1408,9 @@ def startPublishing(update,context):
     except KeyError:
         sendMistake(update,context,message=botTexts.string_pleaseArrangeTimer)
 
+def removeJob(update,context):
+    os.remove("jobs/{}".format(selectedJob))
+    updateCommand(update,context)
 def languageLoader():
     jsonFile = open("userJson.json", "r")
     jsonText = jsonFile.read()
