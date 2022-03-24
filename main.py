@@ -213,7 +213,11 @@ def mainQueryHandler(update: Update, context: CallbackContext) -> None:
     if(query.data == "add to post"):
         inputMode = "PostName"
         global botTexts
-        context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_postName)
+
+        backButton = [[InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
+        reply_markup = InlineKeyboardMarkup(backButton)
+
+        context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_postName,reply_markup=reply_markup)
 
     if(query.data == "add button ok"):
         saveJob(update,context)
@@ -681,8 +685,11 @@ def removeFolder(update,context):
 def addNewFolder(update,context):
     global inputMode
     inputMode = "folderName"
-    global botTexts
-    context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseTypeFolderName)
+
+    backButton = [[InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
+    reply_markup = InlineKeyboardMarkup(backButton)
+
+    context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseTypeFolderName,reply_markup=reply_markup)
 
 
 def awaitForInput(update: Updater, context: CallbackContext):
@@ -696,8 +703,11 @@ def awaitForInput(update: Updater, context: CallbackContext):
             pre_groupWillBeSaved = update.message.text
             groupWillBeSaved = pre_groupWillBeSaved.replace(" ","") #BR Blank Removed Demek.
             inputMode = "groupId"
-            global botTexts
-            context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseTypeGroupId)
+
+            backButton = [[InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
+            reply_markup = InlineKeyboardMarkup(backButton)
+
+            context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseTypeGroupId,reply_markup=reply_markup)
 
         except IndexError: #ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
             pass
@@ -712,7 +722,7 @@ def awaitForInput(update: Updater, context: CallbackContext):
 
     elif(inputMode == "folderName"):
         global folderName
-        folderName = update.message.text
+        folderName = "{}_folder".format(update.message.text)
 
         jsonFile = open("userJson.json", "r")
         jsonText = jsonFile.read()
@@ -739,7 +749,11 @@ def awaitForInput(update: Updater, context: CallbackContext):
             pre_postWillBeSaved = update.message.text
             postWillBeSaved = pre_postWillBeSaved.replace(" ","") #BR Blank Removed Demek.
             inputMode = "PostContent"
-            context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_postContent)
+
+            backButton = [[InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
+            reply_markup = InlineKeyboardMarkup(backButton)
+
+            context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_postContent, reply_markup=reply_markup)
         except IndexError:  # ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
             pass
 
@@ -790,7 +804,11 @@ def addChannel(update, context, ekleme=False, groupInfo = None,showMessage=False
     inputMode = "GroupName"
     if(showMessage):
         global botTexts
-        context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseEnterTheGroupName)
+
+        backButton = [[InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
+        reply_markup = InlineKeyboardMarkup(backButton)
+
+        context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseEnterTheGroupName,reply_markup=reply_markup)
     print("ADD CHANNEL")
     if(ekleme):
         groupInfoList = groupInfo.split(",")
@@ -871,8 +889,6 @@ def addManager(update,context):
     reply_markup = InlineKeyboardMarkup(backButton)
     context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseEnterManagerUserName,reply_markup=reply_markup)
 
-
-
 def addSelectedManager(update,context, userName):
     jsonFile = open("userJson.json", "r")
     jsonText = jsonFile.read()
@@ -913,7 +929,11 @@ def addOrSkipMedia(update: Update, context: CallbackContext):
         listMedias(update, context)
     elif(query.data == "skip_media"):
         addMedia = False
-        context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_postName)
+
+        backButton = [[InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
+        reply_markup = InlineKeyboardMarkup(backButton)
+
+        context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_postName,reply_markup=reply_markup)
         inputMode = "PostName"
 
     medias = os.listdir("medias/")  # returns list
