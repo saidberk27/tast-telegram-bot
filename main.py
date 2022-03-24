@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
+from threading import Timer
 from telegram import *
 from telegram.ext import *
 import os
@@ -318,6 +319,7 @@ def removeSelectedChannel(update,context):
 
     updateCommand(update,context)
 
+
 def editSelectedPost(update,context,newText):
     print(newText)
     jsonFile = open("userJson.json", "r")
@@ -340,6 +342,7 @@ def editJobs(update: Update, context: CallbackContext):
 
     editButton = [[InlineKeyboardButton(botTexts.string_addTimer, callback_data="add timer")],
                   [InlineKeyboardButton(botTexts.string_startPublishing, callback_data="start publishing")],
+                  [InlineKeyboardButton(botTexts.string_stopPublishing, callback_data="stop publishing")],
                   [InlineKeyboardButton(botTexts.string_removeJob, callback_data="remove job")],
                   [InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
     reply_markup_edit = InlineKeyboardMarkup(editButton)
@@ -350,8 +353,8 @@ def editJobs(update: Update, context: CallbackContext):
     if(dotJsonAdded in jobs and inputMode == "jobEdit"):
         global selectedJob
         selectedJob = dotJsonAdded
-        job_group = dotJsonAdded.split("-")[0]
-        job_post = dotJsonAdded.split("-")[1]
+        job_group = dotJsonAdded.split("_")[0]
+        job_post = dotJsonAdded.split("_")[1]
         context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_GroupFormatPostFormat.format(job_group,job_post), reply_markup=reply_markup_edit)
         jobFile = "jobs/{}".format(dotJsonAdded)
     else:
@@ -361,15 +364,9 @@ def editJobs(update: Update, context: CallbackContext):
         addTimer(update,context)
 
     if(query.data == "stop publishing"):
-        jobFile = open("jobs/{}".format(selectedJob), "r")
-        jobText = jobFile.read()
-        jobFile.close()
-
-        JobFileConvertedDict = json.loads(jobText)
-        JobFileConvertedDict['isRun'] = 'False'
-        jobFileWrite = open("jobs/{}".format(selectedJob), "w")
-        jobFileWrite.write(json.dumps(JobFileConvertedDict))
-        jobFileWrite.close()
+        post_timer = "post_{}".format(selectedJob[:-5])
+        post_timer = eval(post_timer)
+        post_timer.cancel()
 
         updateCommand(update,context)
 
@@ -1006,9 +1003,22 @@ def publishYesorNo(update,context):
     buttons = [[InlineKeyboardButton(botTexts.string_yes,callback_data='YES')],[InlineKeyboardButton(botTexts.string_no,callback_data='NO')]]
     context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_areYouSure, reply_markup=InlineKeyboardMarkup(buttons))
 
+class IntervalTimer(Timer):
+    def run(self):
+        while not self.finished.wait(self.interval):
+            self.function(*self.args, **self.kwargs)
+        print("Ad Stopped")
 
-def publishPosts(update, context, jobData, timer):
-    global currentUser
+def publishSelectedPost(update, context, jobData, timer):
+    print("NEW METHOD")
+
+
+    jobFile = open("jobs/{}".format(selectedJob), "r")
+    jobText = jobFile.read()
+    jobFile.close()
+    JobFileConvertedDict = json.loads(jobText)
+
+
     print("Posts are being publishing.")
     jobGroupName = jobData['GroupName']
     jobPostName = jobData['PostName']
@@ -1022,318 +1032,134 @@ def publishPosts(update, context, jobData, timer):
     channel_id = convertedDictUsers["channel-data"][jobGroupName]
     ad_data = convertedDictUsers["post-data"][jobPostName]
     ad_text = ad_data.split(",")[0]
+
     try:
         ad_media = ad_data.split(",")[1]
     except IndexError:
         ad_media = None
 
+    publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media)
+
+def display(msg):
+    print(msg)
+
+class RepeatTimer(Timer):
+    def run(self):
+        while not self.finished.wait(self.interval):
+            self.function(*self.args, **self.kwargs)
+        print("done")
+
+def publishPosts(update, context, jobData, timer):
+
+
     if (timer == "1 Second"):
-        def Interval():
-            jobFile = open("jobs/{}".format(selectedJob), "r")
-            jobText = jobFile.read()
-            JobFileConvertedDict = json.loads(jobText)
-            isRun = JobFileConvertedDict['isRun']
+        post_timer = "post_{}".format(selectedJob[:-5])
+        globals()[post_timer] = IntervalTimer(1, publishSelectedPost, [update,context,jobData,timer])
 
-            if(isRun == "False"):
-                print("pass")
-                jobFile.close()
-
-            elif(isRun == "True"):
-                print(isRun)
-                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media, isRun=isRun)
-                if True:
-                    Timer(1, Interval).start()
-                jobFile.close()
-
-        Interval()
+        post_timer = eval(post_timer)
+        post_timer.start()
 
     if (timer == "10 Seconds"):
-        def Interval():
-            jobFile = open("jobs/{}".format(selectedJob), "r")
-            jobText = jobFile.read()
-            JobFileConvertedDict = json.loads(jobText)
-            isRun = JobFileConvertedDict['isRun']
+        post_timer = "post_{}".format(selectedJob[:-5])
+        globals()[post_timer] = IntervalTimer(10, publishSelectedPost, [update,context,jobData,timer])
 
-            if (isRun == "False"):
-                print("pass")
-                jobFile.close()
-
-            elif (isRun == "True"):
-                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
-                        isRun=isRun)
-                if True:
-                    Timer(10, Interval).start()
-
-                jobFile.close()
-
-        Interval()
+        post_timer = eval(post_timer)
+        post_timer.start()
 
     if (timer == "30 Seconds"):
-        def Interval():
-            jobFile = open("jobs/{}".format(selectedJob), "r")
-            jobText = jobFile.read()
-            JobFileConvertedDict = json.loads(jobText)
-            isRun = JobFileConvertedDict['isRun']
+        post_timer = "post_{}".format(selectedJob[:-5])
+        globals()[post_timer] = IntervalTimer(30, publishSelectedPost, [update,context,jobData,timer])
 
-            if (isRun == "False"):
-                print("pass")
-                jobFile.close()
-
-            elif (isRun == "True"):
-                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
-                        isRun=isRun)
-                if True:
-                    Timer(30, Interval).start()
-
-                jobFile.close()
-
-        Interval()
+        post_timer = eval(post_timer)
+        post_timer.start()
 
     if (timer == "45 Seconds"):
-        def Interval():
-            jobFile = open("jobs/{}".format(selectedJob), "r")
-            jobText = jobFile.read()
-            JobFileConvertedDict = json.loads(jobText)
-            isRun = JobFileConvertedDict['isRun']
+        post_timer = "post_{}".format(selectedJob[:-5])
+        globals()[post_timer] = IntervalTimer(45, publishSelectedPost, [update, context, jobData, timer])
 
-            if (isRun == "False"):
-                print("pass")
-                jobFile.close()
+        post_timer = eval(post_timer)
+        post_timer.start()
 
-            elif (isRun == "True"):
-                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
-                        isRun=isRun)
-                if True:
-                    Timer(45, Interval).start()
-
-                jobFile.close()
-
-        Interval()
     if(timer == "1 Minute"):
-        def Interval():
-            jobFile = open("jobs/{}".format(selectedJob), "r")
-            jobText = jobFile.read()
-            JobFileConvertedDict = json.loads(jobText)
-            isRun = JobFileConvertedDict['isRun']
+        post_timer = "post_{}".format(selectedJob[:-5])
+        globals()[post_timer] = IntervalTimer(60, publishSelectedPost, [update, context, jobData, timer])
 
-            if (isRun == "False"):
-                print("pass")
-                jobFile.close()
+        post_timer = eval(post_timer)
+        post_timer.start()
 
-            elif (isRun == "True"):
-                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
-                        isRun=isRun)
-                if True:
-                    Timer(60, Interval).start()
-
-                jobFile.close()
-
-        Interval()
     if (timer == "10 Minutes"):
-        def Interval():
-            jobFile = open("jobs/{}".format(selectedJob), "r")
-            jobText = jobFile.read()
-            JobFileConvertedDict = json.loads(jobText)
-            isRun = JobFileConvertedDict['isRun']
+        post_timer = "post_{}".format(selectedJob[:-5])
+        globals()[post_timer] = IntervalTimer(600, publishSelectedPost, [update,context,jobData,timer])
 
-            if (isRun == "False"):
-                print("pass")
-                jobFile.close()
-
-            elif (isRun == "True"):
-                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
-                        isRun=isRun)
-                if True:
-                    Timer(600, Interval).start()
-
-                jobFile.close()
-
-        Interval()
+        post_timer = eval(post_timer)
+        post_timer.start()
 
     if (timer == "30 Minutes"):
-        def Interval():
-            jobFile = open("jobs/{}".format(selectedJob), "r")
-            jobText = jobFile.read()
-            JobFileConvertedDict = json.loads(jobText)
-            isRun = JobFileConvertedDict['isRun']
+        post_timer = "post_{}".format(selectedJob[:-5])
+        globals()[post_timer] = IntervalTimer(1800, publishSelectedPost, [update, context, jobData, timer])
 
-            if (isRun == "False"):
-                print("pass")
-                jobFile.close()
-
-            elif (isRun == "True"):
-                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
-                        isRun=isRun)
-                if True:
-                    Timer(1800, Interval).start()
-
-                jobFile.close()
-
-        Interval()
+        post_timer = eval(post_timer)
+        post_timer.start()
 
     if (timer == "1 Hour"):
-        def Interval():
-            jobFile = open("jobs/{}".format(selectedJob), "r")
-            jobText = jobFile.read()
-            JobFileConvertedDict = json.loads(jobText)
-            isRun = JobFileConvertedDict['isRun']
+        post_timer = "post_{}".format(selectedJob[:-5])
+        globals()[post_timer] = IntervalTimer(3600, publishSelectedPost, [update,context,jobData,timer])
 
-            if (isRun == "False"):
-                print("pass")
-                jobFile.close()
-
-            elif (isRun == "True"):
-                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
-                        isRun=isRun)
-                if True:
-                    Timer(3600, Interval).start()
-
-                jobFile.close()
-
-        Interval()
+        post_timer = eval(post_timer)
+        post_timer.start()
 
     if (timer == "3 Hours"):
-        def Interval():
-            jobFile = open("jobs/{}".format(selectedJob), "r")
-            jobText = jobFile.read()
-            JobFileConvertedDict = json.loads(jobText)
-            isRun = JobFileConvertedDict['isRun']
+        post_timer = "post_{}".format(selectedJob[:-5])
+        globals()[post_timer] = IntervalTimer(10800, publishSelectedPost, [update,context,jobData,timer])
 
-            if (isRun == "False"):
-                print("pass")
-                jobFile.close()
+        post_timer = eval(post_timer)
+        post_timer.start()
 
-            elif (isRun == "True"):
-                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
-                        isRun=isRun)
-                if True:
-                    Timer(10800, Interval).start()
-
-                jobFile.close()
-
-        Interval()
     if (timer == "6 Hours"):
-        def Interval():
-            jobFile = open("jobs/{}".format(selectedJob), "r")
-            jobText = jobFile.read()
-            JobFileConvertedDict = json.loads(jobText)
-            isRun = JobFileConvertedDict['isRun']
+        post_timer = "post_{}".format(selectedJob[:-5])
+        globals()[post_timer] = IntervalTimer(21600, publishSelectedPost, [update,context,jobData,timer])
 
-            if (isRun == "False"):
-                print("pass")
-                jobFile.close()
-
-            elif (isRun == "True"):
-                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
-                        isRun=isRun)
-                if True:
-                    Timer(21.600, Interval).start()
-
-                jobFile.close()
-
-        Interval()
+        post_timer = eval(post_timer)
+        post_timer.start()
 
     if (timer == "12 Hours"):
-        def Interval():
-            jobFile = open("jobs/{}".format(selectedJob), "r")
-            jobText = jobFile.read()
-            JobFileConvertedDict = json.loads(jobText)
-            isRun = JobFileConvertedDict['isRun']
+        post_timer = "post_{}".format(selectedJob[:-5])
+        globals()[post_timer] = IntervalTimer(43200, publishSelectedPost, [update,context,jobData,timer])
 
-            if (isRun == "False"):
-                print("pass")
-                jobFile.close()
-
-            elif (isRun == "True"):
-                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
-                        isRun=isRun)
-                if True:
-                    Timer(43.200, Interval).start()
-
-                jobFile.close()
-
-        Interval()
-
+        post_timer = eval(post_timer)
+        post_timer.start()
     if (timer == "1 Day"):
-        def Interval():
-            jobFile = open("jobs/{}".format(selectedJob), "r")
-            jobText = jobFile.read()
-            JobFileConvertedDict = json.loads(jobText)
-            isRun = JobFileConvertedDict['isRun']
+        timer86400 = IntervalTimer(86400, publishSelectedPost, [update, context, jobData, timer])
+        timer86400.start()
+        print("1 Day Has Started")
 
-            if (isRun == "False"):
-                print("pass")
-                jobFile.close()
-
-            elif (isRun == "True"):
-                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
-                        isRun=isRun)
-                if True:
-                    Timer(86.400, Interval).start()
-
-                jobFile.close()
-
-        Interval()
     if (timer == "3 Days"):
-        def Interval():
-            jobFile = open("jobs/{}".format(selectedJob), "r")
-            jobText = jobFile.read()
-            JobFileConvertedDict = json.loads(jobText)
-            isRun = JobFileConvertedDict['isRun']
-
-            if (isRun == "False"):
-                print("pass")
-                jobFile.close()
-
-            elif (isRun == "True"):
-                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
-                        isRun=isRun)
-                if True:
-                    Timer(259.200, Interval).start()
-
-                jobFile.close()
-
-        Interval()
+        timer259200 = IntervalTimer(259.200, publishSelectedPost, [update, context, jobData, timer])
+        timer259200.start()
+        print("3 Days Has Started")
 
     if (timer == "1 Week"):
-        def Interval():
-            jobFile = open("jobs/{}".format(selectedJob), "r")
-            jobText = jobFile.read()
-            JobFileConvertedDict = json.loads(jobText)
-            isRun = JobFileConvertedDict['isRun']
+        timer604800 = IntervalTimer(604.800, publishSelectedPost, [update, context, jobData, timer])
+        timer604800.start()
+        print("1 Week Has Started")
 
-            if (isRun == "False"):
-                print("pass")
-                jobFile.close()
 
-            elif (isRun == "True"):
-                publish(update, context, channelID=channel_id, adText=ad_text, buttons=jobButtons, adFile=ad_media,
-                        isRun=isRun)
-                if True:
-                    Timer(604.800, Interval).start()
-
-                jobFile.close()
-
-        Interval()
-
-def publish(update,context,channelID,adText,adFile,buttons,isRun = "False"):
+def publish(update,context,channelID,adText,adFile,buttons):
     buttonsFinal = []
-    if(isRun == "False"):
-        print("don't run")
+
+    print("Run")
+    if(adFile == None):
+        for button in buttons:
+            buttonsFinal.append([InlineKeyboardButton("{}".format(button[0]), url="{}".format(button[1]))])
+
+        context.bot.send_message(chat_id=channelID, text=adText ,reply_markup=InlineKeyboardMarkup(buttonsFinal))
+
     else:
-        print("Run")
-        if(adFile == None):
-            for button in buttons:
-                buttonsFinal.append([InlineKeyboardButton("{}".format(button[0]), url="{}".format(button[1]))])
+        for button in buttons:
+            buttonsFinal.append([InlineKeyboardButton("{}".format(button[0]), url="{}".format(button[1]))])
 
-            context.bot.send_message(chat_id=channelID, text=adText ,reply_markup=InlineKeyboardMarkup(buttonsFinal))
-
-        else:
-            for button in buttons:
-                buttonsFinal.append([InlineKeyboardButton("{}".format(button[0]), url="{}".format(button[1]))])
-
-            path = "medias/{}".format(adFile)
-            context.bot.send_photo(channelID, photo=open(path, 'rb'), caption=adText,reply_markup=InlineKeyboardMarkup(buttonsFinal))
+        path = "medias/{}".format(adFile)
+        context.bot.send_photo(channelID, photo=open(path, 'rb'), caption=adText,reply_markup=InlineKeyboardMarkup(buttonsFinal))
 
 def deactivateBot():
     print("Bot Is Deactivating")
@@ -1385,7 +1211,7 @@ def saveJob(update,context):
     global buttonDatas
     global timer
     jobData = {"GroupName":selectedGroup,"PostName":selectedPost,"Buttons":buttonDatas}
-    jobFile = open("jobs/{}-job.json".format(selectedGroup + "-" + selectedPost),"w")
+    jobFile = open("jobs/{}_job.json".format(selectedGroup + "_" + selectedPost),"w")
     jobFile.write(json.dumps(jobData))
 
     updateCommand(update,context)
