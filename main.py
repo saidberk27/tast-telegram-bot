@@ -362,6 +362,12 @@ def editJobs(update: Update, context: CallbackContext):
     if(query.data == "add timer"):
         addTimer(update,context)
 
+    if (query.data == "stop publishing"):
+        post_timer = "post_{}".format(selectedJob[:-5])
+        post_timer = eval(post_timer)
+        post_timer.cancel()
+
+        updateCommand(update, context)
 
     if (query.data == "1 Second"):
         with open(jobFile, "r") as JobFile:
