@@ -866,7 +866,10 @@ def addPost(update, context, groupInfo = None,skip=True):
 def addManager(update,context):
     global inputMode
     inputMode = "addManager"
-    context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseEnterManagerUserName)
+    backButton = [[InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
+
+    reply_markup = InlineKeyboardMarkup(backButton)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseEnterManagerUserName,reply_markup=reply_markup)
 
 
 
