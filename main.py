@@ -687,10 +687,12 @@ def awaitForInput(update: Updater, context: CallbackContext):
     if(inputMode == "GroupName"):
         try:
             global groupWillBeSaved
-            groupWillBeSaved = update.message.text
+            pre_groupWillBeSaved = update.message.text
+            groupWillBeSaved = pre_groupWillBeSaved.replace(" ","") #BR Blank Removed Demek.
             inputMode = "groupId"
             global botTexts
             context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseTypeGroupId)
+
         except IndexError: #ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
             pass
 
@@ -728,7 +730,8 @@ def awaitForInput(update: Updater, context: CallbackContext):
     elif(inputMode == "PostName"):
         try:
             global postWillBeSaved
-            postWillBeSaved = update.message.text
+            pre_postWillBeSaved = update.message.text
+            postWillBeSaved = pre_postWillBeSaved.replace(" ","") #BR Blank Removed Demek.
             inputMode = "PostContent"
             context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_postContent)
         except IndexError:  # ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
