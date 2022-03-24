@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-import time
 from threading import Timer
+
+import telegram
 from telegram import *
 from telegram.ext import *
 import os
@@ -361,12 +362,6 @@ def editJobs(update: Update, context: CallbackContext):
     if(query.data == "add timer"):
         addTimer(update,context)
 
-    if (query.data == "stop publishing"):
-        post_timer = "post_{}".format(selectedJob[:-5])
-        post_timer = eval(post_timer)
-        post_timer.cancel()
-
-        updateCommand(update, context)
 
     if (query.data == "1 Second"):
         with open(jobFile, "r") as JobFile:
@@ -1197,7 +1192,7 @@ def publish(update,context,channelID,adText,adFile,buttons):
         for button in buttons:
             buttonsFinal.append([InlineKeyboardButton("{}".format(button[0]), url="{}".format(button[1]))])
 
-        context.bot.send_message(chat_id=channelID, text=adText ,reply_markup=InlineKeyboardMarkup(buttonsFinal))
+        context.bot.send_message(chat_id=channelID, text=adText ,reply_markup=InlineKeyboardMarkup(buttonsFinal),parse_mode=telegram.ParseMode.MARKDOWN_V2)
 
     else:
         for button in buttons:
