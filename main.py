@@ -361,6 +361,12 @@ def editJobs(update: Update, context: CallbackContext):
     if(query.data == "add timer"):
         addTimer(update,context)
 
+    if (query.data == "stop publishing"):
+        post_timer = "post_{}".format(selectedJob[:-5])
+        post_timer = eval(post_timer)
+        post_timer.cancel()
+
+        updateCommand(update, context)
 
     if (query.data == "1 Second"):
         with open(jobFile, "r") as JobFile:
@@ -380,6 +386,8 @@ def editJobs(update: Update, context: CallbackContext):
         jobWrite = open(jobFile, "w")
         jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
+
+        startPublishing(update,context)
         updateCommand(update, context)
 
     if (query.data == "30 Seconds"):
@@ -389,7 +397,10 @@ def editJobs(update: Update, context: CallbackContext):
         jobWrite = open(jobFile, "w")
         jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
+
+        startPublishing(update,context)
         updateCommand(update, context)
+
 
     if (query.data == "45 Seconds"):
         with open(jobFile, "r") as JobFile:
@@ -398,6 +409,8 @@ def editJobs(update: Update, context: CallbackContext):
         jobWrite = open(jobFile, "w")
         jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
+
+        startPublishing(update,context)
         updateCommand(update, context)
 
     if(query.data == "1 Minute"):
@@ -407,6 +420,8 @@ def editJobs(update: Update, context: CallbackContext):
         jobWrite = open(jobFile,"w")
         jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
+
+        startPublishing(update,context)
         updateCommand(update, context)
 
     if(query.data == "10 Minutes"):
@@ -416,6 +431,8 @@ def editJobs(update: Update, context: CallbackContext):
         jobWrite = open(jobFile,"w")
         jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
+
+        startPublishing(update,context)
         updateCommand(update, context)
 
     if(query.data == "30 Minutes"):
@@ -425,6 +442,8 @@ def editJobs(update: Update, context: CallbackContext):
         jobWrite = open(jobFile,"w")
         jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
+
+        startPublishing(update,context)
         updateCommand(update, context)
 
     if(query.data == "1 Hour"):
@@ -434,6 +453,8 @@ def editJobs(update: Update, context: CallbackContext):
         jobWrite = open(jobFile,"w")
         jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
+
+        startPublishing(update,context)
         updateCommand(update, context)
 
     if(query.data == "3 Hours"):
@@ -443,6 +464,8 @@ def editJobs(update: Update, context: CallbackContext):
         jobWrite = open(jobFile,"w")
         jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
+
+        startPublishing(update,context)
         updateCommand(update, context)
 
     if(query.data == "6 Hours"):
@@ -452,6 +475,8 @@ def editJobs(update: Update, context: CallbackContext):
         jobWrite = open(jobFile,"w")
         jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
+
+        startPublishing(update,context)
         updateCommand(update, context)
 
     if(query.data == "12 Hours"):
@@ -461,6 +486,8 @@ def editJobs(update: Update, context: CallbackContext):
         jobWrite = open(jobFile,"w")
         jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
+
+        startPublishing(update,context)
         updateCommand(update, context)
 
     if (query.data == "1 Day"):
@@ -470,6 +497,7 @@ def editJobs(update: Update, context: CallbackContext):
         jobWrite = open(jobFile, "w")
         jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
+        startPublishing(update,context)
         updateCommand(update, context)
 
     if (query.data == "3 Days"):
@@ -479,6 +507,8 @@ def editJobs(update: Update, context: CallbackContext):
         jobWrite = open(jobFile, "w")
         jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
+
+        startPublishing(update,context)
         updateCommand(update, context)
 
     if (query.data == "1 Week"):
@@ -488,8 +518,9 @@ def editJobs(update: Update, context: CallbackContext):
         jobWrite = open(jobFile, "w")
         jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
-        updateCommand(update,context)
 
+        startPublishing(update,context)
+        updateCommand(update, context)
 
 def addTimer(update,context):
     timerButtons = [[InlineKeyboardButton(botTexts.string_1second, callback_data="1 Second"), InlineKeyboardButton(botTexts.string_10seconds, callback_data="10 Seconds"),InlineKeyboardButton(botTexts.string_30seconds, callback_data="30 Seconds"),InlineKeyboardButton(botTexts.string_45seconds, callback_data="45 Seconds")],[InlineKeyboardButton(botTexts.string_1minute, callback_data="1 Minute"), InlineKeyboardButton(botTexts.string_10minutes, callback_data="10 Minutes"),InlineKeyboardButton(botTexts.string_30minutes, callback_data="30 Minutes")], [InlineKeyboardButton(botTexts.string_1hour, callback_data="1 Hour"),InlineKeyboardButton(botTexts.string_3hours, callback_data="3 Hours"),InlineKeyboardButton(botTexts.string_6hours, callback_data="6 Hours")],[InlineKeyboardButton(botTexts.string_12hours, callback_data="12 Hours"),InlineKeyboardButton(botTexts.string_1day, callback_data="1 Day")],[InlineKeyboardButton(botTexts.string_3days, callback_data="3 Days"),InlineKeyboardButton(botTexts.string_1week, callback_data="1 Week")]]
@@ -1179,11 +1210,13 @@ def deactivateBot():
     print("Bot Is Deactivating")
 
 
-def fileListener(update,context):
+def fileListener(update: Update, context: CallbackContext):
     global inputMode
     print("image handler")
     if(inputMode == "save img"):
-        context.bot.get_file(update.message.document).download(custom_path="medias/nameless.jpg")
+        file_id = update.message.photo[-1].file_id
+
+        context.bot.get_file(file_id).download(custom_path="medias/nameless.jpg")
         context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseNameYourPhoto)
         inputMode = "image name"
 
@@ -1292,7 +1325,7 @@ if __name__ == '__main__':
     updater.dispatcher.add_handler(CallbackQueryHandler(languageSelectionQueryListener), group=5)
     updater.dispatcher.add_handler(CallbackQueryHandler(addOrSkipMedia), group=6)
 
-    dispatcher.add_handler(MessageHandler(Filters.document,fileListener))
+    dispatcher.add_handler(MessageHandler(Filters.photo,fileListener))
 
     runData = False
     currentUser = None
