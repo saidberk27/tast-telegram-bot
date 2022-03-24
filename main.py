@@ -100,8 +100,6 @@ def startCommand(update: Update, context: CallbackContext) -> None:
     user = update.message.from_user
     username = user['username']
 
-    currentUser = username
-
     if (userCheck(username)):
         keyboard = [
             [
@@ -128,7 +126,7 @@ def languageSelectionQueryListener(update: Update, context: CallbackContext):
     query.answer()
     query.message.delete() # SINGLE-CALL YAPTIM ( TEK BALON CIKIYOR BUTONA BASINCA )
     if(query.data == "changelanguage"):
-        languageOptions = [[InlineKeyboardButton("English 🇬🇧", callback_data="english")],[InlineKeyboardButton("Hebrew 🇮🇱", callback_data="hebrew")]]
+        languageOptions = [[InlineKeyboardButton("English 🇬🇧", callback_data="english")],[InlineKeyboardButton("Hebrew 🇮🇱", callback_data="hebrew")],[InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
         reply_markup = InlineKeyboardMarkup(languageOptions)
         context.bot.send_message(chat_id=update.effective_chat.id, text="PLease Select a Language",reply_markup=reply_markup)
 
@@ -363,12 +361,6 @@ def editJobs(update: Update, context: CallbackContext):
     if(query.data == "add timer"):
         addTimer(update,context)
 
-    if(query.data == "stop publishing"):
-        post_timer = "post_{}".format(selectedJob[:-5])
-        post_timer = eval(post_timer)
-        post_timer.cancel()
-
-        updateCommand(update,context)
 
     if (query.data == "1 Second"):
         with open(jobFile, "r") as JobFile:
@@ -377,6 +369,8 @@ def editJobs(update: Update, context: CallbackContext):
         jobWrite = open(jobFile, "w")
         jobWrite.write(json.dumps(JobFileConvertedDict))
         jobWrite.close()
+
+        startPublishing(update,context)
         updateCommand(update, context)
 
     if (query.data == "10 Seconds"):
@@ -509,7 +503,8 @@ def userCheck(username):
     with open("userList.txt","r") as userFile:
         userList = userFile.readlines()
 
-    return usernameChecked in userList
+    print(userList)
+    return (usernameChecked in userList or usernameChecked[:-2])
 
 def getCheckedUserName(username):
     illegal_chars = ["<",">","/","*","?"," ","'",'"',":","|","\\"]
@@ -567,7 +562,7 @@ def listFolderPosts(update, context, folder = None):
     for adNames in folderData:
         buttons.append([InlineKeyboardButton(adNames,callback_data=adNames)])
 
-    staticsOfList = [InlineKeyboardButton(botTexts.string_addPostToFolder, callback_data='add post to folder')], [InlineKeyboardButton(botTexts.string_back, callback_data='back')]
+    staticsOfList = [InlineKeyboardButton(botTexts.string_addPostToFolder, callback_data='add post to folder')],[InlineKeyboardButton(botTexts.string_removeFolder, callback_data='remove folder')], [InlineKeyboardButton(botTexts.string_back, callback_data='back')]
     buttons = buttons + list(staticsOfList)
     reply_markup = InlineKeyboardMarkup(buttons)
     context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseSelectPost, reply_markup=reply_markup)
@@ -633,6 +628,24 @@ def folderSelection(update: Updater, context: CallbackContext):
     if(query.data == "add folder"):
         addNewFolder(update,context)
 
+    if(query.data == "remove folder"):
+        removeFolder(update,context)
+
+def removeFolder(update,context):
+    jsonFile = open("userJson.json", "r")
+    jsonText = jsonFile.read()
+    jsonFile.close()
+    convertedDict = json.loads(jsonText)
+
+    folderData = convertedDict["folder-data"]
+    del folderData[selectedFolder]
+    convertedDict["folder-data"] = folderData
+
+    jsonFileWrite = open("userJson.json", "w")
+    jsonFileWrite.write(json.dumps(convertedDict))
+    jsonFile.close()
+    updateCommand(update, context)
+
 def addNewFolder(update,context):
     global inputMode
     inputMode = "folderName"
@@ -680,6 +693,7 @@ def awaitForInput(update: Updater, context: CallbackContext):
         jsonFileWrite.write(json.dumps(convertedDict))
         jsonFile.close()
         updateCommand(update,context)
+
 
     if (inputMode == "image name"):
         os.rename("medias/nameless.jpg", "medias/{}.jpg".format(update.message.text))
