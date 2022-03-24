@@ -1411,6 +1411,7 @@ def startPublishing(update,context):
 def removeJob(update,context):
     os.remove("jobs/{}".format(selectedJob))
     updateCommand(update,context)
+
 def languageLoader():
     jsonFile = open("userJson.json", "r")
     jsonText = jsonFile.read()
@@ -1423,7 +1424,8 @@ def languageLoader():
         elif(convertedDict["language"] == "hw"):
             botTexts = STRINGS_HW
         else:
-            botTexts = STRINGS_EN
+            botTexts = STRINGS_HW
+
     except KeyError:
         botTexts = STRINGS_EN
 
