@@ -220,6 +220,9 @@ def mainQueryHandler(update: Update, context: CallbackContext) -> None:
         context.bot.send_message(chat_id=update.effective_chat.id,text=botTexts.string_postName,reply_markup=reply_markup)
 
     if(query.data == "add button ok"):
+
+        addPost(update, context, groupInfo=postInfo, skip=addMedia)
+
         saveJob(update,context)
         inputMode = None
 
@@ -540,7 +543,9 @@ def userCheck(username):
         userList = userFile.readlines()
 
     print(userList)
-    return (usernameChecked in userList or usernameChecked[:-2])
+    usernameChecked = usernameChecked + "\n"
+    print(usernameChecked)
+    return usernameChecked in userList
 
 def getCheckedUserName(username):
     illegal_chars = ["<",">","/","*","?"," ","'",'"',":","|","\\"]
@@ -696,6 +701,7 @@ def awaitForInput(update: Updater, context: CallbackContext):
     global inputMode
     print("Trigerred",inputMode)
 
+    update.message.delete()
 
     if(inputMode == "GroupName"):
         try:
@@ -760,12 +766,20 @@ def awaitForInput(update: Updater, context: CallbackContext):
     elif(inputMode == "addManager"):
         addSelectedManager(update,context,userName = update.message.text)
 
+
     elif(inputMode == "PostContent"):
         global addMedia
         try:
             postContent = update.message.text
             postInfo = postWillBeSaved + "," + postContent
-            addPost(update, context, groupInfo=postInfo, skip=addMedia)
+            lastItem = [[InlineKeyboardButton(botTexts.string_addButton, callback_data="add button")],
+                        [InlineKeyboardButton("OK 👌", callback_data="add button ok")]]
+
+            context.bot.send_message(chat_id=update.effective_chat.id,
+                                     text="Please Enter Your Button's Text (Tap OK to Skip) ",
+                                     reply_markup=InlineKeyboardMarkup(lastItem))
+            addButtons(update,context,postInfo)
+
         except IndexError:  # ADD CHANNEL'I YAKALAYIP INDEXERROR VERMEMESI ICIN
             pass
 
@@ -924,6 +938,7 @@ def addOrSkipMedia(update: Update, context: CallbackContext):
 
     query = update.callback_query
     query.answer()
+
     if(query.data == "add_media"):
         addMedia = True
         listMedias(update, context)

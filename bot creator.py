@@ -1,6 +1,59 @@
 import os
 import json
 import time
+import shutil
+
+def arrangeManagers(userName):
+    jsonFile = open("{}/userJson.json".format(userName), "r")
+    jsonText = jsonFile.read()
+    jsonFile.close()
+    convertedDict = json.loads(jsonText)
+    managerList = convertedDict['managers']
+    print("Managers of user = {}".format(managerList))
+    selection = input("PLEASE TYPE \n 1 for REMOVE MANAGER \n 2 for ADD MANAGER")
+
+    userFile = open("{}/userList.txt".format(userName), "r")
+    userFileContent = userFile.readlines()
+    userFile.close()
+
+    if(selection == "1"):
+        managerWillBeRemoved = input("Please Type the UserName of the Manager You Want to Remove")
+        managerList.remove(managerWillBeRemoved)
+        convertedDict['managers'] = managerList
+
+        userJsonWrite = open("{}/userJson.json".format(userName), "w")
+        userJsonWrite.write(json.dumps(convertedDict))
+        userJsonWrite.close()
+
+        try:
+            userFileContent.remove(managerWillBeRemoved)
+        except ValueError:
+            userFileContent.remove(managerWillBeRemoved + "\n")
+
+        userFileWrite = open("{}/userList.txt".format(userName), "w")
+        for user in userFileContent:
+            userFileWrite.write(user + "\n")
+
+        print("Manager Succesfully Removed")
+
+
+    if (selection == "2"):
+        managerWillBeAdded = input("Please Type the UserName of the Manager You Want to Add")
+        managerList.append(managerWillBeAdded)
+        convertedDict['managers'] = managerList
+
+        userJsonWrite = open("{}/userJson.json".format(userName), "w")
+        userJsonWrite.write(json.dumps(convertedDict))
+        userJsonWrite.close()
+
+        userFileContent.append(managerWillBeAdded)
+
+        userFileWrite = open("{}/userList.txt".format(userName), "a")
+        for user in userFileContent:
+            userFileWrite.write(user + "\n")
+        userFileWrite.close()
+
+        print("Manager Succesfully Added")
 
 
 def createFolders(userName,botToken):
@@ -49,14 +102,33 @@ def createFolders(userName,botToken):
 
 if __name__ == '__main__':
     while True:
-        selection = input("PLEASE SELECT ")
-        userName = input("Please Type Username of User of This Bot: ")
-        botToken = input("Please Enter Bot Token: ")
-        print("DISCLAIMER! MAKE SURE YOUR BOT HAS BEEN ADDED TO EVERY GROUP YOU WANT TO PUBLISH ADVERTISEMENTS (BEING ADMIN IS NOT REQUIRED)")
-        try:
-            createFolders(userName,botToken)
-            time.sleep(5)
-        except FileExistsError:
-            print("User Already Saved")
-            time.sleep(5)
+        selection = input("PLEASE TYPE \n 1 for CREATE BOT: \n 2 for DELETE BOT: \n 3 for ARRANGE MANAGERS: \n 4 for QUIT: \n")
+        if(selection == "1"):
+            userName = input("Please Type Username of User of This Bot: ")
+            botToken = input("Please Enter Bot Token: ")
+            print("DISCLAIMER! MAKE SURE YOUR BOT HAS BEEN ADDED TO EVERY GROUP YOU WANT TO PUBLISH ADVERTISEMENTS (BEING ADMIN IS NOT REQUIRED)")
+            try:
+                createFolders(userName,botToken)
+                time.sleep(5)
+            except FileExistsError:
+                print("User Already Saved")
+                time.sleep(5)
 
+        if(selection == "2"):
+            try:
+                userName = input("Please Type Username of User You Want To Delete")
+                shutil.rmtree(userName)
+            except FileNotFoundError:
+                print("User Not Exist")
+                continue
+
+        if(selection == "3"):
+            try:
+                userName = input("Please Type Username of User You Want Arrange Managers")
+                arrangeManagers(userName)
+            except FileNotFoundError:
+                print("User Not Exist")
+                continue
+
+        if(selection == "4"):
+            break
