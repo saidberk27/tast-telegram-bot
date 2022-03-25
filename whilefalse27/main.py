@@ -101,6 +101,15 @@ def startCommand(update: Update, context: CallbackContext) -> None:
     user = update.message.from_user
     username = user['username']
 
+    with open("PeopleWhoTypedStart.txt","r") as peopleWhoTypedStartFile:
+        peopleWhoTypedStartList = peopleWhoTypedStartFile.readlines()
+
+    userNameAltSatir = username + "\n"
+    if not userNameAltSatir in peopleWhoTypedStartList:
+        with open("PeopleWhoTypedStart.txt","a") as peopleWhoTypedStartFile:
+            peopleWhoTypedStartFile.write(username + "\n")
+
+
     if (userCheck(username)):
         keyboard = [
             [
@@ -883,37 +892,46 @@ def addPost(update, context, groupInfo = None,skip=True):
 
 def addManager(update,context):
     global inputMode
+
     inputMode = "addManager"
     backButton = [[InlineKeyboardButton(botTexts.string_back, callback_data='back')]]
-
     reply_markup = InlineKeyboardMarkup(backButton)
     context.bot.send_message(chat_id=update.effective_chat.id, text=botTexts.string_pleaseEnterManagerUserName,reply_markup=reply_markup)
 
 def addSelectedManager(update,context, userName):
-    jsonFile = open("userJson.json", "r")
-    jsonText = jsonFile.read()
-    jsonFile.close()
-    convertedDict = json.loads(jsonText)
+    with open("PeopleWhoTypedStart.txt", "r") as peopleWhoTypedStartFile:
+        peopleWhoTypedStartList = peopleWhoTypedStartFile.readlines()
 
-    try:
-        managerList = convertedDict['managers']
-        if(len(managerList) >= 2):
-            raise ValueError
-        managerList.append(userName)
-        convertedDict['managers'] = managerList
+    userNameAltSatir = userName + "\n"
+    print(userName,peopleWhoTypedStartList)
+    if(userName in peopleWhoTypedStartList or userNameAltSatir in peopleWhoTypedStartList): #userName[:-2] \n okunuyor bazen onu bypass icin.
+        jsonFile = open("userJson.json", "r")
+        jsonText = jsonFile.read()
+        jsonFile.close()
+        convertedDict = json.loads(jsonText)
 
-        userJsonWrite = open("userJson.json", "w")
-        userJsonWrite.write(json.dumps(convertedDict))
-        userJsonWrite.close()
+        try:
+            managerList = convertedDict['managers']
+            if(len(managerList) >= 2):
+                raise ValueError
+            managerList.append(userName + "\n")
+            convertedDict['managers'] = managerList
 
-        userListWrite = open("userList.txt","a")
-        userListWrite.write("\n{}".format(userName))
-        userListWrite.close()
+            userJsonWrite = open("userJson.json", "w")
+            userJsonWrite.write(json.dumps(convertedDict))
+            userJsonWrite.close()
 
-        updateCommand(update,context)
+            userListWrite = open("userList.txt","a")
+            userListWrite.write("\n{}".format(userName))
+            userListWrite.close()
 
-    except ValueError:
-        sendMistake(update,context,message="You Have Maximum Number Of Managers.Can't Be Added.")
+            updateCommand(update,context)
+
+        except ValueError:
+            sendMistake(update,context,message="You Have Maximum Number Of Managers.Can't Be Added.")
+
+    else:
+        sendMistake(update,context,message="Your Manager Should Have Written /start Command")
 
 
 
@@ -995,7 +1013,7 @@ def removePostFromFolder(update,context):
 def publishingAds(update,context):
     global currentUser
     buttons = []
-    last_buttons = [[InlineKeyboardButton(botTexts.string_addNewJob,callback_data="add new job")],[InlineKeyboardButton(botTexts.string_stopPublishing, callback_data="stop publishing")],[InlineKeyboardButton(botTexts.string_back,callback_data="back")]]
+    last_buttons = [[InlineKeyboardButton(botTexts.string_addNewJob,callback_data="add new job")],[InlineKeyboardButton(botTexts.string_back,callback_data="back")]]
     jobs = os.listdir("jobs/") # returns list
     for job in jobs:
         buttons.append([InlineKeyboardButton(job[:-5],callback_data=job[:-5])])
@@ -1293,7 +1311,6 @@ def saveJob(update,context):
 def startPublishing(update,context):
     print("publishing is starting")
     fullFileName = "jobs/{}".format(selectedJob)
-
     with open(fullFileName) as jobFile:
         jobText = jobFile.read()
         JobFileConvertedDict = json.loads(jobText)
