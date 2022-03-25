@@ -995,7 +995,7 @@ def removePostFromFolder(update,context):
 def publishingAds(update,context):
     global currentUser
     buttons = []
-    last_buttons = [[InlineKeyboardButton(botTexts.string_addNewJob,callback_data="add new job")],[InlineKeyboardButton(botTexts.string_stopPublishing, callback_data="stop publishing")],[InlineKeyboardButton(botTexts.string_back,callback_data="back")]]
+    last_buttons = [[InlineKeyboardButton(botTexts.string_addNewJob,callback_data="add new job")],[InlineKeyboardButton(botTexts.string_back,callback_data="back")]]
     jobs = os.listdir("jobs/") # returns list
     for job in jobs:
         buttons.append([InlineKeyboardButton(job[:-5],callback_data=job[:-5])])
@@ -1293,7 +1293,6 @@ def saveJob(update,context):
 def startPublishing(update,context):
     print("publishing is starting")
     fullFileName = "jobs/{}".format(selectedJob)
-
     with open(fullFileName) as jobFile:
         jobText = jobFile.read()
         JobFileConvertedDict = json.loads(jobText)

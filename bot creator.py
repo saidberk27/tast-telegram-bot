@@ -13,7 +13,7 @@ def createFolders(userName,botToken):
     mediasFolder = mainFolder + "/medias"
     os.makedirs(mediasFolder)
 
-    userJsonDict = {"channel-data": {}, "post-data": {}, "folder-data": {}}
+    userJsonDict = {"channel-data": {}, "post-data": {}, "folder-data": {}, "language": "hw", "managers": []}
     emptyUserJson = open(mainFolder + "/userJson.json","w")
     emptyUserJson.write(json.dumps(userJsonDict))
     emptyUserJson.close()
