@@ -2,6 +2,7 @@ from threading import Timer
 import telegram
 from telegram import *
 from telegram.ext import *
+from user_data import UserData
 
 class PostToAllChannels(Timer):
     def run(self):
@@ -16,16 +17,17 @@ def start(update: Update, context: CallbackContext):
     username = user['username']
 
     keyboard = [
-        [InlineKeyboardButton("Channels", callback_data='posts')],
-        [InlineKeyboardButton("Posts", callback_data='channels')],
-        [InlineKeyboardButton("Bot is Active", callback_data='isActive')]
-        [InlineKeyboardButton("Lanugage", callback_data='language')]
+        [InlineKeyboardButton("Channels", callback_data='channels')],
+        [InlineKeyboardButton("Posts", callback_data='posts')],
+        [InlineKeyboardButton("Bot is Active", callback_data='isActive')],
+        [InlineKeyboardButton("Lanugage", callback_data='language')],
     ]
-    update.message.reply_text("Hello {} Welcome the bot 🔥🔥🔥".format(username))
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    update.message.reply_text("Hello {} Welcome the bot 🔥🔥🔥".format(username),reply_markup=reply_markup)
 
-
-    state = "WAIT_FOR_TEXT"
+    state = "MAIN MENU"
     print(state)
+
 def sendMessage(update, context, messageText):
     channelIDs = [-724890661, -616199647]
     for channelID in channelIDs:
@@ -37,7 +39,6 @@ def messageListener(update, context):
     global messageTimer
     print(state)
 
-    print(state == "WAIT_FOR_TIMER")
     if(state == "WAIT_FOR_TEXT"):
         messageText = update.message.text
         state = "WAIT_FOR_TIMER"
@@ -51,13 +52,40 @@ def messageListener(update, context):
         except ValueError: #nedense int yuzunden valuerror firlatiyor (false olmasina ragmen)
             pass
 
-def queryListener(update, context):
-    pass
+def queryListener(update: Update, context: CallbackContext):
+    global state
+    global userdata
+
+    query = update.callback_query
+    query.answer()
+
+    if(state == "MAIN MENU"):
+        if(query.data == "channels"):
+            state = "CHANNELS SELECTED"
+            listChannels(update,context)
+        if(query.data == "posts"):
+            state = "POSTS SELECTED"
+
+        if (query.data == "isActive"):
+            state = "BOT IS ACTIVE SELECTED"
+
+        if (query.data == "language"):
+            state = "LANGUAGE SELECTED"
+
+def listChannels(update,context):
+    keyboard = []
+    for channelName in userdata.getChannelNames():
+        keyboard.append([InlineKeyboardButton("{}".format(channelName), callback_data="{}".format(channelName))])
+    keyboard.append([InlineKeyboardButton("ADD NEW CHANNEL", callback_data="BACK")])
+    keyboard.append([InlineKeyboardButton("BACK", callback_data="BACK")])
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Your Channels:", reply_markup=reply_markup)
 
 if __name__ == '__main__':
     state = None
     messageText = "Yok"
     messageTimer = "Yok"
+    userdata = UserData()
 
     updater = Updater("5746559989:AAHKLZEkp7Cz_Kko0_r6kA9a626OEB-Crc0", use_context=True)
     dp = updater.dispatcher
