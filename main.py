@@ -28,10 +28,19 @@ def start(update: Update, context: CallbackContext):
     state = "MAIN MENU"
     print(state)
 
-def sendMessage(update, context, messageText):
-    channelIDs = [-724890661, -616199647]
-    for channelID in channelIDs:
-        context.bot.send_message(chat_id="{}".format(channelID),text=messageText)
+
+def mainMenu(update, context):
+    global state
+    keyboard = [
+        [InlineKeyboardButton("Channels", callback_data='channels')],
+        [InlineKeyboardButton("Posts", callback_data='posts')],
+        [InlineKeyboardButton("Bot is Active", callback_data='isActive')],
+        [InlineKeyboardButton("Lanugage", callback_data='language')],
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Main Menu", reply_markup=reply_markup)
+
+    state = "MAIN MENU"
 
 def messageListener(update, context):
     global state
@@ -72,11 +81,14 @@ def queryListener(update: Update, context: CallbackContext):
         if (query.data == "language"):
             state = "LANGUAGE SELECTED"
 
+    if(query.data == "BACK"):
+        mainMenu(update,context)
+
 def listChannels(update,context):
     keyboard = []
     for channelName in userdata.getChannelNames():
         keyboard.append([InlineKeyboardButton("{}".format(channelName), callback_data="{}".format(channelName))])
-    keyboard.append([InlineKeyboardButton("ADD NEW CHANNEL", callback_data="BACK")])
+    keyboard.append([InlineKeyboardButton("ADD NEW CHANNEL", callback_data="ADD NEW CHANNEL")])
     keyboard.append([InlineKeyboardButton("BACK", callback_data="BACK")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Your Channels:", reply_markup=reply_markup)
