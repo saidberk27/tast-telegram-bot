@@ -47,6 +47,8 @@ def start(update: Update, context: CallbackContext):
     update.message.reply_text("Hello {} Starting Posting".format(username))
 
     createAd(update, context, timer=2, messageText="Kanal Birrr", channelList=[-724890661])
+    createAd(update, context, timer=4, messageText="Kanal İkii", channelList=[-616199647])
+
     print(active_slots[0])
     time.sleep(3)
 
@@ -55,6 +57,7 @@ def start(update: Update, context: CallbackContext):
 
 
 def stopAd(ad):
+    print("Bak Buraya",ad)
     ad.running = False
 
 def createAd(update, context, timer, messageText, channelList):
@@ -65,8 +68,8 @@ def createAd(update, context, timer, messageText, channelList):
     passive_slots.append(active_slots[0])
     active_slots.pop(0)
     print("Bekle...")
-    time.sleep(8)
-    stopAd(passive_slots[0])
+    #time.sleep(8)
+    #stopAd(passive_slots[len(passive_slots) - 1])#passive slots listesi bossa 0. index bir eleman varsa 1. index 2 eleman varasa 2. index ... seklinde gitsin
     print(passive_slots, active_slots)
 
 
