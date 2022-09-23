@@ -1,3 +1,1 @@
-dfdsfdas
-
-ffsds
+ InlineKeyboardButton("15 Minutes", callback_data="15 Minutes"), InlineKeyboardButton("30 Minutes", callback_data="30 Minutes"), InlineKeyboardButton("45 Minutes", callback_data="45 Minutes")

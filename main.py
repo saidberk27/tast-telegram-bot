@@ -13,11 +13,10 @@ class MainMethods:
 
 class MainViews:
     keyboard = [
-        [InlineKeyboardButton("Channels", callback_data='channels')],
-        [InlineKeyboardButton("Create an Ad", callback_data='create an ad')],
-        [InlineKeyboardButton("Stop an Ad", callback_data='stop an ad')],
-        [InlineKeyboardButton("Bot is Active", callback_data='isActive')],
-        [InlineKeyboardButton("Lanugage", callback_data='language')],
+        [InlineKeyboardButton("Channels ☀", callback_data='channels')],
+        [InlineKeyboardButton("Create an Ad ➕", callback_data='create an ad')],
+        [InlineKeyboardButton("Delete an Ad ❌", callback_data='delete an ad')],
+        [InlineKeyboardButton("Bot is Active ✔", callback_data='isActive')],
     ]
 
 class loop:
@@ -90,17 +89,18 @@ def messageListener(update, context):
         update.message.reply_text("Text {} saved.Please Type Channel ID".format(messageText))
 
     elif(state == "WAIT_FOR_CHANNEL"):
+        keyboard = [[InlineKeyboardButton("10 Seconds", callback_data="10"),InlineKeyboardButton("30 Seconds", callback_data="30"), InlineKeyboardButton("45 Seconds", callback_data="45")],
+                    [InlineKeyboardButton("1 Minute", callback_data="60"), InlineKeyboardButton("5 Minutes", callback_data="300"), InlineKeyboardButton("10 Minutes", callback_data="600")],
+                    [InlineKeyboardButton("15 Minutes", callback_data="900"), InlineKeyboardButton("30 Minutes",callback_data="1800"), InlineKeyboardButton("45 Minutes", callback_data="2700"), InlineKeyboardButton("1 Hour", callback_data="3600")],
+                    [InlineKeyboardButton("3 Hours", callback_data="10800"), InlineKeyboardButton("6 Hours", callback_data="21600"), InlineKeyboardButton("9 Hours", callback_data="32400"), InlineKeyboardButton("12 Hours",callback_data="43200")],
+                    [InlineKeyboardButton("15 Hours", callback_data="54000"), InlineKeyboardButton("18 Hours", callback_data="64800"), InlineKeyboardButton("24 Hours", callback_data="86400")],
+                    [InlineKeyboardButton("BACK ⬅", callback_data="BACK")]
+        ]
         channelID = int(update.message.text)
         state = "WAIT_FOR_TIMER"
-        update.message.reply_text("Text {} saved.Please Type Timer Data".format(messageText))
-    elif(state == "WAIT_FOR_TIMER"):
-        try:
-            messageTimer = int(update.message.text)
-            update.message.reply_text("Timer {} saved.".format(messageTimer))
-            createAd(update, context, adTitle=adTitle, timer=messageTimer, messageText="{}".format(messageText), channelList=[channelID])
-            mainMenu(update, context)
-        except ValueError: #nedense int yuzunden valuerror firlatiyor (false olmasina ragmen)
-            pass
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        update.message.reply_text("Text {} saved.Please Select Timer Data".format(messageText),reply_markup=reply_markup)
+   #WAIT FOR TIMER STATE'I QUERY LISTENER'DA DENETLENIYOR.
 
 
 def queryListener(update: Update, context: CallbackContext):
@@ -127,13 +127,23 @@ def queryListener(update: Update, context: CallbackContext):
         if (query.data == "language"):
             state = "LANGUAGE SELECTED"
 
-        if(query.data == "stop an ad"):
-            state = "STOP AN AD"
+        if(query.data == "delete an ad"):
+            state = "DELETE AN AD SELECTED"
             listAds(update, context)
 
-    if(state == "STOP AN AD"):
+    if(state == "WAIT_FOR_TIMER"):
+        try:
+            messageTimer = int(query.data)
+            context.bot.send_message(chat_id=update.effective_chat.id, text="Timer saved. Ad is Running")
+            createAd(update, context, adTitle=adTitle, timer=messageTimer, messageText="{}".format(messageText),
+                     channelList=[channelID])
+            mainMenu(update, context)
+        except ValueError:  # nedense int yuzunden valuerror firlatiyor (false olmasina ragmen)
+            pass
+
+    if(state == "DELETE AN AD SELECTED"):
         if(query.data != "BACK"):
-            stopAd(query.data)
+            deleteAd(query.data)
 
     if(state == "CREATE AN AD SELECTED"):
         context.bot.send_message(chat_id=update.effective_chat.id, text="What is the name of title?")
@@ -147,11 +157,11 @@ def listChannels(update,context):
     for channelName in userdata.getChannelNames():
         keyboard.append([InlineKeyboardButton("{}".format(channelName), callback_data="{}".format(channelName))])
     keyboard.append([InlineKeyboardButton("ADD NEW CHANNEL", callback_data="ADD NEW CHANNEL")])
-    keyboard.append([InlineKeyboardButton("BACK", callback_data="BACK")])
+    keyboard.append([InlineKeyboardButton("BACK ⬅", callback_data="BACK")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Your Channels:", reply_markup=reply_markup)
 
-async def listAds(update, context):
+def listAds(update, context):
     global state
 
     keyboard = []
@@ -171,7 +181,7 @@ async def listAds(update, context):
         keyboard.append([InlineKeyboardButton("{}".format(_adTitle), callback_data="{}".format(_adNumber))])
         _adNumber = _adNumber + 1
 
-    keyboard.append([InlineKeyboardButton("BACK", callback_data="BACK")])
+    keyboard.append([InlineKeyboardButton("BACK ⬅", callback_data="BACK")])
 
     reply_markup = InlineKeyboardMarkup(keyboard)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Your Active Ads:", reply_markup=reply_markup)
@@ -193,18 +203,17 @@ def createAd(update, context, adTitle, timer, messageText, channelList):
     SaveData(adTitle=adTitle, adContent=messageText,channelList=channelList, adTimer=timer).saveAdToJson()
 
 
-def stopAd(adNumber):
+def deleteAd(adNumber):
     try:
         adNumber = int(adNumber)
-    except ValueError:
+        passive_slots[adNumber].running = False
+        print(active_slots, passive_slots)
+        passive_slots.pop(adNumber)
+        active_slots.insert(adNumber, "Free Slot {}".format(adNumber + 1)) #adNumber + 1 cünkü 1, 2, 3 seklinde gitsin sifirdan baslamasin.
+        print(passive_slots, active_slots)
+
+    except:
         pass
-
-    passive_slots[adNumber].running = False
-    print(active_slots, passive_slots)
-    passive_slots.pop(adNumber)
-    active_slots.insert(adNumber, "Free Slot {}".format(adNumber + 1)) #adNumber + 1 cünkü 1, 2, 3 seklinde gitsin sifirdan baslamasin.
-    print(passive_slots, active_slots)
-
 if __name__ == '__main__':
     state = None
     messageText = "Yok"
