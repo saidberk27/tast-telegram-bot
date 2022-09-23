@@ -112,7 +112,8 @@ def queryListener(update: Update, context: CallbackContext):
     if(state == "MAIN MENU"):
         if(query.data == "channels"):
             state = "CHANNELS SELECTED"
-            listChannels(update,context)
+            listChannels(update, context)
+
         if(query.data == "posts"):
             state = "POSTS SELECTED"
 
@@ -124,6 +125,10 @@ def queryListener(update: Update, context: CallbackContext):
 
         if (query.data == "language"):
             state = "LANGUAGE SELECTED"
+
+        if(query.data == "stop an ad"):
+            state = "STOP AN AD"
+            stopAd(passive_slots[0])
 
     if(state == "CREATE AN AD SELECTED"):
         context.bot.send_message(chat_id=update.effective_chat.id, text="What is the name of title?")
@@ -151,6 +156,10 @@ def createAd(update, context, timer, messageText, channelList):
     #time.sleep(8)
     #stopAd(passive_slots[len(passive_slots) - 1])#passive slots listesi bossa 0. index bir eleman varsa 1. index 2 eleman varasa 2. index ... seklinde gitsin
     print(passive_slots, active_slots)
+
+def stopAd(ad):
+    print("Bak Buraya",ad)
+    ad.running = False
 
 if __name__ == '__main__':
     state = None
