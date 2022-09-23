@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 import json
 class SaveData:
-    def __init__(self, adTitle=None, adContent=None, adTimer=None):
+    def __init__(self, adTitle=None, adContent=None, channelList=None, adTimer=None):
         self.adTitle = adTitle
         self.adContent = adContent
         self.adTimer = adTimer
+        self.channelList = channelList
 
     def _createAdDict(self):
         adJson = {"Ad Title":"{}".format(self.adTitle),
                   "Ad Content":"{}".format(self.adContent),
+                  "Ad Channels":self.channelList,
                   "Ad Timer":self.adTimer
                    }
 

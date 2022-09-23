@@ -3,7 +3,7 @@ from telegram.ext import *
 from user_data import UserData
 import threading
 import time
-
+from save_data import *
 
 class MainMethods:
     def sendMessage(context, messageText, channelList):
@@ -75,6 +75,7 @@ def messageListener(update, context):
     global messageText
     global messageTimer
     global channelID
+    global adTitle
 
     print("Message Listener State = ",state)
 
@@ -96,7 +97,7 @@ def messageListener(update, context):
         try:
             messageTimer = int(update.message.text)
             update.message.reply_text("Timer {} saved.".format(messageTimer))
-            createAd(update, context, timer=messageTimer, messageText="{}".format(messageText), channelList=[channelID])
+            createAd(update, context, adTitle=adTitle, timer=messageTimer, messageText="{}".format(messageText), channelList=[channelID])
             mainMenu(update, context)
         except ValueError: #nedense int yuzunden valuerror firlatiyor (false olmasina ragmen)
             pass
@@ -145,7 +146,7 @@ def listChannels(update,context):
     reply_markup = InlineKeyboardMarkup(keyboard)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Your Channels:", reply_markup=reply_markup)
 
-def createAd(update, context, timer, messageText, channelList):
+def createAd(update, context, adTitle, timer, messageText, channelList):
     global active_slots
     global passive_slots
     global adOne
@@ -156,6 +157,8 @@ def createAd(update, context, timer, messageText, channelList):
     #time.sleep(8)
     #stopAd(passive_slots[len(passive_slots) - 1])#passive slots listesi bossa 0. index bir eleman varsa 1. index 2 eleman varasa 2. index ... seklinde gitsin
     print(passive_slots, active_slots)
+    SaveData(adTitle=adTitle, adContent=messageText,channelList=channelList, adTimer=timer).saveAdToJson()
+
 
 def stopAd(ad):
     print("Bak Buraya",ad)
@@ -165,6 +168,7 @@ if __name__ == '__main__':
     state = None
     messageText = "Yok"
     messageTimer = "Yok"
+    adTitle = "Yok"
     channelID = None
 
     userdata = UserData()
