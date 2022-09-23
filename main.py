@@ -105,7 +105,7 @@ def messageListener(update, context):
 
 def queryListener(update: Update, context: CallbackContext):
     global state
-    global userdata
+    userdata = UserData()
 
     query = update.callback_query
     query.answer()
@@ -129,7 +129,11 @@ def queryListener(update: Update, context: CallbackContext):
 
         if(query.data == "stop an ad"):
             state = "STOP AN AD"
-            stopAd(passive_slots[0])
+            listAds(update, context)
+
+    if(state == "STOP AN AD"):
+        if(query.data != "BACK"):
+            stopAd(query.data)
 
     if(state == "CREATE AN AD SELECTED"):
         context.bot.send_message(chat_id=update.effective_chat.id, text="What is the name of title?")
@@ -138,6 +142,7 @@ def queryListener(update: Update, context: CallbackContext):
         mainMenu(update,context)
 
 def listChannels(update,context):
+    userdata = UserData()
     keyboard = []
     for channelName in userdata.getChannelNames():
         keyboard.append([InlineKeyboardButton("{}".format(channelName), callback_data="{}".format(channelName))])
@@ -145,6 +150,34 @@ def listChannels(update,context):
     keyboard.append([InlineKeyboardButton("BACK", callback_data="BACK")])
     reply_markup = InlineKeyboardMarkup(keyboard)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Your Channels:", reply_markup=reply_markup)
+
+async def listAds(update, context):
+    global state
+
+    keyboard = []
+    _adTitles = []
+
+    _jsonFile = open("userData.json", "r")
+    _jsonText = _jsonFile.read()
+    _jsonFile.close()
+    _convertedDict = json.loads(_jsonText)
+    _adList = _convertedDict["Ads"]
+
+    for _ad in _adList:
+        _adTitles.append(_ad["Ad Title"])
+
+    _adNumber = 0
+    for _adTitle in _adTitles:
+        keyboard.append([InlineKeyboardButton("{}".format(_adTitle), callback_data="{}".format(_adNumber))])
+        _adNumber = _adNumber + 1
+
+    keyboard.append([InlineKeyboardButton("BACK", callback_data="BACK")])
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Your Active Ads:", reply_markup=reply_markup)
+
+    #await client.edit_message(chat, message.id, 'hello!!')
+    #context.bot.editMessageText(chat_id=update.effective_chat.id, text="Your Active Ads:", reply_markup=reply_markup)
 
 def createAd(update, context, adTitle, timer, messageText, channelList):
     global active_slots
@@ -160,9 +193,17 @@ def createAd(update, context, adTitle, timer, messageText, channelList):
     SaveData(adTitle=adTitle, adContent=messageText,channelList=channelList, adTimer=timer).saveAdToJson()
 
 
-def stopAd(ad):
-    print("Bak Buraya",ad)
-    ad.running = False
+def stopAd(adNumber):
+    try:
+        adNumber = int(adNumber)
+    except ValueError:
+        pass
+
+    passive_slots[adNumber].running = False
+    print(active_slots, passive_slots)
+    passive_slots.pop(adNumber)
+    active_slots.insert(adNumber, "Free Slot {}".format(adNumber + 1)) #adNumber + 1 cünkü 1, 2, 3 seklinde gitsin sifirdan baslamasin.
+    print(passive_slots, active_slots)
 
 if __name__ == '__main__':
     state = None
@@ -170,8 +211,6 @@ if __name__ == '__main__':
     messageTimer = "Yok"
     adTitle = "Yok"
     channelID = None
-
-    userdata = UserData()
 
     adOne = "Free Slot 1"
     adTwo = "Free Slot 2"

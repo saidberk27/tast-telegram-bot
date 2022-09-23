@@ -1,4 +1,11 @@
-def sendMessage(update, context, messageText):
-    channelIDs = [-724890661, -616199647]
-    for channelID in channelIDs:
-        context.bot.send_message(chat_id="{}".format(channelID),text=messageText)
+import time
+
+from user_data import *
+
+
+while True:
+    _jsonFile = open("userData.json", "r")
+    _jsonText = _jsonFile.read()
+    _jsonFile.close()
+    _convertedDict = json.loads(_jsonText)
+    print(_convertedDict["Ads"])
