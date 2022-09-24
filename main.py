@@ -13,10 +13,10 @@ class MainMethods:
 
 class MainViews:
     keyboard = [
-        [InlineKeyboardButton("Channels ☀", callback_data='channels')],
-        [InlineKeyboardButton("Create an Ad ➕", callback_data='create an ad')],
-        [InlineKeyboardButton("Delete an Ad ❌", callback_data='delete an ad')],
-        [InlineKeyboardButton("Bot is Active ✔", callback_data='isActive')],
+        [InlineKeyboardButton("🔥 CHANNELS", callback_data='channels')],
+        [InlineKeyboardButton("➕ CREATE AN AD", callback_data='create an ad')],
+        [InlineKeyboardButton("❌ DELETE AN AD ", callback_data='delete an ad')],
+        [InlineKeyboardButton("✔ BOT IS ACTIVE", callback_data='isActive')],
     ]
 
 class loop:
@@ -60,12 +60,12 @@ def start(update: Update, context: CallbackContext):
     print(state)
 
 
-def mainMenu(update, context):
+def mainMenu(update, context, menuText = "Main Menu ⭐"):
     global state
     global keyboard
     keyboard = MainViews.keyboard
     reply_markup = InlineKeyboardMarkup(keyboard)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Main Menu", reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=menuText, reply_markup=reply_markup)
 
     state = "MAIN MENU"
 
@@ -75,6 +75,7 @@ def messageListener(update, context):
     global messageTimer
     global channelID
     global adTitle
+    global channelName
 
     print("Message Listener State = ",state)
 
@@ -102,6 +103,15 @@ def messageListener(update, context):
         update.message.reply_text("Text {} saved.Please Select Timer Data".format(messageText),reply_markup=reply_markup)
    #WAIT FOR TIMER STATE'I QUERY LISTENER'DA DENETLENIYOR.
 
+    elif(state == "WAIT_FOR_CHANNEL_NAME"):
+        channelName = update.message.text
+        state = "WAIT_FOR_CHANNEL_ID"
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Channel Name {} Saved. Please Enter Chat ID".format(channelName))
+
+    elif(state == "WAIT_FOR_CHANNEL_ID"):
+        channelID = int(update.message.text)
+        SaveData(channelName=channelName, channelID=channelID).saveChanneltoJson()
+        mainMenu(update, context, menuText="Channel Succesfully Saved. You Can Use it with Your Ads".format(channelName))
 
 def queryListener(update: Update, context: CallbackContext):
     global state
@@ -148,18 +158,28 @@ def queryListener(update: Update, context: CallbackContext):
     if(state == "CREATE AN AD SELECTED"):
         context.bot.send_message(chat_id=update.effective_chat.id, text="What is the name of title?")
         state = "WAIT_FOR_AD_TITLE"
+
+    if(state == "CHANNELS SELECTED"):
+        if(query.data == "ADD NEW CHANNEL"):
+            state = "WAIT_FOR_CHANNEL_NAME"
+            context.bot.send_message(chat_id=update.effective_chat.id, text="What is the name of channel?")
+
     if(query.data == "BACK"):
         mainMenu(update,context)
 
 def listChannels(update,context):
-    userdata = UserData()
+    _jsonFile = open("userData.json", "r")
+    _jsonText = _jsonFile.read()
+    _jsonFile.close()
+    _convertedDict = json.loads(_jsonText)
+    channelNamesList = _convertedDict['channels'].keys()
     keyboard = []
-    for channelName in userdata.getChannelNames():
+    for channelName in channelNamesList:
         keyboard.append([InlineKeyboardButton("{}".format(channelName), callback_data="{}".format(channelName))])
-    keyboard.append([InlineKeyboardButton("ADD NEW CHANNEL", callback_data="ADD NEW CHANNEL")])
+    keyboard.append([InlineKeyboardButton("➕ ADD NEW CHANNEL", callback_data="ADD NEW CHANNEL")])
     keyboard.append([InlineKeyboardButton("BACK ⬅", callback_data="BACK")])
     reply_markup = InlineKeyboardMarkup(keyboard)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Your Channels:", reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="⭐ Your Channels:", reply_markup=reply_markup)
 
 def listAds(update, context):
     global state
@@ -220,6 +240,7 @@ if __name__ == '__main__':
     messageTimer = "Yok"
     adTitle = "Yok"
     channelID = None
+    channelName = None
 
     adOne = "Free Slot 1"
     adTwo = "Free Slot 2"
