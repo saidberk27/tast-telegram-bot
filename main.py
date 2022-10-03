@@ -209,7 +209,7 @@ def queryListener(update: Update, context: CallbackContext):
 
     if(state == "DELETE AN AD SELECTED"):
         if(query.data != "BACK"):
-            deleteAd(query.data)
+            deleteAd(update, context, query.data)
 
     if(state == "CREATE AN AD SELECTED"):
         context.bot.send_message(chat_id=update.effective_chat.id, text="What is the name of title?")
@@ -318,7 +318,7 @@ def createAd(update, context, adTitle, timer, messageText, channelList):
     SaveData(adTitle=adTitle, adContent=messageText,channelList=channelList, adTimer=timer, mediaName=media).saveAdToJson()
 
 
-def deleteAd(adNumber):
+def deleteAd(update, context, adNumber):
     try:
         adNumber = int(adNumber)
         passive_slots[adNumber].running = False
@@ -326,6 +326,7 @@ def deleteAd(adNumber):
         passive_slots.pop(adNumber)
         active_slots.insert(adNumber, "Free Slot {}".format(adNumber + 1)) #adNumber + 1 cünkü 1, 2, 3 seklinde gitsin sifirdan baslamasin.
         print(passive_slots, active_slots)
+        mainMenu(update, context, "AD SUCCESFULLY DELETED")
 
     except:
         pass
