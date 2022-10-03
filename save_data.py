@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
 import json
 class SaveData:
-    def __init__(self, adTitle=None, adContent=None, channelList=None, adTimer=None, channelName = None,  channelID = None):
+    def __init__(self, adTitle=None, adContent=None, channelList=None, adTimer=None, channelName = None,  channelID = None, mediaName = None):
         self.adTitle = adTitle
         self.adContent = adContent
         self.adTimer = adTimer
         self.channelList = channelList
         self.channelName = channelName
         self.channelID = channelID
+        self.mediaName = mediaName
 
     def _createAdDict(self):
         adJson = {"Ad Title":"{}".format(self.adTitle),
                   "Ad Content":"{}".format(self.adContent),
                   "Ad Channels":self.channelList,
-                  "Ad Timer":self.adTimer
+                  "Ad Timer":self.adTimer,
+                  "Ad Media":self.mediaName
                    }
 
         return adJson
@@ -43,5 +45,3 @@ class SaveData:
             jsonFile.write(convertedData)
             jsonFile.truncate()
 
-if __name__ == '__main__':
-    SaveData(adTitle="qwqwq", adContent="qwqeqe!", adTimer=5).saveAdToJson()
