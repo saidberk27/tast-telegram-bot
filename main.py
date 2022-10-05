@@ -6,12 +6,13 @@ import time
 from save_data import *
 
 class MainMethods:
-    def sendMessage(context, messageText, channelList, fileName):
+    def sendMessage(context, messageText, channelList, fileName, buttonList):
+        reply_markup = InlineKeyboardMarkup(buttonList)
         for channelID in channelList:
             if(fileName == None):
-                context.bot.send_message(chat_id="{}".format(channelID), text=messageText)
+                context.bot.send_message(chat_id="{}".format(channelID), text=messageText, reply_markup=reply_markup)
             else:
-                context.bot.send_photo(channelID, photo=open("Medias/{}".format(fileName), 'rb'), caption=messageText)
+                context.bot.send_photo(channelID, photo=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup)
 
 class MainViews:
     keyboard = [
@@ -54,16 +55,17 @@ class loop:
     def run(self, seconds):
         while self.running:
             # Runs function
-            self.function(self.context, self.messageText, self.channelList, self.fileName)
+            self.function(self.context, self.messageText, self.channelList, self.fileName, self.buttonList)
             self.wait(seconds)
 
-    def __init__(self, seconds, function, context, messageText, channelList, fileName):
+    def __init__(self, seconds, function, context, messageText, channelList, fileName, buttonList):
         self.running = True
         self.function = function
         self.context = context
         self.messageText = messageText
         self.channelList = channelList
         self.fileName = fileName
+        self.buttonList = buttonList
         # Starts new thread instead of running it in the main thread
         # is because so it will not block other code
         self.thread = threading.Thread(target=self.run, args=(seconds,))# args = (seconds,) anlamadim arastiricam ama dokunma simdilik.
@@ -82,6 +84,7 @@ def start(update: Update, context: CallbackContext):
 
     state = "MAIN MENU"
     print(state)
+    print(buttonsTempList)
 
 
 def mainMenu(update, context, menuText = "Main Menu ⭐"):
@@ -101,6 +104,8 @@ def messageListener(update, context):
     global adTitle
     global channelName
     global buttonsTempList
+    global buttonText
+    global buttonLink
 
     print("Message Listener State = ",state)
 
@@ -153,13 +158,27 @@ def messageListener(update, context):
         SaveData(channelName=channelName, channelID=channelID).saveChanneltoJson()
         mainMenu(update, context, menuText="Channel Succesfully Saved. You Can Use it with Your Ads".format(channelName))
 
+    elif(state == "WAIT_FOR_BUTTON_TEXT"):
+        state = "WAIT_FOR_BUTTON_LINK"
+        buttonText = update.message.text
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Button Text {} Saved. Please Enter Button Link".format(buttonText))
 
+    elif(state == "WAIT_FOR_BUTTON_LINK"):
+        state = "WAIT_FOR_BUTTON"
+        buttonLink = update.message.text
+        createButton(buttonText=buttonText, buttonLink=buttonLink)
+        keyboard = [[InlineKeyboardButton("Add Buttons", callback_data="add buttons"), InlineKeyboardButton("Continue", callback_data="continue")]]
+        reply_markup = InlineKeyboardMarkup(buttonsTempList)
+        reply_markup2 = InlineKeyboardMarkup(keyboard)
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Button Succesfully Saved!", reply_markup=reply_markup)
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Add More Button or Continue", reply_markup=reply_markup2)
 
 
 def queryListener(update: Update, context: CallbackContext):
     global state
     global adChannelName
     global adChannelID
+    global buttonsTempList
     userdata = UserData()
 
     query = update.callback_query
@@ -193,8 +212,8 @@ def queryListener(update: Update, context: CallbackContext):
         try:
             messageTimer = int(query.data)
             context.bot.send_message(chat_id=update.effective_chat.id, text="Timer saved. Ad is Running")
-            createAd(update, context, adTitle=adTitle, timer=messageTimer, messageText="{}".format(messageText),
-                     channelList=[adChannelID])
+            createAd(update, context, adTitle=adTitle, timer=messageTimer, messageText="{}".format(messageText), channelList=[adChannelID], buttonList = buttonsTempList)
+            buttonsTempList = []
             mainMenu(update, context)
         except ValueError:  # nedense int yuzunden valuerror firlatiyor (false olmasina ragmen)
             pass
@@ -230,6 +249,11 @@ def queryListener(update: Update, context: CallbackContext):
             state = "WAIT_FOR_CHANNEL"
             context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Group You Want To Post:")
             listChannels(update, context)
+
+        elif(query.data == "add buttons"):
+            state = "WAIT_FOR_BUTTON_TEXT"
+            context.bot.send_message(chat_id=update.effective_chat.id, text="What is the Text of Button")
+
 
     if(query.data == "BACK"):
         mainMenu(update,context)
@@ -290,25 +314,24 @@ def handleMedia(update: Update, context: CallbackContext):
         context.bot.send_message(chat_id=update.effective_chat.id, text="File {} Saved to Ad. Add Buttons Or Continue".format(update.message.document["file_name"]), reply_markup=reply_markup)
         #listChannels(update, context)
 
-def createButton(update, context, buttonText, buttonLink):
-    global state
+def createButton(buttonText, buttonLink):
     global buttonsTempList
-    buttonsTempList.append(InlineKeyboardButton(buttonText, callback_data=buttonLink))
+    buttonsTempList.append([InlineKeyboardButton(buttonText, url=buttonLink)])
 
 
 
-def createAd(update, context, adTitle, timer, messageText, channelList):
+def createAd(update, context, adTitle, timer, messageText, channelList, buttonList):
     global active_slots
     global passive_slots
     global media
-    active_slots[0] = loop(timer, MainMethods.sendMessage, context, messageText="{}".format(messageText), channelList=channelList, fileName=media)
+    active_slots[0] = loop(timer, MainMethods.sendMessage, context, messageText="{}".format(messageText), channelList=channelList, fileName=media, buttonList=buttonList)
     passive_slots.append(active_slots[0])
     active_slots.pop(0)
     print("Bekle...")
     #time.sleep(8)
     #stopAd(passive_slots[len(passive_slots) - 1])#passive slots listesi bossa 0. index bir eleman varsa 1. index 2 eleman varasa 2. index ... seklinde gitsin
     print(passive_slots, active_slots)
-    SaveData(adTitle=adTitle, adContent=messageText,channelList=channelList, adTimer=timer, mediaName=media).saveAdToJson()
+    SaveData(adTitle=adTitle, adContent=messageText,channelList=channelList, adTimer=timer, mediaName=media, buttonList=buttonList).saveAdToJson()
 
 
 def deleteAd(update, context, adNumber):
@@ -335,6 +358,8 @@ if __name__ == '__main__':
     adChannelID = None
     media = None
     buttonsTempList = []
+    buttonText = None
+    buttonLink = None
 
     adOne = "Free Slot 1"
     adTwo = "Free Slot 2"
