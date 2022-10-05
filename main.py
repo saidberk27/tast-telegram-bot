@@ -5,8 +5,6 @@ import threading
 import time
 from save_data import *
 
-
-
 class MainMethods:
     def sendMessage(context, messageText, channelList, fileName):
         for channelID in channelList:
@@ -14,7 +12,6 @@ class MainMethods:
                 context.bot.send_message(chat_id="{}".format(channelID), text=messageText)
             else:
                 context.bot.send_photo(channelID, photo=open("Medias/{}".format(fileName), 'rb'), caption=messageText)
-
 
 class MainViews:
     keyboard = [
@@ -118,11 +115,6 @@ def messageListener(update, context):
         update.message.reply_text("Text {} saved. Please Add Image/Video/Gif or Skip".format(messageText))
 
         #WAIT_FOR_MEDIA Supervising at FileHandler handleMedia()
-
-    elif(state == "WAIT_FOR_MEDIA"):
-        state = "WAIT_FOR_CHANNEL"
-        update.message.reply_text("Text {} saved.Please Select Your Channel".format(messageText))
-        listChannels(update, context)
 
     elif(state == "WAIT_FOR_CHANNEL"):
         keyboard = [[InlineKeyboardButton("10 Seconds", callback_data="10"),
@@ -233,7 +225,11 @@ def queryListener(update: Update, context: CallbackContext):
         reply_markup = InlineKeyboardMarkup(MainViews.timerKeyboard)
         context.bot.send_message(chat_id=update.effective_chat.id, text="Channel {} Selected. Please Select Timer Data".format(adChannelName), reply_markup=reply_markup)
 
-
+    if(state == "WAIT_FOR_BUTTON"):
+        if(query.data == "continue"):
+            state = "WAIT_FOR_CHANNEL"
+            context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Group You Want To Post:")
+            listChannels(update, context)
 
     if(query.data == "BACK"):
         mainMenu(update,context)
@@ -283,25 +279,22 @@ def listAds(update, context):
 def handleMedia(update: Update, context: CallbackContext):
     global state
     global media
+
     if(state == "WAIT_FOR_MEDIA"):
-        state = "WAIT_FOR_CHANNEL"
+        state = "WAIT_FOR_BUTTON"
         file_id = update.message.document["file_id"]
         media = update.message.document["file_name"]
         context.bot.get_file(file_id).download(custom_path="Medias/{}".format(update.message.document["file_name"]))
-        context.bot.send_message(chat_id=update.effective_chat.id, text="File {} Saved to Ad. Please Select Your Channel".format(update.message.document["file_name"]))
-        listChannels(update, context)
+        keyboard = [[InlineKeyboardButton("Add Buttons", callback_data="add buttons"), InlineKeyboardButton("Continue", callback_data="continue")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        context.bot.send_message(chat_id=update.effective_chat.id, text="File {} Saved to Ad. Add Buttons Or Continue".format(update.message.document["file_name"]), reply_markup=reply_markup)
+        #listChannels(update, context)
 
-def createButtons(update, context):
-    global buttonNumber
+def createButton(update, context, buttonText, buttonLink):
     global state
-    i = 1
-    while(True):
-        if(i == buttonNumber):
-            state = "WAIT_FOR_BUTTON_LINK"
-        else:
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Please Enter Text of Button {}".format(i))
-            state = "WAIT_FOR_BUTTON_TEXT"
-            i = i + 1
+    global buttonsTempList
+    buttonsTempList.append(InlineKeyboardButton(buttonText, callback_data=buttonLink))
+
 
 
 def createAd(update, context, adTitle, timer, messageText, channelList):
