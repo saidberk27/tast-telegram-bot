@@ -62,12 +62,7 @@ class SaveData:
     def deleteChannelFromJson(self):
         with open("userData.json","r+") as jsonFile:
             data = json.load(jsonFile)
-            index = 0
-            for channel in data["channels"].keys():
-                if(self.channelName == channel):
-                    data["channels"].pop(index)
-                    break
-                index = index + 1
+            data["channels"].pop(self.channelName)
 
             convertedData = json.dumps(data)
 

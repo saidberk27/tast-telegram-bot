@@ -232,6 +232,16 @@ def queryListener(update: Update, context: CallbackContext):
             state = "WAIT_FOR_CHANNEL_NAME"
             context.bot.send_message(chat_id=update.effective_chat.id, text="What is the name of channel?")
 
+        elif(query.data == "DELETE CHANNEL"):
+            state = "WAIT_FOR_NAME_OF_DELETED_CHANNEL"
+            listChannels(update, context, "Please Select a Channel You Want to Delete")
+
+    if(state == "WAIT_FOR_NAME_OF_DELETED_CHANNEL"):
+        if(query.data != "DELETE CHANNEL"):
+            delete_channel = SaveData(channelName=query.data)
+            delete_channel.deleteChannelFromJson()
+            mainMenu(update, context, "CHANNEL SUCCESFULLY REMOVED")
+
     if(state == "WAIT_FOR_CHANNEL"):
         _jsonFile = open("userData.json", "r")
         _jsonText = _jsonFile.read()
@@ -265,7 +275,7 @@ def queryListener(update: Update, context: CallbackContext):
     if(query.data == "BACK"):
         mainMenu(update,context)
 
-def listChannels(update,context):
+def listChannels(update, context, message="⭐ Your Channels:"):
     _jsonFile = open("userData.json", "r")
     _jsonText = _jsonFile.read()
     _jsonFile.close()
@@ -275,9 +285,10 @@ def listChannels(update,context):
     for channelName in channelNamesList:
         keyboard.append([InlineKeyboardButton("{}".format(channelName), callback_data="{}".format(channelName))])
     keyboard.append([InlineKeyboardButton("➕ ADD NEW CHANNEL", callback_data="ADD NEW CHANNEL")])
+    keyboard.append([InlineKeyboardButton("DELETE CHANNEL", callback_data="DELETE CHANNEL")])
     keyboard.append([InlineKeyboardButton("BACK ⬅", callback_data="BACK")])
     reply_markup = InlineKeyboardMarkup(keyboard)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="⭐ Your Channels:", reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=message, reply_markup=reply_markup)
 
 def listAds(update, context):
     global state
