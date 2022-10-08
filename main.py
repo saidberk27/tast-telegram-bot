@@ -117,7 +117,8 @@ def messageListener(update, context):
     elif(state == "WAIT_FOR_TEXT"):
         messageText = update.message.text
         state = "WAIT_FOR_MEDIA"
-        update.message.reply_text("Text {} saved. Please Add Image/Video/Gif or Skip".format(messageText))
+        reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Skip", callback_data="skip")]])
+        update.message.reply_text("Text {} saved. Please Add Image/Video/Gif or Skip".format(messageText), reply_markup=reply_markup)
 
         #WAIT_FOR_MEDIA Supervising at FileHandler handleMedia()
 
@@ -254,6 +255,12 @@ def queryListener(update: Update, context: CallbackContext):
             state = "WAIT_FOR_BUTTON_TEXT"
             context.bot.send_message(chat_id=update.effective_chat.id, text="What is the Text of Button")
 
+    if(state == "WAIT_FOR_MEDIA" and query.data == "skip"):
+        state = "WAIT_FOR_BUTTON"
+        keyboard = [[InlineKeyboardButton("Add Buttons", callback_data="add buttons"),
+                     InlineKeyboardButton("Continue", callback_data="continue")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Adding File Skipped. Add Buttons Or Continue", reply_markup=reply_markup)
 
     if(query.data == "BACK"):
         mainMenu(update,context)
@@ -324,6 +331,7 @@ def createAd(update, context, adTitle, timer, messageText, channelList, buttonLi
     global active_slots
     global passive_slots
     global media
+
     active_slots[0] = loop(timer, MainMethods.sendMessage, context, messageText="{}".format(messageText), channelList=channelList, fileName=media, buttonList=buttonList)
     passive_slots.append(active_slots[0])
     active_slots.pop(0)
@@ -335,6 +343,7 @@ def createAd(update, context, adTitle, timer, messageText, channelList, buttonLi
 
 
 def deleteAd(update, context, adNumber):
+
     try:
         adNumber = int(adNumber)
         passive_slots[adNumber].running = False
@@ -342,6 +351,10 @@ def deleteAd(update, context, adNumber):
         passive_slots.pop(adNumber)
         active_slots.insert(adNumber, "Free Slot {}".format(adNumber + 1)) #adNumber + 1 cünkü 1, 2, 3 seklinde gitsin sifirdan baslamasin.
         print(passive_slots, active_slots)
+
+
+        delete_ad = SaveData(adIndex = adNumber)
+        delete_ad.deleteAdFromJson()
         mainMenu(update, context, "AD SUCCESFULLY DELETED")
 
     except:
@@ -368,6 +381,7 @@ if __name__ == '__main__':
     adFive = "Free Slot 5"
 
     active_slots = [adOne, adTwo, adThree, adFour, adFive]
+    active_slots_channel_names = []
     passive_slots = []
 
     updater = Updater("5746559989:AAHKLZEkp7Cz_Kko0_r6kA9a626OEB-Crc0", use_context=True)

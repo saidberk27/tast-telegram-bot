@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 class SaveData:
-    def __init__(self, adTitle=None, adContent=None, channelList=None, adTimer=None, channelName = None,  channelID = None, mediaName = None, buttonList = []):
+    def __init__(self, adTitle=None, adContent=None, channelList=None, adTimer=None, channelName = None,  channelID = None, mediaName = None, buttonList = [], adIndex = None):
         self.adTitle = adTitle
         self.adContent = adContent
         self.adTimer = adTimer
@@ -10,6 +10,7 @@ class SaveData:
         self.channelID = channelID
         self.mediaName = mediaName
         self.buttonList = buttonList
+        self.adIndex = adIndex
 
     def _createAdDict(self):
         adJson = {"Ad Title":"{}".format(self.adTitle),
@@ -46,3 +47,30 @@ class SaveData:
             jsonFile.write(convertedData)
             jsonFile.truncate()
 
+    def deleteAdFromJson(self):
+        with open("userData.json", "r+") as jsonFile:
+            data = json.load(jsonFile)
+            data["Ads"].pop(self.adIndex)
+
+            convertedData = json.dumps(data)
+
+            jsonFile.seek(0)
+            jsonFile.write(convertedData)  # once yaziyoruz, cursor sona geliyor
+            jsonFile.truncate()  # sonra yazdigimiz veriden once ne varsa siliyoruz. OVERWRITE
+            # https://stackoverflow.com/questions/2424000/read-and-overwrite-a-file-in-python
+
+    def deleteChannelFromJson(self):
+        with open("userData.json","r+") as jsonFile:
+            data = json.load(jsonFile)
+            index = 0
+            for channel in data["channels"].keys():
+                if(self.channelName == channel):
+                    data["channels"].pop(index)
+                    break
+                index = index + 1
+
+            convertedData = json.dumps(data)
+
+            jsonFile.seek(0)
+            jsonFile.write(convertedData)
+            jsonFile.truncate()
