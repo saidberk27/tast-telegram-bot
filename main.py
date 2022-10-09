@@ -4,14 +4,22 @@ from user_data import UserData
 import threading
 import time
 from save_data import *
+from datetime import datetime
+from authentication import Auth
 
 class MainMethods:
     def sendMessage(context, messageText, channelList, fileName, buttonList):
         reply_markup = InlineKeyboardMarkup(buttonList)
+        print(fileName)
+        fileType = detectFileType(fileName)
         for channelID in channelList:
-            if(fileName == None):
+            if(fileName == None): #dosya ismi yoksa dosya yoktur :p
                 context.bot.send_message(chat_id="{}".format(channelID), text=messageText, reply_markup=reply_markup)
-            else:
+            elif(fileType == "document"):
+                context.bot.send_document(channelID, document=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup)
+            elif(fileType == "video"):
+                context.bot.send_video(channelID, video=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup)
+            elif(fileType == "photo"):
                 context.bot.send_photo(channelID, photo=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup)
 
 class MainViews:
@@ -19,8 +27,9 @@ class MainViews:
         [InlineKeyboardButton("🔥 CHANNELS", callback_data='channels')],
         [InlineKeyboardButton("➕ CREATE AN AD", callback_data='create an ad')],
         [InlineKeyboardButton("❌ DELETE AN AD ", callback_data='delete an ad')],
-        [InlineKeyboardButton("✔ BOT IS ACTIVE", callback_data='isActive')],
-        [InlineKeyboardButton("Media Test", callback_data='media')],
+        [InlineKeyboardButton("ADD MANAGER", callback_data='add manager')],
+        [InlineKeyboardButton("CHANGE LANGUAGE", callback_data='change language')],
+
     ]
 
     timerKeyboard = [[InlineKeyboardButton("10 Seconds", callback_data="10"),
@@ -74,17 +83,21 @@ class loop:
 
 
 def start(update: Update, context: CallbackContext):
-    global state
     user = update.message.from_user
     username = user['username']
+    if(Auth(username=username).isManager()):
+        global state
+        keyboard = MainViews.keyboard
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        update.message.reply_text("Hello {} Welcome the bot 🔥🔥🔥".format(username),reply_markup=reply_markup)
+        state = "MAIN MENU"
+        print(state)
+        print(buttonsTempList)
+    else:
+        keyboard = [[InlineKeyboardButton("CONTACT WITH SELLER",url="https://t.me/whilefalse27")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        update.message.reply_text("Hello, You Are Not Allowed to Use Bot. Please Contact With Seller.",reply_markup=reply_markup)
 
-    keyboard = MainViews.keyboard
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    update.message.reply_text("Hello {} Welcome the bot 🔥🔥🔥".format(username),reply_markup=reply_markup)
-
-    state = "MAIN MENU"
-    print(state)
-    print(buttonsTempList)
 
 
 def mainMenu(update, context, menuText = "Main Menu ⭐"):
@@ -174,6 +187,10 @@ def messageListener(update, context):
         context.bot.send_message(chat_id=update.effective_chat.id, text="Button Succesfully Saved!", reply_markup=reply_markup)
         context.bot.send_message(chat_id=update.effective_chat.id, text="Add More Button or Continue", reply_markup=reply_markup2)
 
+    elif(state == "WAIT_FOR_MANAGER_USERNAME"):
+        manager_username = update.message.text
+        Auth(username=manager_username).addManager()
+        mainMenu(update, context, menuText="MANAGER SUCCESFULLY ADDED.")
 
 def queryListener(update: Update, context: CallbackContext):
     global state
@@ -259,7 +276,7 @@ def queryListener(update: Update, context: CallbackContext):
         if(query.data == "continue"):
             state = "WAIT_FOR_CHANNEL"
             context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Group You Want To Post:")
-            listChannels(update, context)
+            listChannels(update, context, hideOptions=True)
 
         elif(query.data == "add buttons"):
             state = "WAIT_FOR_BUTTON_TEXT"
@@ -275,7 +292,12 @@ def queryListener(update: Update, context: CallbackContext):
     if(query.data == "BACK"):
         mainMenu(update,context)
 
-def listChannels(update, context, message="⭐ Your Channels:"):
+    if(query.data == "add manager"):
+        state = "WAIT_FOR_MANAGER_USERNAME"
+        context.bot.send_message(chat_id=update.effective_chat.id, text="What is the Username of your manager?")
+
+
+def listChannels(update, context, message="⭐ Your Channels:", hideOptions = False):
     _jsonFile = open("userData.json", "r")
     _jsonText = _jsonFile.read()
     _jsonFile.close()
@@ -284,9 +306,14 @@ def listChannels(update, context, message="⭐ Your Channels:"):
     keyboard = []
     for channelName in channelNamesList:
         keyboard.append([InlineKeyboardButton("{}".format(channelName), callback_data="{}".format(channelName))])
-    keyboard.append([InlineKeyboardButton("➕ ADD NEW CHANNEL", callback_data="ADD NEW CHANNEL")])
-    keyboard.append([InlineKeyboardButton("DELETE CHANNEL", callback_data="DELETE CHANNEL")])
-    keyboard.append([InlineKeyboardButton("BACK ⬅", callback_data="BACK")])
+
+    if(hideOptions):
+        pass
+    else:
+        keyboard.append([InlineKeyboardButton("➕ ADD NEW CHANNEL", callback_data="ADD NEW CHANNEL")])
+        keyboard.append([InlineKeyboardButton("DELETE CHANNEL", callback_data="DELETE CHANNEL")])
+        keyboard.append([InlineKeyboardButton("BACK ⬅", callback_data="BACK")])
+
     reply_markup = InlineKeyboardMarkup(keyboard)
     context.bot.send_message(chat_id=update.effective_chat.id, text=message, reply_markup=reply_markup)
 
@@ -322,21 +349,54 @@ def handleMedia(update: Update, context: CallbackContext):
     global state
     global media
 
+    now = datetime.now()
+    dt_string = now.strftime("%d-%m-%Y-%H-%M-%S")
+
     if(state == "WAIT_FOR_MEDIA"):
         state = "WAIT_FOR_BUTTON"
         file_id = update.message.document["file_id"]
-        media = update.message.document["file_name"]
+        media = "{}".format(dt_string)
         context.bot.get_file(file_id).download(custom_path="Medias/{}".format(update.message.document["file_name"]))
         keyboard = [[InlineKeyboardButton("Add Buttons", callback_data="add buttons"), InlineKeyboardButton("Continue", callback_data="continue")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
         context.bot.send_message(chat_id=update.effective_chat.id, text="File {} Saved to Ad. Add Buttons Or Continue".format(update.message.document["file_name"]), reply_markup=reply_markup)
         #listChannels(update, context)
 
+def handleVideo(update: Update, context: CallbackContext):
+    global state
+    global media
+    now = datetime.now()
+    dt_string = now.strftime("%d-%m-%Y-%H-%M-%S")
+
+    if(state == "WAIT_FOR_MEDIA"):
+        state = "WAIT_FOR_BUTTON"
+        file_id = update.message.video["file_id"]
+        media = "{}.mp4".format(dt_string)
+        context.bot.get_file(file_id).download(custom_path="Medias/{}".format(media))
+        keyboard = [[InlineKeyboardButton("Add Buttons", callback_data="add buttons"), InlineKeyboardButton("Continue", callback_data="continue")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        context.bot.send_message(chat_id=update.effective_chat.id, text="File Saved to Ad. Add Buttons Or Continue", reply_markup=reply_markup)
+        #listChannels(update, context)
+
+def handlePhoto(update: Update, context: CallbackContext):
+    global state
+    global media
+    now = datetime.now()
+    dt_string = now.strftime("%d-%m-%Y-%H-%M-%S")
+
+    if(state == "WAIT_FOR_MEDIA"):
+        state = "WAIT_FOR_BUTTON"
+        file_id = update.message.photo[-1].file_id
+        media = "{}.jpg".format(dt_string)
+        context.bot.get_file(file_id).download(custom_path="Medias/{}".format(media))
+        keyboard = [[InlineKeyboardButton("Add Buttons", callback_data="add buttons"), InlineKeyboardButton("Continue", callback_data="continue")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        context.bot.send_message(chat_id=update.effective_chat.id, text="Photo {} Saved to Ad. Add Buttons Or Continue".format(media), reply_markup=reply_markup)
+        #listChannels(update, context)
+
 def createButton(buttonText, buttonLink):
     global buttonsTempList
     buttonsTempList.append([InlineKeyboardButton(buttonText, url=buttonLink)])
-
-
 
 def createAd(update, context, adTitle, timer, messageText, channelList, buttonList):
     global active_slots
@@ -371,6 +431,20 @@ def deleteAd(update, context, adNumber):
     except:
         pass
 
+def detectFileType(fileName):
+    extensions = {"png":"photo", "jpg":"photo", "mp4":"video", "avi":"video", "wmv":"video"}
+    try:
+        extension = fileName.split(".")[1] #burada hata veriyorsa - AttributeError: 'NoneType' object has no attribute 'split' handleImage'de unique id ile calistigindan oturu veriyor ( niye cozemedim henuz )
+        try:
+            return extensions[extension]
+        except KeyError:
+            return "document"
+
+    except:
+        return "photo"
+
+
+
 if __name__ == '__main__':
     state = None
     messageText = "Yok"
@@ -402,6 +476,8 @@ if __name__ == '__main__':
     dp.add_handler(CallbackQueryHandler(queryListener))
     dp.add_handler(MessageHandler(Filters.text, messageListener))
     dp.add_handler(MessageHandler(Filters.document, handleMedia))
+    dp.add_handler(MessageHandler(Filters.video, handleVideo))
+    dp.add_handler(MessageHandler(Filters.photo, handlePhoto))
 
     updater.start_polling()
     updater.idle()
