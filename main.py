@@ -1,11 +1,16 @@
 from telegram import *
 from telegram.ext import *
+
+import strings
 from user_data import UserData
 import threading
 import time
 from save_data import *
 from datetime import datetime
 from authentication import Auth
+from collections import namedtuple
+import strings
+
 
 class MainMethods:
     def sendMessage(context, messageText, channelList, fileName, buttonList):
@@ -23,16 +28,22 @@ class MainMethods:
                 context.bot.send_photo(channelID, photo=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup)
 
 class MainViews:
-    keyboard = [
-        [InlineKeyboardButton("🔥 CHANNELS", callback_data='channels')],
-        [InlineKeyboardButton("➕ CREATE AN AD", callback_data='create an ad')],
-        [InlineKeyboardButton("❌ DELETE AN AD ", callback_data='delete an ad')],
-        [InlineKeyboardButton("ADD MANAGER", callback_data='add manager')],
-        [InlineKeyboardButton("CHANGE LANGUAGE", callback_data='change language')],
+    def getMainKeyboard(self):
+        global string
+        keyboard = [
+            [InlineKeyboardButton(string["channels"], callback_data='channels')],
+            [InlineKeyboardButton(string["create_ad"], callback_data='create an ad')],
+            [InlineKeyboardButton(string["delete_ad"], callback_data='delete an ad')],
+            [InlineKeyboardButton(string["add_manager"], callback_data='add manager')],
+            [InlineKeyboardButton(string["change_language"], callback_data='change language')],
 
-    ]
+        ]
 
-    timerKeyboard = [[InlineKeyboardButton("10 Seconds", callback_data="10"),
+        return keyboard
+    def getTimerKeyboard(self):
+        global string
+
+        timerKeyboard = [[InlineKeyboardButton("10 Seconds", callback_data="10"),
                       InlineKeyboardButton("30 Seconds", callback_data="30"),
                       InlineKeyboardButton("45 Seconds", callback_data="45")],
                      [InlineKeyboardButton("1 Minute", callback_data="60"),
@@ -51,6 +62,8 @@ class MainViews:
                       InlineKeyboardButton("24 Hours", callback_data="86400")],
                      [InlineKeyboardButton("BACK ⬅", callback_data="BACK")]
                      ]
+
+        return timerKeyboard
 
 class loop:
     def wait(self, seconds):
@@ -87,9 +100,9 @@ def start(update: Update, context: CallbackContext):
     username = user['username']
     if(Auth(username=username).isManager()):
         global state
-        keyboard = MainViews.keyboard
+        keyboard = MainViews().getMainKeyboard()
         reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text("Hello {} Welcome the bot 🔥🔥🔥".format(username),reply_markup=reply_markup)
+        update.message.reply_text(string["wellcome_message"].format(username),reply_markup=reply_markup)
         state = "MAIN MENU"
         print(state)
         print(buttonsTempList)
@@ -100,10 +113,11 @@ def start(update: Update, context: CallbackContext):
 
 
 
-def mainMenu(update, context, menuText = "Main Menu ⭐"):
+def mainMenu(update, context, menuText = "Main Menu"):
+    global string
     global state
     global keyboard
-    keyboard = MainViews.keyboard
+    keyboard = MainViews().getMainKeyboard()
     reply_markup = InlineKeyboardMarkup(keyboard)
     context.bot.send_message(chat_id=update.effective_chat.id, text=menuText, reply_markup=reply_markup)
 
@@ -119,19 +133,19 @@ def messageListener(update, context):
     global buttonsTempList
     global buttonText
     global buttonLink
-
+    global string
     print("Message Listener State = ",state)
 
     if(state == "WAIT_FOR_AD_TITLE"):
         adTitle = update.message.text
-        update.message.reply_text("Title {} saved.Please Type Your Post Text".format(adTitle))
+        update.message.reply_text(string["title_saved"].format(adTitle))
         state = "WAIT_FOR_TEXT"
 
     elif(state == "WAIT_FOR_TEXT"):
         messageText = update.message.text
         state = "WAIT_FOR_MEDIA"
         reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Skip", callback_data="skip")]])
-        update.message.reply_text("Text {} saved. Please Add Image/Video/Gif or Skip".format(messageText), reply_markup=reply_markup)
+        update.message.reply_text(string["text_saved"].format(messageText), reply_markup=reply_markup)
 
         #WAIT_FOR_MEDIA Supervising at FileHandler handleMedia()
 
@@ -158,46 +172,46 @@ def messageListener(update, context):
         channelID = int(update.message.text)
         state = "WAIT_FOR_TIMER"
         reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text("Text {} saved.Please Select Timer Data".format(messageText),
+        update.message.reply_text(string["channel_id_saved"].format(messageText),
                                   reply_markup=reply_markup)
     # WAIT FOR TIMER STATE'I QUERY LISTENER'DA DENETLENIYOR.
 
     elif(state == "WAIT_FOR_CHANNEL_NAME"):
         channelName = update.message.text
         state = "WAIT_FOR_CHANNEL_ID"
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Channel Name {} Saved. Please Enter Chat ID".format(channelName))
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["channel_name_saved"].format(channelName))
 
     elif(state == "WAIT_FOR_CHANNEL_ID"):
         channelID = int(update.message.text)
         SaveData(channelName=channelName, channelID=channelID).saveChanneltoJson()
-        mainMenu(update, context, menuText="Channel Succesfully Saved. You Can Use it with Your Ads".format(channelName))
+        mainMenu(update, context, menuText=string["channel_saved"].format(channelName))
 
     elif(state == "WAIT_FOR_BUTTON_TEXT"):
         state = "WAIT_FOR_BUTTON_LINK"
         buttonText = update.message.text
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Button Text {} Saved. Please Enter Button Link".format(buttonText))
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["button_text_saved"].format(buttonText))
 
     elif(state == "WAIT_FOR_BUTTON_LINK"):
         state = "WAIT_FOR_BUTTON"
         buttonLink = update.message.text
         createButton(buttonText=buttonText, buttonLink=buttonLink)
-        keyboard = [[InlineKeyboardButton("Add Buttons", callback_data="add buttons"), InlineKeyboardButton("Continue", callback_data="continue")]]
+        keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
         reply_markup = InlineKeyboardMarkup(buttonsTempList)
         reply_markup2 = InlineKeyboardMarkup(keyboard)
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Button Succesfully Saved!", reply_markup=reply_markup)
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Add More Button or Continue", reply_markup=reply_markup2)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["button_saved"], reply_markup=reply_markup)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["add_more_button_or_continue"], reply_markup=reply_markup2)
 
     elif(state == "WAIT_FOR_MANAGER_USERNAME"):
         manager_username = update.message.text
         Auth(username=manager_username).addManager()
-        mainMenu(update, context, menuText="MANAGER SUCCESFULLY ADDED.")
+        mainMenu(update, context, menuText=string["manager_added"])
 
 def queryListener(update: Update, context: CallbackContext):
     global state
     global adChannelName
     global adChannelID
     global buttonsTempList
-    userdata = UserData()
+    global string
 
     query = update.callback_query
     query.answer()
@@ -229,7 +243,7 @@ def queryListener(update: Update, context: CallbackContext):
     if(state == "WAIT_FOR_TIMER"):
         try:
             messageTimer = int(query.data)
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Timer saved. Ad is Running")
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["timer_saved_ad_is_running"])
             createAd(update, context, adTitle=adTitle, timer=messageTimer, messageText="{}".format(messageText), channelList=[adChannelID], buttonList = buttonsTempList)
             buttonsTempList = []
             mainMenu(update, context)
@@ -241,23 +255,23 @@ def queryListener(update: Update, context: CallbackContext):
             deleteAd(update, context, query.data)
 
     if(state == "CREATE AN AD SELECTED"):
-        context.bot.send_message(chat_id=update.effective_chat.id, text="What is the name of title?")
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["what_is_the_title"])
         state = "WAIT_FOR_AD_TITLE"
 
     if(state == "CHANNELS SELECTED"):
         if(query.data == "ADD NEW CHANNEL"):
             state = "WAIT_FOR_CHANNEL_NAME"
-            context.bot.send_message(chat_id=update.effective_chat.id, text="What is the name of channel?")
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["what_is_the_name_of_channel"])
 
         elif(query.data == "DELETE CHANNEL"):
             state = "WAIT_FOR_NAME_OF_DELETED_CHANNEL"
-            listChannels(update, context, "Please Select a Channel You Want to Delete")
+            listChannels(update, context, string["please_select_channel"])
 
     if(state == "WAIT_FOR_NAME_OF_DELETED_CHANNEL"):
         if(query.data != "DELETE CHANNEL"):
             delete_channel = SaveData(channelName=query.data)
             delete_channel.deleteChannelFromJson()
-            mainMenu(update, context, "CHANNEL SUCCESFULLY REMOVED")
+            mainMenu(update, context, string["channel_succesfully_removed"])
 
     if(state == "WAIT_FOR_CHANNEL"):
         _jsonFile = open("userData.json", "r")
@@ -269,35 +283,51 @@ def queryListener(update: Update, context: CallbackContext):
         adChannelName = query.data
         adChannelID = _convertedDict["channels"][adChannelName]
         state = "WAIT_FOR_TIMER"
-        reply_markup = InlineKeyboardMarkup(MainViews.timerKeyboard)
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Channel {} Selected. Please Select Timer Data".format(adChannelName), reply_markup=reply_markup)
+        reply_markup = InlineKeyboardMarkup(MainViews().getTimerKeyboard())
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["channel_selected"].format(adChannelName), reply_markup=reply_markup)
 
     if(state == "WAIT_FOR_BUTTON"):
         if(query.data == "continue"):
             state = "WAIT_FOR_CHANNEL"
-            context.bot.send_message(chat_id=update.effective_chat.id, text="Please Select the Group You Want To Post:")
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["please_select_group"])
             listChannels(update, context, hideOptions=True)
 
         elif(query.data == "add buttons"):
             state = "WAIT_FOR_BUTTON_TEXT"
-            context.bot.send_message(chat_id=update.effective_chat.id, text="What is the Text of Button")
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["what_is_the_text_of_button"])
 
     if(state == "WAIT_FOR_MEDIA" and query.data == "skip"):
         state = "WAIT_FOR_BUTTON"
-        keyboard = [[InlineKeyboardButton("Add Buttons", callback_data="add buttons"),
-                     InlineKeyboardButton("Continue", callback_data="continue")]]
+        keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"),
+                     InlineKeyboardButton(string["continue"], callback_data="continue")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Adding File Skipped. Add Buttons Or Continue", reply_markup=reply_markup)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["adding_file_skipped"], reply_markup=reply_markup)
 
     if(query.data == "BACK"):
         mainMenu(update,context)
 
     if(query.data == "add manager"):
         state = "WAIT_FOR_MANAGER_USERNAME"
-        context.bot.send_message(chat_id=update.effective_chat.id, text="What is the Username of your manager?")
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["what_is_username"])
 
+    if(query.data == "change language"):
+        state = "WAIT_FOR_LANGUAGE"
+        keyboard = [[InlineKeyboardButton("ENGLISH", callback_data="en")],
+                        [InlineKeyboardButton("עִברִית", callback_data="he")]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
 
-def listChannels(update, context, message="⭐ Your Channels:", hideOptions = False):
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["please_select_language"], reply_markup = reply_markup)
+
+    if(state == "WAIT_FOR_LANGUAGE"):
+        if(query.data == "he"):
+            string = strings.he
+            mainMenu(update, context, string["language_succesfully_changed"])
+
+        elif(query.data == "en"):
+            string = strings.en
+            mainMenu(update, context,  string["language_succesfully_changed"])
+        print(string)
+def listChannels(update, context, message="Your Channels", hideOptions = False):
     _jsonFile = open("userData.json", "r")
     _jsonText = _jsonFile.read()
     _jsonFile.close()
@@ -310,9 +340,9 @@ def listChannels(update, context, message="⭐ Your Channels:", hideOptions = Fa
     if(hideOptions):
         pass
     else:
-        keyboard.append([InlineKeyboardButton("➕ ADD NEW CHANNEL", callback_data="ADD NEW CHANNEL")])
-        keyboard.append([InlineKeyboardButton("DELETE CHANNEL", callback_data="DELETE CHANNEL")])
-        keyboard.append([InlineKeyboardButton("BACK ⬅", callback_data="BACK")])
+        keyboard.append([InlineKeyboardButton(string["add_new_channel"], callback_data="ADD NEW CHANNEL")])
+        keyboard.append([InlineKeyboardButton(string["delete_channel"], callback_data="DELETE CHANNEL")])
+        keyboard.append([InlineKeyboardButton(string["back"], callback_data="BACK")])
 
     reply_markup = InlineKeyboardMarkup(keyboard)
     context.bot.send_message(chat_id=update.effective_chat.id, text=message, reply_markup=reply_markup)
@@ -337,10 +367,10 @@ def listAds(update, context):
         keyboard.append([InlineKeyboardButton("{}".format(_adTitle), callback_data="{}".format(_adNumber))])
         _adNumber = _adNumber + 1
 
-    keyboard.append([InlineKeyboardButton("BACK ⬅", callback_data="BACK")])
+    keyboard.append([InlineKeyboardButton(string["back"], callback_data="BACK")])
 
     reply_markup = InlineKeyboardMarkup(keyboard)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Your Active Ads:", reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=string["your_active_ads"], reply_markup=reply_markup)
 
     #await client.edit_message(chat, message.id, 'hello!!')
     #context.bot.editMessageText(chat_id=update.effective_chat.id, text="Your Active Ads:", reply_markup=reply_markup)
@@ -356,10 +386,10 @@ def handleMedia(update: Update, context: CallbackContext):
         state = "WAIT_FOR_BUTTON"
         file_id = update.message.document["file_id"]
         media = "{}".format(dt_string)
-        context.bot.get_file(file_id).download(custom_path="Medias/{}".format(update.message.document["file_name"]))
-        keyboard = [[InlineKeyboardButton("Add Buttons", callback_data="add buttons"), InlineKeyboardButton("Continue", callback_data="continue")]]
+        context.bot.get_file(file_id).download(custom_path="Medias/{}".format(media))
+        keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        context.bot.send_message(chat_id=update.effective_chat.id, text="File {} Saved to Ad. Add Buttons Or Continue".format(update.message.document["file_name"]), reply_markup=reply_markup)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_saved_to_ad"], reply_markup=reply_markup)
         #listChannels(update, context)
 
 def handleVideo(update: Update, context: CallbackContext):
@@ -373,9 +403,9 @@ def handleVideo(update: Update, context: CallbackContext):
         file_id = update.message.video["file_id"]
         media = "{}.mp4".format(dt_string)
         context.bot.get_file(file_id).download(custom_path="Medias/{}".format(media))
-        keyboard = [[InlineKeyboardButton("Add Buttons", callback_data="add buttons"), InlineKeyboardButton("Continue", callback_data="continue")]]
+        keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        context.bot.send_message(chat_id=update.effective_chat.id, text="File Saved to Ad. Add Buttons Or Continue", reply_markup=reply_markup)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_saved_to_ad"], reply_markup=reply_markup)
         #listChannels(update, context)
 
 def handlePhoto(update: Update, context: CallbackContext):
@@ -389,9 +419,9 @@ def handlePhoto(update: Update, context: CallbackContext):
         file_id = update.message.photo[-1].file_id
         media = "{}.jpg".format(dt_string)
         context.bot.get_file(file_id).download(custom_path="Medias/{}".format(media))
-        keyboard = [[InlineKeyboardButton("Add Buttons", callback_data="add buttons"), InlineKeyboardButton("Continue", callback_data="continue")]]
+        keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        context.bot.send_message(chat_id=update.effective_chat.id, text="Photo {} Saved to Ad. Add Buttons Or Continue".format(media), reply_markup=reply_markup)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_saved_to_ad"], reply_markup=reply_markup)
         #listChannels(update, context)
 
 def createButton(buttonText, buttonLink):
@@ -426,7 +456,7 @@ def deleteAd(update, context, adNumber):
 
         delete_ad = SaveData(adIndex = adNumber)
         delete_ad.deleteAdFromJson()
-        mainMenu(update, context, "AD SUCCESFULLY DELETED")
+        mainMenu(update, context, string["ad_deleted"])
 
     except:
         pass
@@ -458,6 +488,7 @@ if __name__ == '__main__':
     buttonsTempList = []
     buttonText = None
     buttonLink = None
+    string = strings.he
 
     adOne = "Free Slot 1"
     adTwo = "Free Slot 2"
