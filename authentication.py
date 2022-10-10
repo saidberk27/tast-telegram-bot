@@ -6,11 +6,8 @@ class Auth:
     def isManager(self):
         with open("managerlist.json", "r+") as jsonFile:
             data = json.load(jsonFile)
-            for manager in data["manager_list"]:
-                print(data)
-                if(manager == self.username):
-                    return True
-                return False
+            return self.username in data["manager_list"]
+
 
     def addManager(self):
         with open("managerlist.json", "r+") as managerfile:
