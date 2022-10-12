@@ -213,6 +213,8 @@ def queryListener(update: Update, context: CallbackContext):
     global adChannelID
     global buttonsTempList
     global string
+    global channelList
+
 
     query = update.callback_query
     query.answer()
@@ -245,7 +247,7 @@ def queryListener(update: Update, context: CallbackContext):
         try:
             messageTimer = int(query.data)
             context.bot.send_message(chat_id=update.effective_chat.id, text=string["timer_saved_ad_is_running"])
-            createAd(update, context, adTitle=adTitle, timer=messageTimer, messageText="{}".format(messageText), channelList=[adChannelID], buttonList = buttonsTempList)
+            createAd(update, context, adTitle=adTitle, timer=messageTimer, messageText="{}".format(messageText), channelList=channelList, buttonList = buttonsTempList)
             buttonsTempList = []
             mainMenu(update, context)
         except ValueError:  # nedense int yuzunden valuerror firlatiyor (false olmasina ragmen)
@@ -264,6 +266,7 @@ def queryListener(update: Update, context: CallbackContext):
             state = "WAIT_FOR_CHANNEL_NAME"
             context.bot.send_message(chat_id=update.effective_chat.id, text=string["what_is_the_name_of_channel"])
 
+
         elif(query.data == "DELETE CHANNEL"):
             state = "WAIT_FOR_NAME_OF_DELETED_CHANNEL"
             listChannels(update, context, string["please_select_channel"])
@@ -279,19 +282,25 @@ def queryListener(update: Update, context: CallbackContext):
         _jsonText = _jsonFile.read()
         _jsonFile.close()
         _convertedDict = json.loads(_jsonText)
-
-
-        adChannelName = query.data
-        adChannelID = _convertedDict["channels"][adChannelName]
-        state = "WAIT_FOR_TIMER"
         reply_markup = InlineKeyboardMarkup(MainViews().getTimerKeyboard())
-        context.bot.send_message(chat_id=update.effective_chat.id, text=string["channel_selected"].format(adChannelName), reply_markup=reply_markup)
+
+        if(query.data == "POST TO ALL GROUPS"):
+            channelList = list(_convertedDict["channels"].values())
+            state = "WAIT_FOR_TIMER"
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["all_channels_selected"], reply_markup=reply_markup)
+
+        else:
+            adChannelName = query.data
+            adChannelID = _convertedDict["channels"][adChannelName]
+            channelList = [adChannelID]
+            state = "WAIT_FOR_TIMER"
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["channel_selected"].format(adChannelName), reply_markup=reply_markup)
 
     if(state == "WAIT_FOR_BUTTON"):
         if(query.data == "continue"):
             state = "WAIT_FOR_CHANNEL"
             context.bot.send_message(chat_id=update.effective_chat.id, text=string["please_select_group"])
-            listChannels(update, context, hideOptions=True)
+            listChannels(update, context, hideOptions=True, showSendToAllGroupsOption=True)
 
         elif(query.data == "add buttons"):
             state = "WAIT_FOR_BUTTON_TEXT"
@@ -328,7 +337,7 @@ def queryListener(update: Update, context: CallbackContext):
             string = strings.en
             mainMenu(update, context,  string["language_succesfully_changed"])
         print(string)
-def listChannels(update, context, message="Your Channels", hideOptions = False):
+def listChannels(update, context, message="Your Channels", hideOptions = False, showSendToAllGroupsOption=False):
     _jsonFile = open("userData.json", "r")
     _jsonText = _jsonFile.read()
     _jsonFile.close()
@@ -338,6 +347,8 @@ def listChannels(update, context, message="Your Channels", hideOptions = False):
     for channelName in channelNamesList:
         keyboard.append([InlineKeyboardButton("{}".format(channelName), callback_data="{}".format(channelName))])
 
+    if(showSendToAllGroupsOption):
+        keyboard.append([InlineKeyboardButton(string["post_all_groups"], callback_data="POST TO ALL GROUPS")])
     if(hideOptions):
         pass
     else:
@@ -487,6 +498,7 @@ if __name__ == '__main__':
     adChannelID = None
     media = None
     buttonsTempList = []
+    channelList = []
     buttonText = None
     buttonLink = None
     string = strings.he

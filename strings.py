@@ -37,7 +37,9 @@ he = {
     "file_saved_to_ad":"הקובץ נשמר במודעה. הוסף כפתורים או המשך",
     "add_buttons":"➕ הוסף לחצנים",
     "continue":"המשך ✔",
-    "ad_deleted":"המודעה נמחקה בהצלחה"
+    "ad_deleted":"המודעה נמחקה בהצלחה",
+    "post_all_groups":"פרסם לכל הקבוצות",
+    "all_channels_selected":"כל הערוצים נבחרו. נא לציין נתוני טיימר"
 
 }
 
@@ -67,7 +69,7 @@ en = {
     "what_is_the_name_of_channel":"What is the name of channel?",
     "please_select_channel":"Please Select a Channel You Want to Delete",
     "channel_succesfully_removed":"Channel Successfully Removed ✔",
-    "channel_selected":"Channel {} Selected. Please Select Timer Data",
+    "channel_selected":"Channel {} Selected. Please Specify Timer Data",
     "please_select_group":"Please Select the Group You Want To Post:",
     "what_is_the_text_of_button":"What is the Text of Button",
     "adding_file_skipped":"Adding File Skipped. Add Buttons Or Continue",
@@ -80,6 +82,8 @@ en = {
     "file_saved_to_ad":"File Saved to Ad. Add Buttons Or Continue",
     "add_buttons":"➕ Add Buttons",
     "continue":"Continue ✔",
-    "ad_deleted":"AD SUCCESFULLY DELETED"
+    "ad_deleted":"AD SUCCESFULLY DELETED",
+    "post_all_groups":"POST TO ALL GROUPS",
+    "all_channels_selected":"All Channels Selected. Please Specify Timer Data"
 
 }
