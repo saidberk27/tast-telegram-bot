@@ -20,13 +20,13 @@ class MainMethods:
         fileType = detectFileType(fileName)
         for channelID in channelList:
             if(fileName == None): #dosya ismi yoksa dosya yoktur :p
-                context.bot.send_message(chat_id="{}".format(channelID), text=messageText, reply_markup=reply_markup, parse_mode=telegram.ParseMode.HTML)
+                context.bot.send_message(chat_id="{}".format(channelID), text=messageText, reply_markup=reply_markup, parse_mode=telegram.ParseMode.MARKDOWN)
             elif(fileType == "document"):
-                context.bot.send_document(channelID, document=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.HTML)
+                context.bot.send_document(channelID, document=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.MARKDOWN)
             elif(fileType == "video"):
-                context.bot.send_video(channelID, video=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.HTML)
+                context.bot.send_video(channelID, video=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.MARKDOWN)
             elif(fileType == "photo"):
-                context.bot.send_photo(channelID, photo=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.HTML)
+                context.bot.send_photo(channelID, photo=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.MARKDOWN)
 
 class MainViews:
     def getMainKeyboard(self):
@@ -143,7 +143,7 @@ def messageListener(update, context):
         state = "WAIT_FOR_TEXT"
 
     elif(state == "WAIT_FOR_TEXT"):
-        messageText = update.message.text
+        messageText = update.message.text_markdown_v2
         state = "WAIT_FOR_MEDIA"
         reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Skip", callback_data="skip")]])
         update.message.reply_text(string["text_saved"].format(messageText), reply_markup=reply_markup)
