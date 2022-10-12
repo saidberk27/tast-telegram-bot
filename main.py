@@ -28,6 +28,34 @@ class MainMethods:
             elif(fileType == "photo"):
                 context.bot.send_photo(channelID, photo=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.MARKDOWN)
 
+    def resetGlobalVars(self):
+        global state
+        global messageText
+        global messageTimer
+        global adTitle
+        global channelID
+        global channelName
+        global adChannelName
+        global adChannelID
+        global media
+        global buttonsTempList
+        global channelList
+        global buttonText
+        global buttonLink
+
+        state = None
+        messageText = "Yok"
+        messageTimer = "Yok"
+        adTitle = "Yok"
+        channelID = None
+        channelName = None
+        adChannelName = None
+        adChannelID = None
+        media = None
+        buttonsTempList = []
+        channelList = []
+        buttonText = None
+        buttonLink = None
 class MainViews:
     def getMainKeyboard(self):
         global string
@@ -249,6 +277,7 @@ def queryListener(update: Update, context: CallbackContext):
             context.bot.send_message(chat_id=update.effective_chat.id, text=string["timer_saved_ad_is_running"])
             createAd(update, context, adTitle=adTitle, timer=messageTimer, messageText="{}".format(messageText), channelList=channelList, buttonList = buttonsTempList)
             buttonsTempList = []
+            MainMethods().resetGlobalVars()
             mainMenu(update, context)
         except ValueError:  # nedense int yuzunden valuerror firlatiyor (false olmasina ragmen)
             pass
