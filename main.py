@@ -537,8 +537,12 @@ if __name__ == '__main__':
     adThree = "Free Slot 3"
     adFour = "Free Slot 4"
     adFive = "Free Slot 5"
-
-    active_slots = [adOne, adTwo, adThree, adFour, adFive]
+    adSix = "Free Slot 6"
+    adSeven = "Free Slot 7"
+    adEight = "Free Slot 8"
+    adNine = "Free Slot 9"
+    adTen = "Free Slot 10"
+    active_slots = [adOne, adTwo, adThree, adFour, adFive, adSix, adSeven, adEight, adNine, adTen]
     active_slots_channel_names = []
     passive_slots = []
 
