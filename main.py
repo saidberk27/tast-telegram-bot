@@ -131,14 +131,14 @@ def start(update: Update, context: CallbackContext):
         global state
         keyboard = MainViews().getMainKeyboard()
         reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text(string["wellcome_message"].format(username),reply_markup=reply_markup)
+        update.message.reply_text(string["wellcome_message"].format(username),reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
         state = "MAIN MENU"
         print(state)
         print(buttonsTempList)
     else:
         keyboard = [[InlineKeyboardButton("CONTACT WITH SELLER",url="https://t.me/whilefalse27")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text("Hello, You Are Not Allowed to Use Bot. Please Contact With Seller.",reply_markup=reply_markup)
+        update.message.reply_text("Hello, You Are Not Allowed to Use Bot. Please Contact With Seller.",reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 
@@ -148,7 +148,7 @@ def mainMenu(update, context, menuText = "Main Menu"):
     global keyboard
     keyboard = MainViews().getMainKeyboard()
     reply_markup = InlineKeyboardMarkup(keyboard)
-    context.bot.send_message(chat_id=update.effective_chat.id, text=menuText, reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=menuText, reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
 
     state = "MAIN MENU"
 
@@ -167,14 +167,14 @@ def messageListener(update, context):
 
     if(state == "WAIT_FOR_AD_TITLE"):
         adTitle = update.message.text
-        update.message.reply_text(string["title_saved"].format(adTitle))
+        update.message.reply_text(string["title_saved"].format(adTitle),parse_mode=telegram.ParseMode.MARKDOWN)
         state = "WAIT_FOR_TEXT"
 
     elif(state == "WAIT_FOR_TEXT"):
         messageText = update.message.text_markdown_v2
         state = "WAIT_FOR_MEDIA"
         reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Skip", callback_data="skip")]])
-        update.message.reply_text(string["text_saved"].format(messageText), reply_markup=reply_markup)
+        update.message.reply_text(string["text_saved"].format(messageText), reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
 
         #WAIT_FOR_MEDIA Supervising at FileHandler handleMedia()
 
@@ -201,14 +201,13 @@ def messageListener(update, context):
         channelID = int(update.message.text)
         state = "WAIT_FOR_TIMER"
         reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text(string["channel_id_saved"].format(messageText),
-                                  reply_markup=reply_markup)
+        update.message.reply_text(string["channel_id_saved"].format(messageText), reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
     # WAIT FOR TIMER STATE'I QUERY LISTENER'DA DENETLENIYOR.
 
     elif(state == "WAIT_FOR_CHANNEL_NAME"):
         channelName = update.message.text
         state = "WAIT_FOR_CHANNEL_ID"
-        context.bot.send_message(chat_id=update.effective_chat.id, text=string["channel_name_saved"].format(channelName))
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["channel_name_saved"].format(channelName),parse_mode=telegram.ParseMode.MARKDOWN)
 
     elif(state == "WAIT_FOR_CHANNEL_ID"):
         channelID = int(update.message.text)
@@ -218,7 +217,7 @@ def messageListener(update, context):
     elif(state == "WAIT_FOR_BUTTON_TEXT"):
         state = "WAIT_FOR_BUTTON_LINK"
         buttonText = update.message.text
-        context.bot.send_message(chat_id=update.effective_chat.id, text=string["button_text_saved"].format(buttonText))
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["button_text_saved"].format(buttonText),parse_mode=telegram.ParseMode.MARKDOWN)
 
     elif(state == "WAIT_FOR_BUTTON_LINK"):
         try:
@@ -229,8 +228,8 @@ def messageListener(update, context):
             reply_markup = InlineKeyboardMarkup(buttonsTempList)
             reply_markup2 = InlineKeyboardMarkup(keyboard)
             state = "WAIT_FOR_BUTTON"
-            context.bot.send_message(chat_id=update.effective_chat.id, text=string["button_saved"], reply_markup=reply_markup)
-            context.bot.send_message(chat_id=update.effective_chat.id, text=string["add_more_button_or_continue"], reply_markup=reply_markup2)
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["button_saved"], reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["add_more_button_or_continue"], reply_markup=reply_markup2,parse_mode=telegram.ParseMode.MARKDOWN)
         except Exception:
             mainMenu(update, context, menuText=string["invalid_button_url"])
 
@@ -278,8 +277,8 @@ def queryListener(update: Update, context: CallbackContext):
     if(state == "WAIT_FOR_TIMER"):
         try:
             messageTimer = int(query.data)
-            context.bot.send_message(chat_id=update.effective_chat.id, text=string["timer_saved_ad_is_running"])
-            createAd(update, context, adTitle=adTitle, timer=messageTimer, messageText="{}".format(messageText), channelList=channelList, buttonList = buttonsTempList)
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["timer_saved_ad_is_running"],parse_mode=telegram.ParseMode.MARKDOWN)
+            createAd(update, context, adTitle=adTitle, timer=messageTimer, messageText="{}".format(messageText), channelList=channelList, buttonList = buttonsTempList,parse_mode=telegram.ParseMode.MARKDOWN)
             buttonsTempList = []
             MainMethods().resetGlobalVars()
             mainMenu(update, context)
@@ -291,13 +290,13 @@ def queryListener(update: Update, context: CallbackContext):
             deleteAd(update, context, query.data)
 
     if(state == "CREATE AN AD SELECTED"):
-        context.bot.send_message(chat_id=update.effective_chat.id, text=string["what_is_the_title"])
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["what_is_the_title"],parse_mode=telegram.ParseMode.MARKDOWN)
         state = "WAIT_FOR_AD_TITLE"
 
     if(state == "CHANNELS SELECTED"):
         if(query.data == "ADD NEW CHANNEL"):
             state = "WAIT_FOR_CHANNEL_NAME"
-            context.bot.send_message(chat_id=update.effective_chat.id, text=string["what_is_the_name_of_channel"])
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["what_is_the_name_of_channel"],parse_mode=telegram.ParseMode.MARKDOWN)
 
 
         elif(query.data == "DELETE CHANNEL"):
@@ -327,31 +326,31 @@ def queryListener(update: Update, context: CallbackContext):
             adChannelID = _convertedDict["channels"][adChannelName]
             channelList = [adChannelID]
             state = "WAIT_FOR_TIMER"
-            context.bot.send_message(chat_id=update.effective_chat.id, text=string["channel_selected"].format(adChannelName), reply_markup=reply_markup)
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["channel_selected"].format(adChannelName), reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
 
     if(state == "WAIT_FOR_BUTTON"):
         if(query.data == "continue"):
             state = "WAIT_FOR_CHANNEL"
-            context.bot.send_message(chat_id=update.effective_chat.id, text=string["please_select_group"])
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["please_select_group"],parse_mode=telegram.ParseMode.MARKDOWN)
             listChannels(update, context, hideOptions=True, showSendToAllGroupsOption=True)
 
         elif(query.data == "add buttons"):
             state = "WAIT_FOR_BUTTON_TEXT"
-            context.bot.send_message(chat_id=update.effective_chat.id, text=string["what_is_the_text_of_button"])
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["what_is_the_text_of_button"],parse_mode=telegram.ParseMode.MARKDOWN)
 
     if(state == "WAIT_FOR_MEDIA" and query.data == "skip"):
         state = "WAIT_FOR_BUTTON"
         keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"),
                      InlineKeyboardButton(string["continue"], callback_data="continue")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=string["adding_file_skipped"], reply_markup=reply_markup)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["adding_file_skipped"], reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
 
     if(query.data == "BACK"):
         mainMenu(update,context)
 
     if(query.data == "add manager"):
         state = "WAIT_FOR_MANAGER_USERNAME"
-        context.bot.send_message(chat_id=update.effective_chat.id, text=string["what_is_username"])
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["what_is_username"],parse_mode=telegram.ParseMode.MARKDOWN)
 
     if(query.data == "change language"):
         state = "WAIT_FOR_LANGUAGE"
@@ -359,7 +358,7 @@ def queryListener(update: Update, context: CallbackContext):
                         [InlineKeyboardButton("עִברִית", callback_data="he")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
-        context.bot.send_message(chat_id=update.effective_chat.id, text=string["please_select_language"], reply_markup = reply_markup)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["please_select_language"], reply_markup = reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
 
     if(state == "WAIT_FOR_LANGUAGE"):
         if(query.data == "he"):
@@ -390,7 +389,7 @@ def listChannels(update, context, message="Your Channels", hideOptions = False, 
         keyboard.append([InlineKeyboardButton(string["back"], callback_data="BACK")])
 
     reply_markup = InlineKeyboardMarkup(keyboard)
-    context.bot.send_message(chat_id=update.effective_chat.id, text=message, reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=message, reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
 
 def listAds(update, context):
     global state
@@ -415,7 +414,7 @@ def listAds(update, context):
     keyboard.append([InlineKeyboardButton(string["back"], callback_data="BACK")])
 
     reply_markup = InlineKeyboardMarkup(keyboard)
-    context.bot.send_message(chat_id=update.effective_chat.id, text=string["your_active_ads"], reply_markup=reply_markup)
+    context.bot.send_message(chat_id=update.effective_chat.id, text=string["your_active_ads"], reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
 
     #await client.edit_message(chat, message.id, 'hello!!')
     #context.bot.editMessageText(chat_id=update.effective_chat.id, text="Your Active Ads:", reply_markup=reply_markup)
@@ -434,7 +433,7 @@ def handleMedia(update: Update, context: CallbackContext):
         context.bot.get_file(file_id).download(custom_path="Medias/{}".format(media))
         keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_saved_to_ad"], reply_markup=reply_markup)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_saved_to_ad"], reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
         #listChannels(update, context)
 
 def handleVideo(update: Update, context: CallbackContext):
@@ -450,7 +449,7 @@ def handleVideo(update: Update, context: CallbackContext):
         context.bot.get_file(file_id).download(custom_path="Medias/{}".format(media))
         keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_saved_to_ad"], reply_markup=reply_markup)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_saved_to_ad"], reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
         #listChannels(update, context)
 
 def handlePhoto(update: Update, context: CallbackContext):
@@ -466,7 +465,7 @@ def handlePhoto(update: Update, context: CallbackContext):
         context.bot.get_file(file_id).download(custom_path="Medias/{}".format(media))
         keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_saved_to_ad"], reply_markup=reply_markup)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_saved_to_ad"], reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
         #listChannels(update, context)
 
 def createButton(buttonText, buttonLink):
