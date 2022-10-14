@@ -72,25 +72,25 @@ class MainViews:
     def getTimerKeyboard(self):
         global string
 
-        timerKeyboard = [[InlineKeyboardButton("10 Seconds", callback_data="10"),
-                      InlineKeyboardButton("30 Seconds", callback_data="30"),
-                      InlineKeyboardButton("45 Seconds", callback_data="45")],
-                     [InlineKeyboardButton("1 Minute", callback_data="60"),
-                      InlineKeyboardButton("5 Minutes", callback_data="300"),
-                      InlineKeyboardButton("10 Minutes", callback_data="600")],
-                     [InlineKeyboardButton("15 Minutes", callback_data="900"),
-                      InlineKeyboardButton("30 Minutes", callback_data="1800"),
-                      InlineKeyboardButton("45 Minutes", callback_data="2700"),
-                      InlineKeyboardButton("1 Hour", callback_data="3600")],
-                     [InlineKeyboardButton("3 Hours", callback_data="10800"),
-                      InlineKeyboardButton("6 Hours", callback_data="21600"),
-                      InlineKeyboardButton("9 Hours", callback_data="32400"),
-                      InlineKeyboardButton("12 Hours", callback_data="43200")],
-                     [InlineKeyboardButton("15 Hours", callback_data="54000"),
-                      InlineKeyboardButton("18 Hours", callback_data="64800"),
-                      InlineKeyboardButton("24 Hours", callback_data="86400")],
-                     [InlineKeyboardButton("BACK ⬅", callback_data="BACK")]
-                     ]
+        timerKeyboard = [[InlineKeyboardButton(string["10_sec"], callback_data="10"),
+                     InlineKeyboardButton(string["30_sec"], callback_data="30"),
+                     InlineKeyboardButton(string["45_sec"], callback_data="45")],
+                    [InlineKeyboardButton(string["1_min"], callback_data="60"),
+                     InlineKeyboardButton(string["5_min"], callback_data="300"),
+                     InlineKeyboardButton(string["10_min"], callback_data="600")],
+                    [InlineKeyboardButton(string["15_min"], callback_data="900"),
+                     InlineKeyboardButton(string["30_min"], callback_data="1800"),
+                     InlineKeyboardButton(string["45_min"], callback_data="2700"),
+                     InlineKeyboardButton(string["1_hour"], callback_data="3600")],
+                    [InlineKeyboardButton(string["3_hour"], callback_data="10800"),
+                     InlineKeyboardButton(string["6_hour"], callback_data="21600"),
+                     InlineKeyboardButton(string["9_hour"], callback_data="32400"),
+                     InlineKeyboardButton(string["12_hour"], callback_data="43200")],
+                    [InlineKeyboardButton(string["15_hour"], callback_data="54000"),
+                     InlineKeyboardButton(string["18_hour"], callback_data="64800"),
+                     InlineKeyboardButton(string["24_hour"], callback_data="86400")],
+                    [InlineKeyboardButton(string["back"], callback_data="BACK")]
+                    ]
 
         return timerKeyboard
 
@@ -142,7 +142,7 @@ def start(update: Update, context: CallbackContext):
 
 
 
-def mainMenu(update, context, menuText = "Main Menu"):
+def mainMenu(update, context, menuText = "Main Menu / תפריט ראשי"):
     global string
     global state
     global keyboard
@@ -173,30 +173,30 @@ def messageListener(update, context):
     elif(state == "WAIT_FOR_TEXT"):
         messageText = update.message.text_markdown_v2
         state = "WAIT_FOR_MEDIA"
-        reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton("Skip", callback_data="skip")]])
+        reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(string["skip"], callback_data="skip")]])
         update.message.reply_text(string["text_saved"].format(messageText), reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
 
         #WAIT_FOR_MEDIA Supervising at FileHandler handleMedia()
 
     elif(state == "WAIT_FOR_CHANNEL"):
-        keyboard = [[InlineKeyboardButton("10 Seconds", callback_data="10"),
-                     InlineKeyboardButton("30 Seconds", callback_data="30"),
-                     InlineKeyboardButton("45 Seconds", callback_data="45")],
-                    [InlineKeyboardButton("1 Minute", callback_data="60"),
-                     InlineKeyboardButton("5 Minutes", callback_data="300"),
-                     InlineKeyboardButton("10 Minutes", callback_data="600")],
-                    [InlineKeyboardButton("15 Minutes", callback_data="900"),
-                     InlineKeyboardButton("30 Minutes", callback_data="1800"),
-                     InlineKeyboardButton("45 Minutes", callback_data="2700"),
-                     InlineKeyboardButton("1 Hour", callback_data="3600")],
-                    [InlineKeyboardButton("3 Hours", callback_data="10800"),
-                     InlineKeyboardButton("6 Hours", callback_data="21600"),
-                     InlineKeyboardButton("9 Hours", callback_data="32400"),
-                     InlineKeyboardButton("12 Hours", callback_data="43200")],
-                    [InlineKeyboardButton("15 Hours", callback_data="54000"),
-                     InlineKeyboardButton("18 Hours", callback_data="64800"),
-                     InlineKeyboardButton("24 Hours", callback_data="86400")],
-                    [InlineKeyboardButton("BACK ⬅", callback_data="BACK")]
+        keyboard = [[InlineKeyboardButton(string["10_sec"], callback_data="10"),
+                     InlineKeyboardButton(string["30_sec"], callback_data="30"),
+                     InlineKeyboardButton(string["45_sec"], callback_data="45")],
+                    [InlineKeyboardButton(string["1_min"], callback_data="60"),
+                     InlineKeyboardButton(string["5_min"], callback_data="300"),
+                     InlineKeyboardButton(string["10_min"], callback_data="600")],
+                    [InlineKeyboardButton(string["15_min"], callback_data="900"),
+                     InlineKeyboardButton(string["30_min"], callback_data="1800"),
+                     InlineKeyboardButton(string["45_min"], callback_data="2700"),
+                     InlineKeyboardButton(string["1_hour"], callback_data="3600")],
+                    [InlineKeyboardButton(string["3_hour"], callback_data="10800"),
+                     InlineKeyboardButton(string["6_hour"], callback_data="21600"),
+                     InlineKeyboardButton(string["9_hour"], callback_data="32400"),
+                     InlineKeyboardButton(string["12_hour"], callback_data="43200")],
+                    [InlineKeyboardButton(string["15_hour"], callback_data="54000"),
+                     InlineKeyboardButton(string["18_hour"], callback_data="64800"),
+                     InlineKeyboardButton(string["24_hour"], callback_data="86400")],
+                    [InlineKeyboardButton(string["back"], callback_data="BACK")]
                     ]
         channelID = int(update.message.text)
         state = "WAIT_FOR_TIMER"
