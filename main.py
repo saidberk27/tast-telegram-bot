@@ -221,14 +221,18 @@ def messageListener(update, context):
         context.bot.send_message(chat_id=update.effective_chat.id, text=string["button_text_saved"].format(buttonText))
 
     elif(state == "WAIT_FOR_BUTTON_LINK"):
-        state = "WAIT_FOR_BUTTON"
-        buttonLink = update.message.text
-        createButton(buttonText=buttonText, buttonLink=buttonLink)
-        keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
-        reply_markup = InlineKeyboardMarkup(buttonsTempList)
-        reply_markup2 = InlineKeyboardMarkup(keyboard)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=string["button_saved"], reply_markup=reply_markup)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=string["add_more_button_or_continue"], reply_markup=reply_markup2)
+        try:
+            buttonLink = update.message.text
+            print(buttonLink)
+            createButton(buttonText=buttonText, buttonLink=buttonLink)
+            keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
+            reply_markup = InlineKeyboardMarkup(buttonsTempList)
+            reply_markup2 = InlineKeyboardMarkup(keyboard)
+            state = "WAIT_FOR_BUTTON"
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["button_saved"], reply_markup=reply_markup)
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["add_more_button_or_continue"], reply_markup=reply_markup2)
+        except Exception:
+            mainMenu(update, context, menuText=string["invalid_button_url"])
 
     elif(state == "WAIT_FOR_MANAGER_USERNAME"):
         manager_username = update.message.text
@@ -467,6 +471,7 @@ def handlePhoto(update: Update, context: CallbackContext):
 
 def createButton(buttonText, buttonLink):
     global buttonsTempList
+
     buttonsTempList.append([InlineKeyboardButton(buttonText, url=buttonLink)])
 
 def createAd(update, context, adTitle, timer, messageText, channelList, buttonList):
