@@ -70,7 +70,7 @@ class MainViews:
     def getTimerKeyboard(self):
         global string
 
-        timerKeyboard = [[InlineKeyboardButton(string["4_sec"], callback_data="4"),
+        timerKeyboard = [[InlineKeyboardButton(string["7_sec"], callback_data="7"),
                         InlineKeyboardButton(string["10_sec"], callback_data="10"),
                      InlineKeyboardButton(string["30_sec"], callback_data="30"),
                      InlineKeyboardButton(string["45_sec"], callback_data="45")],
@@ -180,7 +180,7 @@ def messageListener(update, context):
         #WAIT_FOR_MEDIA Supervising at FileHandler handleMedia()
 
     elif(state == "WAIT_FOR_CHANNEL"):
-        keyboard = [[InlineKeyboardButton(string["4_sec"], callback_data="4"),
+        keyboard = [[InlineKeyboardButton(string["7_sec"], callback_data="7"),
                         InlineKeyboardButton(string["10_sec"], callback_data="10"),
                      InlineKeyboardButton(string["30_sec"], callback_data="30"),
                      InlineKeyboardButton(string["45_sec"], callback_data="45")],
