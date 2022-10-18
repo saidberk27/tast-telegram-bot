@@ -14,17 +14,18 @@ class MainMethods:
     def sendMessage(context, messageText, channelList, fileName, buttonList):
         reply_markup = InlineKeyboardMarkup(buttonList)
         fileType = detectFileType(fileName)
-
-        for channelID in channelList:
-            if(fileName == None): #dosya ismi yoksa dosya yoktur :p
-                context.bot.send_message(chat_id="{}".format(channelID), text=messageText, reply_markup=reply_markup, parse_mode=telegram.ParseMode.MARKDOWN)
-            elif(fileType == "document"):
-                context.bot.send_document(channelID, document=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.MARKDOWN)
-            elif(fileType == "video"):
-                context.bot.send_video(channelID, video=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.MARKDOWN)
-            elif(fileType == "photo"):
-                context.bot.send_photo(channelID, photo=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.MARKDOWN)
-
+        try:
+            for channelID in channelList:
+                if(fileName == None): #dosya ismi yoksa dosya yoktur :p
+                    context.bot.send_message(chat_id="{}".format(channelID), text=messageText, reply_markup=reply_markup, parse_mode=telegram.ParseMode.MARKDOWN)
+                elif(fileType == "document"):
+                    context.bot.send_document(channelID, document=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.MARKDOWN)
+                elif(fileType == "video"):
+                    context.bot.send_video(channelID, video=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.MARKDOWN)
+                elif(fileType == "photo"):
+                    context.bot.send_photo(channelID, photo=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.MARKDOWN)
+        except:
+            print("Flood Prevention.")
     def resetGlobalVars(self):
         global state
         global messageText
