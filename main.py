@@ -306,7 +306,7 @@ def queryListener(update: Update, context: CallbackContext):
             listChannels(update, context, string["please_select_channel"])
 
     if(state == "WAIT_FOR_NAME_OF_DELETED_CHANNEL"):
-        if(query.data != "DELETE CHANNEL"):
+        if(query.data != "DELETE CHANNEL" and query.data != "ADD NEW CHANNEL" and query.data != "BACK"):
             delete_channel = SaveData(channelName=query.data)
             delete_channel.deleteChannelFromJson()
             mainMenu(update, context, string["channel_succesfully_removed"])
