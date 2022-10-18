@@ -2,22 +2,19 @@ import telegram
 from telegram import *
 from telegram.ext import *
 
-import strings
-from user_data import UserData
 import threading
 import time
 from save_data import *
 from datetime import datetime
 from authentication import Auth
-from collections import namedtuple
 import strings
 
 
 class MainMethods:
     def sendMessage(context, messageText, channelList, fileName, buttonList):
         reply_markup = InlineKeyboardMarkup(buttonList)
-        print(fileName)
         fileType = detectFileType(fileName)
+
         for channelID in channelList:
             if(fileName == None): #dosya ismi yoksa dosya yoktur :p
                 context.bot.send_message(chat_id="{}".format(channelID), text=messageText, reply_markup=reply_markup, parse_mode=telegram.ParseMode.MARKDOWN)
@@ -72,7 +69,8 @@ class MainViews:
     def getTimerKeyboard(self):
         global string
 
-        timerKeyboard = [[InlineKeyboardButton(string["10_sec"], callback_data="10"),
+        timerKeyboard = [[InlineKeyboardButton(string["4_sec"], callback_data="4"),
+                        InlineKeyboardButton(string["10_sec"], callback_data="10"),
                      InlineKeyboardButton(string["30_sec"], callback_data="30"),
                      InlineKeyboardButton(string["45_sec"], callback_data="45")],
                     [InlineKeyboardButton(string["1_min"], callback_data="60"),
@@ -133,12 +131,14 @@ def start(update: Update, context: CallbackContext):
         reply_markup = InlineKeyboardMarkup(keyboard)
         update.message.reply_text(string["wellcome_message"].format(username),reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
         state = "MAIN MENU"
-        print(state)
-        print(buttonsTempList)
+        print("STATE = {}".format(state))
+
     else:
-        keyboard = [[InlineKeyboardButton("CONTACT WITH SELLER",url="https://t.me/whilefalse27")]]
+        keyboard = [[InlineKeyboardButton("צור קשר עם המוכר",url="https://t.me/PRSAOMbot")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text("Hello, You Are Not Allowed to Use Bot. Please Contact With Seller.",reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
+        update.message.reply_text("*ברוכים הבאים*  🎁- עוד מערכת משוכללת *מבית קידום ממומן* 🙆🏻‍♂\nם קיבלת את ההודעה זה *אומר* שהבוט לא *שלך!* 😼 רוצה לקנות אותי ? ולפרסם בקבוצות\nנטושות 🥹 ללא ניהול ? *פנה אלי בכפתור למטה*\n",reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
+
+
 
 
 
@@ -163,7 +163,7 @@ def messageListener(update, context):
     global buttonText
     global buttonLink
     global string
-    print("Message Listener State = ",state)
+    print("STATE = {}".format(state))
 
     if(state == "WAIT_FOR_AD_TITLE"):
         adTitle = update.message.text
@@ -179,7 +179,8 @@ def messageListener(update, context):
         #WAIT_FOR_MEDIA Supervising at FileHandler handleMedia()
 
     elif(state == "WAIT_FOR_CHANNEL"):
-        keyboard = [[InlineKeyboardButton(string["10_sec"], callback_data="10"),
+        keyboard = [[InlineKeyboardButton(string["4_sec"], callback_data="4"),
+                        InlineKeyboardButton(string["10_sec"], callback_data="10"),
                      InlineKeyboardButton(string["30_sec"], callback_data="30"),
                      InlineKeyboardButton(string["45_sec"], callback_data="45")],
                     [InlineKeyboardButton(string["1_min"], callback_data="60"),
@@ -222,7 +223,6 @@ def messageListener(update, context):
     elif(state == "WAIT_FOR_BUTTON_LINK"):
         try:
             buttonLink = update.message.text
-            print(buttonLink)
             createButton(buttonText=buttonText, buttonLink=buttonLink)
             keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
             reply_markup = InlineKeyboardMarkup(buttonsTempList)
@@ -235,8 +235,10 @@ def messageListener(update, context):
 
     elif(state == "WAIT_FOR_MANAGER_USERNAME"):
         manager_username = update.message.text
-        Auth(username=manager_username).addManager()
-        mainMenu(update, context, menuText=string["manager_added"])
+        if(Auth(username=manager_username).addManager()):
+            mainMenu(update, context, menuText=string["manager_added"])
+        else:
+            mainMenu(update, context, menuText="You Can Add Managers Only Up to 3.")
 
 def queryListener(update: Update, context: CallbackContext):
     global state
@@ -249,7 +251,7 @@ def queryListener(update: Update, context: CallbackContext):
 
     query = update.callback_query
     query.answer()
-    print("state = ",state)
+    print("STATE = {}".format(state))
 
     if(query.data == "media"):
         handleMedia(update, context)
@@ -278,7 +280,7 @@ def queryListener(update: Update, context: CallbackContext):
         try:
             messageTimer = int(query.data)
             context.bot.send_message(chat_id=update.effective_chat.id, text=string["timer_saved_ad_is_running"],parse_mode=telegram.ParseMode.MARKDOWN)
-            createAd(update, context, adTitle=adTitle, timer=messageTimer, messageText="{}".format(messageText), channelList=channelList, buttonList = buttonsTempList,parse_mode=telegram.ParseMode.MARKDOWN)
+            createAd(update, context, adTitle=adTitle, timer=messageTimer, messageText="{}".format(messageText), channelList=channelList, buttonList = buttonsTempList)
             buttonsTempList = []
             MainMethods().resetGlobalVars()
             mainMenu(update, context)
@@ -368,7 +370,7 @@ def queryListener(update: Update, context: CallbackContext):
         elif(query.data == "en"):
             string = strings.en
             mainMenu(update, context,  string["language_succesfully_changed"])
-        print(string)
+
 def listChannels(update, context, message="Your Channels", hideOptions = False, showSendToAllGroupsOption=False):
     _jsonFile = open("userData.json", "r")
     _jsonText = _jsonFile.read()
@@ -481,10 +483,10 @@ def createAd(update, context, adTitle, timer, messageText, channelList, buttonLi
     active_slots[0] = loop(timer, MainMethods.sendMessage, context, messageText="{}".format(messageText), channelList=channelList, fileName=media, buttonList=buttonList)
     passive_slots.append(active_slots[0])
     active_slots.pop(0)
-    print("Bekle...")
+
     #time.sleep(8)
     #stopAd(passive_slots[len(passive_slots) - 1])#passive slots listesi bossa 0. index bir eleman varsa 1. index 2 eleman varasa 2. index ... seklinde gitsin
-    print(passive_slots, active_slots)
+    #print(passive_slots, active_slots)
     SaveData(adTitle=adTitle, adContent=messageText,channelList=channelList, adTimer=timer, mediaName=media, buttonList=buttonList).saveAdToJson()
 
 
@@ -493,10 +495,10 @@ def deleteAd(update, context, adNumber):
     try:
         adNumber = int(adNumber)
         passive_slots[adNumber].running = False
-        print(active_slots, passive_slots)
+        #print(active_slots, passive_slots)
         passive_slots.pop(adNumber)
         active_slots.insert(adNumber, "Free Slot {}".format(adNumber + 1)) #adNumber + 1 cünkü 1, 2, 3 seklinde gitsin sifirdan baslamasin.
-        print(passive_slots, active_slots)
+        #print(passive_slots, active_slots)
 
 
         delete_ad = SaveData(adIndex = adNumber)
@@ -550,7 +552,11 @@ if __name__ == '__main__':
     active_slots_channel_names = []
     passive_slots = []
 
-    updater = Updater("5746559989:AAHKLZEkp7Cz_Kko0_r6kA9a626OEB-Crc0", use_context=True)
+    userName = input("What is the Customer's Username? : ")
+    botToken = input("What is the Bot Token? : ")
+    updater = Updater("{}".format(botToken), use_context=True)
+    print("Bot has started, you are free to use it.")
+    Auth(username=userName).initializeFirstManager()
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))

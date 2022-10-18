@@ -1,4 +1,0 @@
-https://stackoverflow.com/questions/62245275/how-to-migrate-conversationhandler-module-from-python-telegram-bot-to-telethon
-
-[-724890661]
-[-616199647]
