@@ -41,7 +41,7 @@ class MainMethods:
         global buttonText
         global buttonLink
 
-        state = None
+        state = "MAIN MENU"
         messageText = "Yok"
         messageTimer = "Yok"
         adTitle = "Yok"
