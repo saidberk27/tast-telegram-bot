@@ -438,11 +438,23 @@ def handleMedia(update: Update, context: CallbackContext):
         state = "WAIT_FOR_BUTTON"
         file_id = update.message.document["file_id"]
         media = "{}".format(dt_string)
-        context.bot.get_file(file_id).download(custom_path="Medias/{}".format(media))
-        keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_saved_to_ad"], reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
-        #listChannels(update, context)
+
+        try:
+            context.bot.get_file(file_id).download(custom_path="Medias/{}".format(media))
+            keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"),
+                         InlineKeyboardButton(string["continue"], callback_data="continue")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_saved_to_ad"],
+                                     reply_markup=reply_markup, parse_mode=telegram.ParseMode.MARKDOWN)
+            # listChannels(update, context)
+        except Exception as e:
+            print(e)
+            state = "WAIT_FOR_MEDIA"
+            reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(string["skip"], callback_data="skip")]])
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_is_too_big"],
+                                     reply_markup=reply_markup)
+
+
 
 def handleVideo(update: Update, context: CallbackContext):
     global state
@@ -454,11 +466,20 @@ def handleVideo(update: Update, context: CallbackContext):
         state = "WAIT_FOR_BUTTON"
         file_id = update.message.video["file_id"]
         media = "{}.mp4".format(dt_string)
-        context.bot.get_file(file_id).download(custom_path="Medias/{}".format(media))
-        keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_saved_to_ad"], reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
-        #listChannels(update, context)
+        try:
+            context.bot.get_file(file_id).download(custom_path="Medias/{}".format(media))
+            keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"),
+                         InlineKeyboardButton(string["continue"], callback_data="continue")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_saved_to_ad"],
+                                     reply_markup=reply_markup, parse_mode=telegram.ParseMode.MARKDOWN)
+            # listChannels(update, context)
+
+        except Exception as e:
+            print(e)
+            state = "WAIT_FOR_MEDIA"
+            reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(string["skip"], callback_data="skip")]])
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_is_too_big"], reply_markup=reply_markup)
 
 def handlePhoto(update: Update, context: CallbackContext):
     global state
@@ -470,11 +491,19 @@ def handlePhoto(update: Update, context: CallbackContext):
         state = "WAIT_FOR_BUTTON"
         file_id = update.message.photo[-1].file_id
         media = "{}.jpg".format(dt_string)
-        context.bot.get_file(file_id).download(custom_path="Medias/{}".format(media))
-        keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_saved_to_ad"], reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
-        #listChannels(update, context)
+        try:
+            context.bot.get_file(file_id).download(custom_path="Medias/{}".format(media))
+            keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_saved_to_ad"], reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
+            #listChannels(update, context)
+
+        except Exception as e:
+            print(e)
+            state = "WAIT_FOR_MEDIA"
+            reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(string["skip"], callback_data="skip")]])
+            context.bot.send_message(chat_id=update.effective_chat.id, text=string["file_is_too_big"], reply_markup=reply_markup)
+
 
 def createButton(buttonText, buttonLink):
     global buttonsTempList

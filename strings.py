@@ -106,6 +106,7 @@ en = {
     "all_channels_selected":"All Channels Selected. Please Specify Timer Data",
     "invalid_button_url":"❗❗❗ Invalid Button URL.PLease Type Correct URL. ❗❗❗",
     "skip":"skip",
+    "file_is_too_big":"The file you intended to upload is too big for bot, please try to upload less larger file or skip",
     "7_sec":"7 Seconds",
     "10_sec":"10 Seconds",
     "30_sec":"30 Seconds",
