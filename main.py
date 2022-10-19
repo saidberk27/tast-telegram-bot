@@ -132,12 +132,17 @@ def start(update: Update, context: CallbackContext):
         reply_markup = InlineKeyboardMarkup(keyboard)
         update.message.reply_text(string["wellcome_message"].format(username),reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
         state = "MAIN MENU"
+        MainMethods().resetGlobalVars()
         print("STATE = {}".format(state))
 
     else:
         keyboard = [[InlineKeyboardButton("צור קשר עם המוכר",url="https://t.me/PRSAOMbot")]]
         reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text("*ברוכים הבאים*  🎁- עוד מערכת משוכללת *מבית קידום ממומן* 🙆🏻‍♂\nם קיבלת את ההודעה זה *אומר* שהבוט לא *שלך!* 😼 רוצה לקנות אותי ? ולפרסם בקבוצות\nנטושות 🥹 ללא ניהול ? *פנה אלי בכפתור למטה*\n",reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
+        update.message.reply_text("""
+        *ברוכים הבאים*  🎁- עוד מערכת משוכללת *מבית קידום ממומן* 🙆🏻‍♂
+עם קיבלת את ההודעה זה *אומר* שהבוט לא *שלך!* 😼 רוצה לקנות אותי ? ולפרסם בקבוצות        
+נטושות 🥹 ללא ניהול ? *פנה אלי בכפתור למטה*        
+        """,reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
 
 
 
