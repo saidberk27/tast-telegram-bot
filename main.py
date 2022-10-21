@@ -8,6 +8,7 @@ from save_data import *
 from datetime import datetime
 from authentication import Auth
 import strings
+from flood_prevention import FloodPrevention
 
 
 class MainMethods:
@@ -70,7 +71,7 @@ class MainViews:
     def getTimerKeyboard(self):
         global string
 
-        timerKeyboard = [[InlineKeyboardButton(string["7_sec"], callback_data="7"),
+        timerKeyboard = [[
                         InlineKeyboardButton(string["10_sec"], callback_data="10"),
                      InlineKeyboardButton(string["30_sec"], callback_data="30"),
                      InlineKeyboardButton(string["45_sec"], callback_data="45")],
@@ -185,8 +186,8 @@ def messageListener(update, context):
         #WAIT_FOR_MEDIA Supervising at FileHandler handleMedia()
 
     elif(state == "WAIT_FOR_CHANNEL"):
-        keyboard = [[InlineKeyboardButton(string["7_sec"], callback_data="7"),
-                        InlineKeyboardButton(string["10_sec"], callback_data="10"),
+        keyboard = [[
+                    InlineKeyboardButton(string["10_sec"], callback_data="10"),
                      InlineKeyboardButton(string["30_sec"], callback_data="30"),
                      InlineKeyboardButton(string["45_sec"], callback_data="45")],
                     [InlineKeyboardButton(string["1_min"], callback_data="60"),
@@ -285,11 +286,18 @@ def queryListener(update: Update, context: CallbackContext):
     if(state == "WAIT_FOR_TIMER"):
         try:
             messageTimer = int(query.data)
-            context.bot.send_message(chat_id=update.effective_chat.id, text=string["timer_saved_ad_is_running"],parse_mode=telegram.ParseMode.MARKDOWN)
-            createAd(update, context, adTitle=adTitle, timer=messageTimer, messageText="{}".format(messageText), channelList=channelList, buttonList = buttonsTempList)
-            buttonsTempList = []
-            MainMethods().resetGlobalVars()
-            mainMenu(update, context)
+            if(FloodPrevention(messageTimer).calculateAdsPerMinute()):
+                if(len(active_slots) != 0):
+                    context.bot.send_message(chat_id=update.effective_chat.id, text=string["timer_saved_ad_is_running"],parse_mode=telegram.ParseMode.MARKDOWN)
+                    createAd(update, context, adTitle=adTitle, timer=messageTimer, messageText="{}".format(messageText), channelList=channelList, buttonList = buttonsTempList)
+                    buttonsTempList = []
+                    MainMethods().resetGlobalVars()
+                    mainMenu(update, context)
+                else:
+                    mainMenu(update, context, menuText="Bot can only post 10 Ads at the same time.")
+            else:
+                mainMenu(update, context, menuText="Timer Option is Invalid. You can only post 20 ads per minute due to telegram flood policy. Please select larger wait time for ad.")
+
         except ValueError:  # nedense int yuzunden valuerror firlatiyor (false olmasina ragmen)
             pass
 
@@ -514,6 +522,7 @@ def createAd(update, context, adTitle, timer, messageText, channelList, buttonLi
     global active_slots
     global passive_slots
     global media
+
 
     active_slots[0] = loop(timer, MainMethods.sendMessage, context, messageText="{}".format(messageText), channelList=channelList, fileName=media, buttonList=buttonList)
     passive_slots.append(active_slots[0])
