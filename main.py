@@ -178,7 +178,7 @@ def messageListener(update, context):
         state = "WAIT_FOR_TEXT"
 
     elif(state == "WAIT_FOR_TEXT"):
-        messageText = update.message.text_markdown_v2
+        messageText = update.message.text
         state = "WAIT_FOR_MEDIA"
         reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(string["skip"], callback_data="skip")]])
         update.message.reply_text(string["text_saved"].format(messageText), reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
@@ -294,9 +294,10 @@ def queryListener(update: Update, context: CallbackContext):
                     MainMethods().resetGlobalVars()
                     mainMenu(update, context)
                 else:
-                    mainMenu(update, context, menuText="Bot can only post 10 Ads at the same time.")
+                    mainMenu(update, context, menuText=string["bot_can_only_post_10_ads"])
             else:
-                mainMenu(update, context, menuText="Timer Option is Invalid. You can only post 20 ads per minute due to telegram flood policy. Please select larger wait time for ad.")
+                reply_markup = InlineKeyboardMarkup(MainViews().getTimerKeyboard())
+                context.bot.send_message(chat_id=update.effective_chat.id, text=string["timer_opiton_is_invalid"],parse_mode=telegram.ParseMode.MARKDOWN,reply_markup=reply_markup)
 
         except ValueError:  # nedense int yuzunden valuerror firlatiyor (false olmasina ragmen)
             pass

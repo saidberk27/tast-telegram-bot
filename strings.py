@@ -61,6 +61,8 @@ he = {
     "15_hour":"15 שעות",
     "18_hour":"18 שעות",
     "24_hour":"24 שעות",
+    "timer_option_is_invalid": "⚠לא ניתן להגדיר את הטיימר !⚠\nזה מסכן את הבוט והקבוצה מחסימה.\n*הגבלות ספאם טלגרם* , אנא בחר זמן פרסום אחר .",
+    "bot_can_only_post_10_ads": "Bot can only post 10 Ads at the same time."
 }
 
 en = {
@@ -124,5 +126,7 @@ en = {
     "12_hour":"12 Hours",
     "15_hour":"15 Hours",
     "18_hour":"18 Hours",
-    "24_hour":"24 Hours"
+    "24_hour":"24 Hours",
+    "timer_option_is_invalid":"⚠Timer Option is Invalid!⚠\nYou can only post 20 ads per minute due to telegram flood policy.\nPlease select larger wait time for ad.",
+    "bot_can_only_post_10_ads":"Bot can only post 10 Ads at the same time."
 }
