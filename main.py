@@ -25,8 +25,8 @@ class MainMethods:
                     context.bot.send_video(channelID, video=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.MARKDOWN)
                 elif(fileType == "photo"):
                     context.bot.send_photo(channelID, photo=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.MARKDOWN)
-        except:
-            print("Flood Prevention.")
+        except Exception as e:
+            print("Flood Prevention.",e)
     def resetGlobalVars(self):
         global state
         global messageText
