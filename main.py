@@ -12,7 +12,8 @@ from flood_prevention import FloodPrevention
 
 
 class MainMethods:
-    def sendMessage(context, messageText, channelList, fileName, buttonList):
+    global string
+    def sendMessage(context, update, messageText, channelList, fileName, buttonList):
         reply_markup = InlineKeyboardMarkup(buttonList)
         fileType = detectFileType(fileName)
         try:
@@ -27,6 +28,8 @@ class MainMethods:
                     context.bot.send_photo(channelID, photo=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.MARKDOWN)
         except Exception as e:
             print("Flood Prevention.",e)
+            deleteAd(update,context, adNumber=-1)
+            mainMenu(update,context,menuText=string["long_caption"])
     def resetGlobalVars(self):
         global state
         global messageText
@@ -106,13 +109,14 @@ class loop:
     def run(self, seconds):
         while self.running:
             # Runs function
-            self.function(self.context, self.messageText, self.channelList, self.fileName, self.buttonList)
+            self.function(self.context,self.update, self.messageText, self.channelList, self.fileName, self.buttonList)
             self.wait(seconds)
 
-    def __init__(self, seconds, function, context, messageText, channelList, fileName, buttonList):
+    def __init__(self, seconds, function, context,update, messageText, channelList, fileName, buttonList):
         self.running = True
         self.function = function
         self.context = context
+        self.update = update
         self.messageText = messageText
         self.channelList = channelList
         self.fileName = fileName
@@ -525,7 +529,7 @@ def createAd(update, context, adTitle, timer, messageText, channelList, buttonLi
     global media
 
 
-    active_slots[0] = loop(timer, MainMethods.sendMessage, context, messageText="{}".format(messageText), channelList=channelList, fileName=media, buttonList=buttonList)
+    active_slots[0] = loop(timer, MainMethods.sendMessage, context,update, messageText="{}".format(messageText), channelList=channelList, fileName=media, buttonList=buttonList)
     passive_slots.append(active_slots[0])
     active_slots.pop(0)
 
@@ -548,7 +552,8 @@ def deleteAd(update, context, adNumber):
 
         delete_ad = SaveData(adIndex = adNumber)
         delete_ad.deleteAdFromJson()
-        mainMenu(update, context, string["ad_deleted"])
+        if(adNumber != -1): #Caption too long hatasi alidigmiz zaman -1'i sonuncuyu silsin diye gonderiyoruz. Onda da main menuye redirect yapiyor tekrar yapmasina gerek yok.
+            mainMenu(update, context, string["ad_deleted"])
 
     except:
         pass

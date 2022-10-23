@@ -62,7 +62,8 @@ he = {
     "18_hour":"18 שעות",
     "24_hour":"24 שעות",
     "timer_option_is_invalid": "⚠לא ניתן להגדיר את הטיימר !⚠\nזה מסכן את הבוט והקבוצה מחסימה.\n*הגבלות ספאם טלגרם* , אנא בחר זמן פרסום אחר .",
-    "bot_can_only_post_10_ads": "Bot can only post 10 Ads at the same time."
+    "bot_can_only_post_10_ads": "״ ⚠*שגיאת הצפת מערכת* ⚠ הבוט יכול לפרסם עד 10 מודעות לדקה🎇 \n, אנא בחר זמן פרסום אחר .  או פנה למנהל המערכת *על מנת להגדיל את נפח האחסון* . ״ֶֶ",
+    "long_caption":"⚠⚠אזהרת מערכת⚠⚠\n*אזהרת טלגרם*\nלא ניתן לפרסם יותר מ *1024* תווים . \nוכנראה שהפרסום שלך ערוך מדי . \nנא לשלוח טקסט חדש לפרסום📩"
 }
 
 en = {
@@ -128,5 +129,6 @@ en = {
     "18_hour":"18 Hours",
     "24_hour":"24 Hours",
     "timer_option_is_invalid":"⚠Timer Option is Invalid!⚠\nYou can only post 20 ads per minute due to telegram flood policy.\nPlease select larger wait time for ad.",
-    "bot_can_only_post_10_ads":"Bot can only post 10 Ads at the same time."
+    "bot_can_only_post_10_ads":"⚠*System overflow error* ⚠ The bot can post up to 10 ads per minute🎇,\n please choose another posting time. Or contact the system administrator *in order to increase the storage volume*.",
+    "long_caption":"Sorry, telegram doesn't allow bots to post with a caption longer than 1024 characters."
 }
