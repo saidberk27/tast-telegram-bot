@@ -182,7 +182,7 @@ def messageListener(update, context):
         state = "WAIT_FOR_TEXT"
 
     elif(state == "WAIT_FOR_TEXT"):
-        messageText = update.message.text
+        messageText = update.message.text_markdown_v2
         state = "WAIT_FOR_MEDIA"
         reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(string["skip"], callback_data="skip")]])
         update.message.reply_text(string["text_saved"].format(messageText), reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
