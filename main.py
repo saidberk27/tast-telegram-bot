@@ -30,6 +30,7 @@ class MainMethods:
             print("Flood Prevention.",e)
             deleteAd(update,context, adNumber=-1)
             mainMenu(update,context,menuText=string["long_caption"])
+
     def resetGlobalVars(self):
         global state
         global messageText
@@ -182,7 +183,8 @@ def messageListener(update, context):
         state = "WAIT_FOR_TEXT"
 
     elif(state == "WAIT_FOR_TEXT"):
-        messageText = update.message.text_markdown_v2
+        messageText = update.message.text_markdown_v2.replace("\.", ".") #url lerde noktalar bozulmasin diye replace yapiliyor.
+        #replace("**", "\\*")
         state = "WAIT_FOR_MEDIA"
         reply_markup = InlineKeyboardMarkup([[InlineKeyboardButton(string["skip"], callback_data="skip")]])
         update.message.reply_text(string["text_saved"].format(messageText), reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
@@ -527,7 +529,6 @@ def createAd(update, context, adTitle, timer, messageText, channelList, buttonLi
     global active_slots
     global passive_slots
     global media
-
 
     active_slots[0] = loop(timer, MainMethods.sendMessage, context,update, messageText="{}".format(messageText), channelList=channelList, fileName=media, buttonList=buttonList)
     passive_slots.append(active_slots[0])
