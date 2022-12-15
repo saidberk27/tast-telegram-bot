@@ -26,23 +26,6 @@ class SecondRun:
             data = json.load(jsonFile)
             return data["bot-token"]
 
-    def initializePreviousAds(self, update: Update, context: CallbackContext):
-        print("Previous Ads Are Initializing...")
-
-        with open("userData.json", "r+") as jsonFile:
-            data = json.load(jsonFile)
-        ads = data["Ads"]
-
-        for ad in ads:
-            adTitle = ad["Ad Title"]
-            messageText = ad["Ad Content"]
-            channelList = ad["Ad Channels"]
-            messageTimer = ad["Ad Timer"]
-
-            createAd(update, context, adTitle=adTitle, timer=messageTimer, messageText="{}".format(messageText), channelList=channelList, buttonList=None)
-
-            print(ad)
-        pass
 
 class MainMethods:
     global string
