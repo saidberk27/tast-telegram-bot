@@ -679,13 +679,12 @@ if __name__ == '__main__':
         #SecondRun().initializePreviousAds(update=updater, context=CallbackContext)
 
 
-    else:
-        userName = input("What is the Customer's Username? : ")
-        botToken = input("What is the Bot Token? : ")
-        SaveData(botToken=botToken).saveBotToken()
-        Auth(username=userName).initializeFirstManager()
+    userName = input("What is the Customer's Username? : ")
+    botToken = input("What is the Bot Token? : ")
+    SaveData(botToken=botToken).saveBotToken()
+    Auth(username=userName).initializeFirstManager()
 
-        updater = Updater("{}".format(botToken), use_context=True)
+    updater = Updater("{}".format(botToken), use_context=True)
     print("Bot has started, you are free to use it.")
 
     dp = updater.dispatcher
