@@ -285,7 +285,7 @@ def messageListener(update, context):
         if(Auth(username=manager_username).addManager()):
             mainMenu(update, context, menuText=string["manager_added"])
         else:
-            mainMenu(update, context, menuText="You Can Add Managers Only Up to 3.")
+            mainMenu(update, context, menuText="You Can Add Managers Only Up to 4.")
 
 def queryListener(update: Update, context: CallbackContext):
     global state
