@@ -1,1 +1,1 @@
-{"channels": {}, "isActive": "true", "Ads": [], "bot-token": "5961000072:AAE1JYG_03gMmENG39S8y1yRAByQDyk-YiM"}
+{"channels": {"tesdt": "-833747283"}, "isActive": "true", "Ads": [{"Ad Title": "deneme", "Ad Content": "deneme birki \u00fc\u00e7", "Ad Channels": ["-833747283"], "Ad Timer": 30, "Ad Media": null}, {"Ad Title": "said", "Ad Content": "said", "Ad Channels": ["-833747283"], "Ad Timer": 30, "Ad Media": null}], "bot-token": "5950441691:AAEmDJEoaq8IJdPeWee4ZXOF3O3MpSu5DTY"}

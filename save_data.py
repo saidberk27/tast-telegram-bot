@@ -48,6 +48,11 @@ class SaveData:
             jsonFile.write(convertedData)
             jsonFile.truncate()
 
+    def isChannelExist(self):
+        with open("userData.json","r+") as jsonFile:
+            data = json.load(jsonFile)
+            return self.channelID in data["channels"].values()
+
     def deleteAdFromJson(self):
         with open("userData.json", "r+") as jsonFile:
             data = json.load(jsonFile)

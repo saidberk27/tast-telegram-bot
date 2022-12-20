@@ -19,9 +19,13 @@ class Auth:
 
 
     def addManager(self):
+
         with open("managerlist.json", "r+") as managerfile:
             data = json.load(managerfile)
             if(len(data["manager_list"]) > 4): #limit ekliyoruz
+                return False
+
+            elif(self.username in data["manager_list"]):
                 return False
             else:
                 data["manager_list"].append(self.username)

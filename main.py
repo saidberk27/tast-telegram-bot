@@ -10,23 +10,6 @@ from authentication import Auth
 import strings
 from flood_prevention import FloodPrevention
 
-class SecondRun:
-    def isSecondRun(self):
-        with open("userData.json", "r+") as jsonFile:
-            data = json.load(jsonFile)
-
-        if(data["bot-token"] != None):
-            return True #Bot Token Daha Once Kaydedildiyse Ikinci Kez Calisiyor Demektir.
-
-        return False
-
-
-    def getBotToken(self):
-        with open("userData.json", "r+") as jsonFile:
-            data = json.load(jsonFile)
-            return data["bot-token"]
-
-
 class MainMethods:
     global string
     def sendMessage(context, update, messageText, channelList, fileName, buttonList):
@@ -43,9 +26,7 @@ class MainMethods:
                 elif(fileType == "photo"):
                     context.bot.send_photo(channelID, photo=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.MARKDOWN)
         except Exception as e:
-            print("Flood Prevention.",e)
-            deleteAd(update,context, adNumber=-1)
-            mainMenu(update,context,menuText=string["long_caption"])
+            mainMenu(update,context,menuText=string["long_caption"] + "or" + e)
 
     def resetGlobalVars(self):
         global state
@@ -148,7 +129,8 @@ class loop:
 def start(update: Update, context: CallbackContext):
     print("Start")
     user = update.message.from_user
-    username = user['username']
+    username = str(user['id'])
+    print(user)
     if(Auth(username=username).isManager()):
         global state
         keyboard = MainViews().getMainKeyboard()
@@ -166,10 +148,6 @@ def start(update: Update, context: CallbackContext):
 עם קיבלת את ההודעה זה *אומר* שהבוט לא *שלך!* 😼 רוצה לקנות אותי ? ולפרסם בקבוצות        
 נטושות 🥹 ללא ניהול ? *פנה אלי בכפתור למטה*        
         """,reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
-
-
-
-
 
 def mainMenu(update, context, menuText = "Main Menu / תפריט ראשי"):
     global string
@@ -209,6 +187,9 @@ def messageListener(update, context):
         #WAIT_FOR_MEDIA Supervising at FileHandler handleMedia()
 
     elif(state == "WAIT_FOR_CHANNEL"):
+        with open("userData.json", "r") as file:
+            channels = json.loads(file.read())["channels"]
+
         keyboard = [[
                     InlineKeyboardButton(string["10_sec"], callback_data="10"),
                      InlineKeyboardButton(string["30_sec"], callback_data="30"),
@@ -230,10 +211,10 @@ def messageListener(update, context):
                     [InlineKeyboardButton(string["back"], callback_data="BACK")]
                     ]
         channelID = int(update.message.text)
+            # WAIT FOR TIMER STATE'I QUERY LISTENER'DA DENETLENIYOR.
         state = "WAIT_FOR_TIMER"
         reply_markup = InlineKeyboardMarkup(keyboard)
-        update.message.reply_text(string["channel_id_saved"].format(messageText), reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
-    # WAIT FOR TIMER STATE'I QUERY LISTENER'DA DENETLENIYOR.
+        update.message.reply_text(string["channel_id_saved"].format(messageText), reply_markup=reply_markup, parse_mode=telegram.ParseMode.MARKDOWN)
 
     elif(state == "WAIT_FOR_CHANNEL_NAME"):
         channelName = update.message.text
@@ -242,8 +223,11 @@ def messageListener(update, context):
 
     elif(state == "WAIT_FOR_CHANNEL_ID"):
         channelID = int(update.message.text)
-        SaveData(channelName=channelName, channelID=channelID).saveChanneltoJson()
-        mainMenu(update, context, menuText=string["channel_saved"].format(channelName))
+        if(SaveData(channelID=channelID).isChannelExist()):
+            SaveData(channelName=channelName, channelID=channelID).saveChanneltoJson()
+            mainMenu(update, context, menuText=string["channel_saved"].format(channelName))
+        else:
+            mainMenu(update, context, menuText="Channel Already Added.")
 
     elif(state == "WAIT_FOR_BUTTON_TEXT"):
         state = "WAIT_FOR_BUTTON_LINK"
@@ -253,22 +237,29 @@ def messageListener(update, context):
     elif(state == "WAIT_FOR_BUTTON_LINK"):
         try:
             buttonLink = update.message.text
-            createButton(buttonText=buttonText, buttonLink=buttonLink)
-            keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
-            reply_markup = InlineKeyboardMarkup(buttonsTempList)
-            reply_markup2 = InlineKeyboardMarkup(keyboard)
-            state = "WAIT_FOR_BUTTON"
-            context.bot.send_message(chat_id=update.effective_chat.id, text=string["button_saved"], reply_markup=reply_markup,parse_mode=telegram.ParseMode.MARKDOWN)
-            context.bot.send_message(chat_id=update.effective_chat.id, text=string["add_more_button_or_continue"], reply_markup=reply_markup2,parse_mode=telegram.ParseMode.MARKDOWN)
-        except Exception:
-            mainMenu(update, context, menuText=string["invalid_button_url"])
+            if("http" in update.message.text or "www" in update.message.text or ".com" in update.message.text or "net" in update.message.text): # web sitesi olup olmadigini kontrol
+                createButton(buttonText=buttonText, buttonLink=buttonLink)
+                keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
+                reply_markup = InlineKeyboardMarkup(buttonsTempList)
+                reply_markup2 = InlineKeyboardMarkup(keyboard)
+                context.bot.send_message(chat_id=update.effective_chat.id, text=string["button_saved"],
+                                         reply_markup=reply_markup, parse_mode=telegram.ParseMode.MARKDOWN)
+                context.bot.send_message(chat_id=update.effective_chat.id, text=string["add_more_button_or_continue"],
+                                         reply_markup=reply_markup2, parse_mode=telegram.ParseMode.MARKDOWN)
+                state = "WAIT_FOR_BUTTON"
+            else:
+                context.bot.send_message(chat_id=update.effective_chat.id, text=string["invalid_button_url"])
+
+        except Exception as e:
+            print("link hatasi", e)
+            #mainMenu(update, context, menuText=string["invalid_button_url"])
 
     elif(state == "WAIT_FOR_MANAGER_USERNAME"):
         manager_username = update.message.text
         if(Auth(username=manager_username).addManager()):
             mainMenu(update, context, menuText=string["manager_added"])
         else:
-            mainMenu(update, context, menuText="You Can Add Managers Only Up to 3.")
+            mainMenu(update, context, menuText="!!! You Have Tried Add More Than 3 Managers or Same User as a Manager Again!")
 
 def queryListener(update: Update, context: CallbackContext):
     global state
@@ -620,19 +611,13 @@ if __name__ == '__main__':
     active_slots_channel_names = []
     passive_slots = []
 
-    if (SecondRun().isSecondRun()):
-        botToken = SecondRun().getBotToken()
-        updater = Updater("{}".format(botToken), use_context=True)
-        SecondRun().initializePreviousAds(update=updater, context=CallbackContext)
 
+    userName = input("What is the Customer's Username? : ")
+    botToken = input("What is the Bot Token? : ")
+    SaveData(botToken=botToken).saveBotToken()
+    Auth(username=userName).initializeFirstManager()
 
-    else:
-        userName = input("What is the Customer's Username? : ")
-        botToken = input("What is the Bot Token? : ")
-        SaveData(botToken=botToken).saveBotToken()
-        Auth(username=userName).initializeFirstManager()
-
-        updater = Updater("{}".format(botToken), use_context=True)
+    updater = Updater("{}".format(botToken), use_context=True)
     print("Bot has started, you are free to use it.")
 
     dp = updater.dispatcher
