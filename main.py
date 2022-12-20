@@ -223,7 +223,7 @@ def messageListener(update, context):
 
     elif(state == "WAIT_FOR_CHANNEL_ID"):
         channelID = int(update.message.text)
-        if(SaveData(channelID=channelID).isChannelExist()):
+        if(not SaveData(channelID=channelID).isChannelExist()):
             SaveData(channelName=channelName, channelID=channelID).saveChanneltoJson()
             mainMenu(update, context, menuText=string["channel_saved"].format(channelName))
         else:

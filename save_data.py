@@ -51,7 +51,15 @@ class SaveData:
     def isChannelExist(self):
         with open("userData.json","r+") as jsonFile:
             data = json.load(jsonFile)
-            return self.channelID in data["channels"].values()
+            print(data["channels"].values())
+
+            print(len(data["channels"].values()))
+            print(type(data["channels"].values()))
+
+            if(len(data["channels"].values()) == 0):
+                return False
+            else:
+                return str(self.channelID) in list(data["channels"].values())
 
     def deleteAdFromJson(self):
         with open("userData.json", "r+") as jsonFile:
