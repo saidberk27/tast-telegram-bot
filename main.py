@@ -640,7 +640,43 @@ if __name__ == '__main__':
     adEight = "Free Slot 8"
     adNine = "Free Slot 9"
     adTen = "Free Slot 10"
-    active_slots = [adOne, adTwo, adThree, adFour, adFive, adSix, adSeven, adEight, adNine, adTen]
+
+    adOne1 = "Free Slot 1"
+    adTwo1 = "Free Slot 2"
+    adThree1 = "Free Slot 3"
+    adFour1 = "Free Slot 4"
+    adFive1 = "Free Slot 5"
+    adSix1 = "Free Slot 6"
+    adSeven1 = "Free Slot 7"
+    adEight1 = "Free Slot 8"
+    adNine1 = "Free Slot 9"
+    adTen1 = "Free Slot 10"
+
+    adOne2 = "Free Slot 1"
+    adTwo2 = "Free Slot 2"
+    adThree2 = "Free Slot 3"
+    adFour2 = "Free Slot 4"
+    adFive2 = "Free Slot 5"
+    adSix2 = "Free Slot 6"
+    adSeven2 = "Free Slot 7"
+    adEight2 = "Free Slot 8"
+    adNine2 = "Free Slot 9"
+    adTen2 = "Free Slot 10"
+
+    adOne3 = "Free Slot 1"
+    adTwo3 = "Free Slot 2"
+    adThree3 = "Free Slot 3"
+    adFour3 = "Free Slot 4"
+    adFive3 = "Free Slot 5"
+    adSix3 = "Free Slot 6"
+    adSeven3 = "Free Slot 7"
+    adEight3 = "Free Slot 8"
+    adNine3 = "Free Slot 9"
+    adTen3 = "Free Slot 10"
+    active_slots = [adOne, adTwo, adThree, adFour, adFive, adSix, adSeven, adEight, adNine, adTen,
+                    adOne1, adTwo1, adThree1, adFour1, adFive1, adSix1, adSeven1, adEight1, adNine1, adTen1,
+                    adOne2, adTwo2, adThree2, adFour2, adFive2, adSix2, adSeven2, adEight2, adNine2, adTen2,
+                    adOne3, adTwo3, adThree3, adFour3, adFive3, adSix3, adSeven3, adEight3, adNine3, adTen3]
     active_slots_channel_names = []
     passive_slots = []
 
