@@ -26,8 +26,8 @@ class MainMethods:
                 elif(fileType == "photo"):
                     context.bot.send_photo(channelID, photo=open("Medias/{}".format(fileName), 'rb'), caption=messageText, reply_markup=reply_markup, parse_mode= telegram.ParseMode.MARKDOWN)
         except Exception as e:
-            mainMenu(update,context,menuText=string["long_caption"] + "or" + e)
-
+            mainMenu(update,context,menuText=string["long_caption"] + " or " + str(e))
+            deleteAd(update, context, -1)
     def resetGlobalVars(self):
         global state
         global messageText
@@ -125,6 +125,33 @@ class loop:
         self.thread.start()
 
 
+def restore(update: Update, context: CallbackContext):
+    global media
+    global buttonsTempList
+    with open("userData.json", "r+") as jsonFile:
+        data = json.load(jsonFile)
+
+        for ad in data["Ads"]:
+            buttonsTempList.clear()
+            adTitle = ad['Ad Title']
+            timer = ad['Ad Timer']
+            messageText = ad['Ad Content']
+            channelList = ad['Ad Channels']
+            media = ad['Ad Media']
+            buttons = ad['Ad Buttons']
+
+            for button in buttons:
+                createButton(button['Button Text'], buttonLink=button['Button Link'])
+
+
+            print("ad one ")
+            print(buttons, "\n")
+            print(buttonsTempList)
+            createAd(update, context, adTitle=adTitle, timer=timer, messageText="{}".format(messageText), channelList=channelList,buttonList = buttonsTempList, saveToJson=False)
+
+    update.message.reply_text("Ads are being restored. ", parse_mode=telegram.ParseMode.MARKDOWN)
+
+
 
 def start(update: Update, context: CallbackContext):
     print("Start")
@@ -170,6 +197,7 @@ def messageListener(update, context):
     global buttonText
     global buttonLink
     global string
+    global buttonData
     print("STATE = {}".format(state))
 
     if(state == "WAIT_FOR_AD_TITLE"):
@@ -237,6 +265,8 @@ def messageListener(update, context):
     elif(state == "WAIT_FOR_BUTTON_LINK"):
         try:
             buttonLink = update.message.text
+            buttonData.append({"Button Text":buttonText, "Button Link":buttonLink})
+
             if("http" in update.message.text or "www" in update.message.text or ".com" in update.message.text or "net" in update.message.text): # web sitesi olup olmadigini kontrol
                 createButton(buttonText=buttonText, buttonLink=buttonLink)
                 keyboard = [[InlineKeyboardButton(string["add_buttons"], callback_data="add buttons"), InlineKeyboardButton(string["continue"], callback_data="continue")]]
@@ -533,7 +563,7 @@ def createButton(buttonText, buttonLink):
 
     buttonsTempList.append([InlineKeyboardButton(buttonText, url=buttonLink)])
 
-def createAd(update, context, adTitle, timer, messageText, channelList, buttonList):
+def createAd(update, context, adTitle, timer, messageText, channelList, buttonList = [], saveToJson=True):
     global active_slots
     global passive_slots
     global media
@@ -545,8 +575,10 @@ def createAd(update, context, adTitle, timer, messageText, channelList, buttonLi
     #time.sleep(8)
     #stopAd(passive_slots[len(passive_slots) - 1])#passive slots listesi bossa 0. index bir eleman varsa 1. index 2 eleman varasa 2. index ... seklinde gitsin
     #print(passive_slots, active_slots)
-    SaveData(adTitle=adTitle, adContent=messageText,channelList=channelList, adTimer=timer, mediaName=media, buttonList=buttonList).saveAdToJson()
-
+    if(saveToJson):
+        print(buttonData)
+        SaveData(adTitle=adTitle, adContent=messageText,channelList=channelList, adTimer=timer, mediaName=media, buttonList=buttonData).saveAdToJson()
+        buttonsTempList.clear()
 
 def deleteAd(update, context, adNumber):
 
@@ -595,6 +627,7 @@ if __name__ == '__main__':
     channelList = []
     buttonText = None
     buttonLink = None
+    buttonData = []
     string = strings.he
 
     adOne = "Free Slot 1"
@@ -622,6 +655,7 @@ if __name__ == '__main__':
 
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("restore", restore))
     dp.add_handler(CallbackQueryHandler(queryListener))
     dp.add_handler(MessageHandler(Filters.text, messageListener))
     dp.add_handler(MessageHandler(Filters.document, handleMedia))

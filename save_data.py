@@ -18,7 +18,8 @@ class SaveData:
                   "Ad Content":"{}".format(self.adContent),
                   "Ad Channels":self.channelList,
                   "Ad Timer":self.adTimer,
-                  "Ad Media":self.mediaName
+                  "Ad Media":self.mediaName,
+                  "Ad Buttons":self.buttonList
                    }
 
         return adJson
