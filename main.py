@@ -132,7 +132,6 @@ def restore(update: Update, context: CallbackContext):
         data = json.load(jsonFile)
 
         for ad in data["Ads"]:
-            buttonsTempList.clear()
             adTitle = ad['Ad Title']
             timer = ad['Ad Timer']
             messageText = ad['Ad Content']
@@ -578,7 +577,6 @@ def createAd(update, context, adTitle, timer, messageText, channelList, buttonLi
     if(saveToJson):
         print(buttonData)
         SaveData(adTitle=adTitle, adContent=messageText,channelList=channelList, adTimer=timer, mediaName=media, buttonList=buttonData).saveAdToJson()
-        buttonsTempList.clear()
 
 def deleteAd(update, context, adNumber):
 
