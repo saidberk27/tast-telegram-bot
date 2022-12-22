@@ -145,8 +145,8 @@ def restore(update: Update, context: CallbackContext):
 
 
             print("ad one ")
-            print(buttons, "\n")
-            print(buttonsTempList)
+            #print(buttons, "\n")
+            #print(buttonsTempList)
             createAd(update, context, adTitle=adTitle, timer=timer, messageText="{}".format(messageText), channelList=channelList,buttonList = buttonsTempList, saveToJson=False)
 
     update.message.reply_text("Ads are being restored. ", parse_mode=telegram.ParseMode.MARKDOWN)
