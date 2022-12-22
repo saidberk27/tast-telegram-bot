@@ -138,10 +138,10 @@ def restore(update: Update, context: CallbackContext):
             messageText = ad['Ad Content']
             channelList = ad['Ad Channels']
             media = ad['Ad Media']
-            buttons = ad['Ad Buttons']
+            #buttons = ad['Ad Buttons']
 
-            for button in buttons:
-                createButton(button['Button Text'], buttonLink=button['Button Link'])
+            #for button in buttons:
+                #createButton(button['Button Text'], buttonLink=button['Button Link'])
 
 
             print("ad one ")
